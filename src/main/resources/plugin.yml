@@ -1,0 +1,13 @@
+name: LoginBonusPlugin
+version: '1.0-SNAPSHOT'
+main: io.github.c0mpas5.loginBonusPlugin.LoginBonusPlugin
+api-version: '1.20'
+prefix: '&7[&6LoginBonusPlugin&7] &r'
+commands:
+  loginbonus:
+    description: 'LoginBonusPlugin command'
+    usage: '/<command>'
+
+  test:
+    description: 'streakとその所有者のUUIDを表示します'
+    usage: '/<command>'
