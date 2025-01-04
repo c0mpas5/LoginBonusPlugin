@@ -22,11 +22,11 @@ public class LoginBonusData {
     }
 
     public void setLoginStreak(UUID playerUUID, int streak) {
-        mysqlManager.execute("INSERT INTO loginbonus_info (uuid, streak) VALUES ('" + playerUUID.toString() + "', " + streak + ") ON DUPLICATE KEY UPDATE streak = " + streak);
+        mysqlManager.execute("INSERT INTO loginbonus_info (uuid, streak) VALUES ('" + playerUUID.toString() + "', " + streak + ") ON DUPLICATE KEY UPDATE streak = " + streak, 0);
     }
 
     public int getLoginStreak(UUID playerUUID) {
-        try (ResultSet rs = mysqlManager.query("SELECT streak FROM loginbonus_info WHERE uuid = '" + playerUUID.toString() + "'");) {
+        try (ResultSet rs = mysqlManager.query("SELECT streak FROM loginbonus_info WHERE uuid = '" + playerUUID.toString() + "'", 0)) {
             if (rs.next()) {
                 return rs.getInt("streak");
             }

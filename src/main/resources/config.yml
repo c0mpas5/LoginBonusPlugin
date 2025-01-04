@@ -1,9 +1,16 @@
-loginbonus_info:
+mysql_loginbonus_info:
   host: "localhost"
   port: "3306"
   user: "root"
   pass: "rootpass"
   db: "loginbonus_info"
+
+mysql_connection_data:
+    host: "localhost"
+    port: "3306"
+    user: "root"
+    pass: "rootpass"
+    db: "connection_data"
 
 firstRemainingTime: 30
 maxRate: 10000
