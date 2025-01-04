@@ -38,4 +38,3 @@ public final class LoginBonusPlugin extends JavaPlugin {
         return loginBonusData;
     }
 }
-// test
