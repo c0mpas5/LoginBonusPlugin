@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -36,8 +36,25 @@ public class LoginBonusData {
         return 0;
     }
 
+    public void setLastLoginDate(UUID playerUUID, LocalDateTime date) {
+        mysqlManager.execute("INSERT INTO connection_data (uuid, dt) VALUES ('" + playerUUID.toString() + "', '" + date + "') ON DUPLICATE KEY UPDATE dt = '" + date + "'", 1);
+    }
+
+    public LocalDateTime getLastLoginDate(UUID playerUUID) {
+        try (ResultSet rs = mysqlManager.query("SELECT dt FROM connection_data WHERE uuid = '" + playerUUID.toString() + "'", 1)) {
+            if (rs.next()) {
+                return rs.getTimestamp("dt").toLocalDateTime();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
     private void createTableIfNotExists() {
         String query = "CREATE TABLE IF NOT EXISTS loginbonus_info (uuid VARCHAR(36) PRIMARY KEY, streak INT)";
-        mysqlManager.execute(query);
+        mysqlManager.execute(query, 0);
+        query = "CREATE TABLE IF NOT EXISTS connection_data (uuid VARCHAR(36) PRIMARY KEY, dt DATETIME)";
+        mysqlManager.execute(query, 1);
     }
 }
