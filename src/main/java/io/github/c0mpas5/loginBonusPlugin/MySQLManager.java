@@ -125,7 +125,7 @@ public class MySQLManager {
     ////////////////////////////////
     public int countRows(String table) {
         int count = 0;
-        ResultSet set = this.query(String.format("SELECT * FROM %s", new Object[]{table}));
+        ResultSet set = this.query(String.format("SELECT * FROM %s", new Object[]{table}), 0);
 
         try {
             while(set.next()) {
@@ -142,7 +142,7 @@ public class MySQLManager {
     ////////////////////////////////
     public int count(String table) {
         int count = 0;
-        ResultSet set = this.query(String.format("SELECT count(*) from %s", table));
+        ResultSet set = this.query(String.format("SELECT count(*) from %s", table), 0);
 
         try {
             count = set.getInt("count(*)");
