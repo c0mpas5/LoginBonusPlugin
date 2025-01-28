@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.ArrayList;
 
 public class LoginBonusData {
 
@@ -25,8 +26,8 @@ public class LoginBonusData {
         createTableIfNotExists();
     }
 
-    public void setLoginStreak(UUID playerUUID, int streak) {
-//        mysqlManager.execute("INSERT INTO loginbonus_info (uuid, streak) VALUES ('" + playerUUID.toString() + "', " + streak + ") ON DUPLICATE KEY UPDATE streak = " + streak, 0);
+    public void setLoginCount(UUID playerUUID, int loginCount) {
+//        mysqlManager.execute("INSERT INTO loginbonus_info (uuid, loginCount) VALUES ('" + playerUUID.toString() + "', " + loginCount + ") ON DUPLICATE KEY UPDATE loginCount = " + loginCount, 0);
         this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
         this.con = this.MySQL.open();
         if(this.con == null){
@@ -34,10 +35,10 @@ public class LoginBonusData {
             return;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, streak) VALUES (?, ?) ON DUPLICATE KEY UPDATE streak = ?");
+            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, loginCount) VALUES (?, ?) ON DUPLICATE KEY UPDATE loginCount = ?");
             ps.setString(1, playerUUID.toString());
-            ps.setInt(2, streak);
-            ps.setInt(3, streak);
+            ps.setInt(2, loginCount);
+            ps.setInt(3, loginCount);
             ps.executeUpdate();
             ps.close();
         } catch (SQLException e) {
@@ -47,10 +48,10 @@ public class LoginBonusData {
         this.mysqlManager.close();
     }
 
-    public int getLoginStreak(UUID playerUUID) {
-//        try (ResultSet rs = mysqlManager.query("SELECT streak FROM loginbonus_info WHERE uuid = '" + playerUUID.toString() + "'", 0)) {
+    public int getLoginCount(UUID playerUUID) {
+//        try (ResultSet rs = mysqlManager.query("SELECT loginCount FROM loginbonus_info WHERE uuid = '" + playerUUID.toString() + "'", 0)) {
 //            if (rs.next()) {
-//                return rs.getInt("streak");
+//                return rs.getInt("loginCount");
 //            }
 //        } catch (SQLException e) {
 //            throw new RuntimeException(e);
@@ -62,11 +63,11 @@ public class LoginBonusData {
             return 0;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("SELECT streak FROM loginbonus_info WHERE uuid = ?");
+            PreparedStatement ps = this.con.prepareStatement("SELECT loginCount FROM loginbonus_info WHERE uuid = ?");
             ps.setString(1, playerUUID.toString());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getInt("streak");
+                return rs.getInt("loginCount");
             }
             ps.close();
         } catch (SQLException e) {
@@ -86,11 +87,10 @@ public class LoginBonusData {
             return;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO connection_log (uuid, connected_time, server) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE connected_time = ?");
+            PreparedStatement ps = this.con.prepareStatement("INSERT INTO connection_log (uuid, connected_time, server) VALUES (?, ?, ?)");
             ps.setString(1, playerUUID.toString());
             ps.setTimestamp(2, java.sql.Timestamp.valueOf(date));
             ps.setString(3, serverName);
-            ps.setTimestamp(4, java.sql.Timestamp.valueOf(date));
             ps.executeUpdate();
             ps.close();
         } catch (SQLException e) {
@@ -115,22 +115,42 @@ public class LoginBonusData {
             return null;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("SELECT connected_time FROM connection_log WHERE uuid = ?");
+            ArrayList<LocalDateTime> last2LoginDate = new ArrayList<>();
+            PreparedStatement ps = this.con.prepareStatement("SELECT connected_time FROM connection_log WHERE uuid = ? ORDER BY connected_time DESC LIMIT 2");
             ps.setString(1, playerUUID.toString());
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getTimestamp("connected_time").toLocalDateTime();
+            try {
+                while (rs.next()) {
+                    last2LoginDate.add(rs.getTimestamp("connected_time").toLocalDateTime());
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
             ps.close();
+
+            //DBにログイン履歴がない場合nullを、1つしかない場合はその日時を返す
+            if(last2LoginDate.isEmpty()){
+                return null;
+            }else if(last2LoginDate.size() == 1){
+                return last2LoginDate.get(0);
+            }
+
+            //DB最終ログイン日時が現在時刻と全く同じ場合は最新のレコードより一つ前を返す
+            if(last2LoginDate.get(1).isEqual(LocalDateTime.now())){
+                return last2LoginDate.get(0);
+            }else{
+                return last2LoginDate.get(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         this.mysqlManager.close();
         return null;
     }
 
     private void createTableIfNotExists() {
-        String query = "CREATE TABLE IF NOT EXISTS loginbonus_info (uuid VARCHAR(36) PRIMARY KEY, streak INT)";
+        String query = "CREATE TABLE IF NOT EXISTS loginbonus_info (uuid VARCHAR(36) PRIMARY KEY, loginCount INT)";
         mysqlManager.execute(query, 0);
         query = "CREATE TABLE IF NOT EXISTS connection_log (uuid VARCHAR(36) PRIMARY KEY, connected_time DATETIME, server VARCHAR(16))";
         mysqlManager.execute(query, 1);

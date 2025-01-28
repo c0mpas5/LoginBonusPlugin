@@ -24,8 +24,8 @@ public class LoginBonusCommand implements CommandExecutor {
             if (command.getName().equalsIgnoreCase("loginbonus")) {
                 // loginbonus コマンドの処理
             } else if (command.getName().equalsIgnoreCase("test")) {
-                int streak = loginBonusData.getLoginStreak(player.getUniqueId());
-                player.sendMessage("あなたの連続ログイン日数は " + streak + " 日です。");
+                int loginCount = loginBonusData.getLoginCount(player.getUniqueId());
+                player.sendMessage("あなたの連続ログイン日数は " + loginCount + " 日です。");
                 player.sendMessage("あなたのUUIDは " + player.getUniqueId().toString() + " です。");
             }
         }
