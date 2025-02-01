@@ -11,3 +11,7 @@ commands:
   test:
     description: 'streakとその所有者のUUIDを表示します'
     usage: '/<command>'
+
+  admingui:
+    description: 'AdminGUIを開きます'
+    usage: '/<command>'

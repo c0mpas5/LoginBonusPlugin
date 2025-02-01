@@ -20,12 +20,13 @@ public final class LoginBonusPlugin extends JavaPlugin {
         loginBonusData = new LoginBonusData(this, mysqlManager);
 
         // イベントリスナーの登録
-        getServer().getPluginManager().registerEvents(new PlayerLoginListener(this, loginBonusData), this);
+        getServer().getPluginManager().registerEvents(new EventListener(this, loginBonusData), this);
 
         // コマンドの登録
         LoginBonusCommand loginBonusCommand = new LoginBonusCommand(this, loginBonusData);
         getCommand("loginbonus").setExecutor(loginBonusCommand);
         getCommand("test").setExecutor(loginBonusCommand);
+        getCommand("admingui").setExecutor(loginBonusCommand);
     }
 
     @Override

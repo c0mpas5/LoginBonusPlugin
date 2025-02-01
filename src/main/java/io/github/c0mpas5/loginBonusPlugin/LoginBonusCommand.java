@@ -21,12 +21,22 @@ public class LoginBonusCommand implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            if (command.getName().equalsIgnoreCase("loginbonus")) {
-                // loginbonus コマンドの処理
-            } else if (command.getName().equalsIgnoreCase("test")) {
-                int loginCount = loginBonusData.getLoginCount(player.getUniqueId());
-                player.sendMessage("あなたの連続ログイン日数は " + loginCount + " 日です。");
-                player.sendMessage("あなたのUUIDは " + player.getUniqueId().toString() + " です。");
+            switch (command.getName().toLowerCase()) {
+                case "loginbonus":
+                    // loginbonus コマンドの処理
+                    break;
+                case "test":
+                    int loginCount = loginBonusData.getLoginCount(player.getUniqueId());
+                    player.sendMessage("あなたの連続ログイン日数は " + loginCount + " 日です。");
+                    player.sendMessage("あなたのUUIDは " + player.getUniqueId().toString() + " です。");
+                    break;
+                case "admingui":
+                    if(sender != player){
+                        sender.sendMessage("プレイヤーでないと実行できません");
+                        return false;
+                    }
+                    // GUIを開く処理(senderわたす)
+                    break;
             }
         }
         return true;
