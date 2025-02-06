@@ -10,10 +10,12 @@ public class LoginBonusCommand implements CommandExecutor {
 
     private final LoginBonusPlugin plugin;
     private final LoginBonusData loginBonusData;
+    private final LoginBonusAdminGUI adminGui;
 
-    public LoginBonusCommand(LoginBonusPlugin plugin, LoginBonusData loginBonusData) {
+    public LoginBonusCommand(LoginBonusPlugin plugin, LoginBonusData loginBonusData, LoginBonusAdminGUI adminGUI) {
         this.plugin = plugin;
         this.loginBonusData = loginBonusData;
+        this.adminGui = adminGUI;
     }
 
     @Override
@@ -35,7 +37,7 @@ public class LoginBonusCommand implements CommandExecutor {
                         sender.sendMessage("プレイヤーでないと実行できません");
                         return false;
                     }
-                    // GUIを開く処理(senderわたす)
+                    adminGui.getAdminHomeGui().show(player);
                     break;
             }
         }

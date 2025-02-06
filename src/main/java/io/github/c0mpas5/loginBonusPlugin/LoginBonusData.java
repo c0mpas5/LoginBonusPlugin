@@ -27,7 +27,7 @@ public class LoginBonusData {
         createTableIfNotExists();
     }
 
-    public void setAllData(UUID playerUUID, int loginCount, int loginStreak, int claimedCount, LocalDate lastLoginDate) {
+    public void setAllData(UUID playerUUID, int loginCount, int claimedCount, LocalDate lastClaimedDate) {
 //        mysqlManager.execute("INSERT INTO loginbonus_info (uuid, loginCount) VALUES ('" + playerUUID.toString() + "', " + loginCount + ") ON DUPLICATE KEY UPDATE loginCount = " + loginCount, 0);
         this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
         this.con = this.MySQL.open();
@@ -36,12 +36,11 @@ public class LoginBonusData {
             return;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, loginCount, loginStreak, claimedCount, lastLoginDate) VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, loginCount, claimedCount, lastClaimedDate) VALUES (?, ?, ?, ?)");
             ps.setString(1, playerUUID.toString());
             ps.setInt(2, loginCount);
-            ps.setInt(3, loginStreak);
-            ps.setInt(4, claimedCount);
-            ps.setDate(5, java.sql.Date.valueOf(lastLoginDate));
+            ps.setInt(3, claimedCount);
+            ps.setDate(4, java.sql.Date.valueOf(lastClaimedDate));
             ps.executeUpdate();
             ps.close();
         } catch (SQLException e) {
@@ -101,40 +100,66 @@ public class LoginBonusData {
         return 0;
     }
 
-    public void setLoginStreak(UUID playerUUID, int loginStreak) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return;
-        }
-        try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, loginStreak) VALUES (?, ?) ON DUPLICATE KEY UPDATE loginStreak = ?");
-            ps.setString(1, playerUUID.toString());
-            ps.setInt(2, loginStreak);
-            ps.setInt(3, loginStreak);
-            ps.executeUpdate();
-            ps.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+//    public void setLoginStreak(UUID playerUUID, int loginStreak) {
+//        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
+//        this.con = this.MySQL.open();
+//        if(this.con == null){
+//            Bukkit.getLogger().info("failed to open MYSQL");
+//            return;
+//        }
+//        try {
+//            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, loginStreak) VALUES (?, ?) ON DUPLICATE KEY UPDATE loginStreak = ?");
+//            ps.setString(1, playerUUID.toString());
+//            ps.setInt(2, loginStreak);
+//            ps.setInt(3, loginStreak);
+//            ps.executeUpdate();
+//            ps.close();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        this.mysqlManager.close();
+//    }
 
-        this.mysqlManager.close();
-    }
-
-    public int getLoginStreak(UUID playerUUID) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
+    public int getLoginStreak(UUID playerUUID, int dailyResetHour) {
+        this.MySQL = new MySQLFunc(mysqlManager.HOST1, mysqlManager.DB1, mysqlManager.USER1, mysqlManager.PASS1, mysqlManager.PORT1);
         this.con = this.MySQL.open();
         if(this.con == null){
             Bukkit.getLogger().info("failed to open MYSQL");
             return 0;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("SELECT loginStreak FROM loginbonus_info WHERE uuid = ?");
-            ps.setString(1, playerUUID.toString());
+            String sql = """
+            WITH distinct_dates AS (
+                SELECT DISTINCT DATE(DATE_SUB(connected_time, INTERVAL ? HOUR)) AS login_date
+                FROM connection_log
+                WHERE uuid = ? AND server = ?
+                UNION
+                SELECT DATE(DATE_SUB(CURDATE(), INTERVAL ? HOUR))
+            ),
+            ranked_dates AS (
+                SELECT
+                    login_date,
+                    ROW_NUMBER() OVER (ORDER BY login_date DESC) AS rn,
+                    DATEDIFF(MAX(login_date) OVER (), login_date) AS diff
+                FROM distinct_dates
+            ),
+            grouped_dates AS (
+                SELECT login_date, rn, CAST(diff AS SIGNED) - CAST(rn AS SIGNED) AS grp
+                FROM ranked_dates
+            )
+            SELECT COUNT(*) AS consecutive_days
+            FROM grouped_dates
+            WHERE grp = (SELECT MIN(grp) FROM grouped_dates);
+            """;
+            PreparedStatement ps = this.con.prepareStatement(sql);
+            ps.setInt(1, dailyResetHour);
+            ps.setString(2, playerUUID.toString());
+            ps.setString(3, "man10");
+            ps.setInt(4, dailyResetHour);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getInt("loginStreak");
+                return rs.getInt("consecutive_days");
             }
             ps.close();
         } catch (SQLException e) {
@@ -189,7 +214,7 @@ public class LoginBonusData {
     }
 
 //    //開発用においてるだけ
-//    public void setLastLoginDate(UUID playerUUID, LocalDateTime date, String serverName) {
+//    public void setlastClaimedDate(UUID playerUUID, LocalDateTime date, String serverName) {
 ////        mysqlManager.execute("INSERT INTO connection_log (uuid, connected_time, server) VALUES ('" + playerUUID.toString() + "', '" + date + "', '" + serverName + "') ON DUPLICATE KEY UPDATE connected_time = '" + date + "'", 1);
 //        this.MySQL = new MySQLFunc(mysqlManager.HOST1, mysqlManager.DB1, mysqlManager.USER1, mysqlManager.PASS1, mysqlManager.PORT1);
 //        this.con = this.MySQL.open();
@@ -211,7 +236,7 @@ public class LoginBonusData {
 //        this.mysqlManager.close();
 //    }
 //
-//    public LocalDateTime getLastLoginDate(UUID playerUUID) {
+//    public LocalDateTime getlastClaimedDate(UUID playerUUID) {
 ////        try (ResultSet rs = mysqlManager.query("SELECT connected_time FROM connection_log WHERE uuid = '" + playerUUID.toString() + "'", 1)) {
 ////            if (rs.next()) {
 ////                return rs.getTimestamp("connected_time").toLocalDateTime();
@@ -260,7 +285,7 @@ public class LoginBonusData {
 //        return null;
 //    }
 
-    public void setLastLoginDate(UUID playerUUID, LocalDate lastLoginDate) {
+    public void setLastClaimedDate(UUID playerUUID, LocalDate lastClaimedDate) {
         this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
         this.con = this.MySQL.open();
         if(this.con == null){
@@ -268,10 +293,10 @@ public class LoginBonusData {
             return;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, lastLoginDate) VALUES (?, ?) ON DUPLICATE KEY UPDATE lastLoginDate = ?");
+            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, lastClaimedDate) VALUES (?, ?) ON DUPLICATE KEY UPDATE lastClaimedDate = ?");
             ps.setString(1, playerUUID.toString());
-            ps.setDate(2, java.sql.Date.valueOf(lastLoginDate));
-            ps.setDate(3, java.sql.Date.valueOf(lastLoginDate));
+            ps.setDate(2, java.sql.Date.valueOf(lastClaimedDate));
+            ps.setDate(3, java.sql.Date.valueOf(lastClaimedDate));
             ps.executeUpdate();
             ps.close();
         } catch (SQLException e) {
@@ -281,7 +306,7 @@ public class LoginBonusData {
         this.mysqlManager.close();
     }
 
-    public LocalDate getLastLoginDate(UUID playerUUID) {
+    public LocalDate getLastClaimedDate(UUID playerUUID) {
         this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
         this.con = this.MySQL.open();
         if(this.con == null){
@@ -289,11 +314,11 @@ public class LoginBonusData {
             return null;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("SELECT lastLoginDate FROM loginbonus_info WHERE uuid = ?");
+            PreparedStatement ps = this.con.prepareStatement("SELECT lastClaimedDate FROM loginbonus_info WHERE uuid = ?");
             ps.setString(1, playerUUID.toString());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getDate("lastLoginDate").toLocalDate();
+                return rs.getDate("lastClaimedDate").toLocalDate();
             }
             ps.close();
         } catch (SQLException e) {
@@ -304,14 +329,12 @@ public class LoginBonusData {
     }
 
     private void createTableIfNotExists() {
-        String query = "CREATE TABLE IF NOT EXISTS loginbonus_info (uuid VARCHAR(36) PRIMARY KEY, loginCount INT, loginStreak INT, claimedCount INT, lastLoginDate DATE)";
+        String query = "CREATE TABLE IF NOT EXISTS loginbonus_info (uuid VARCHAR(36) PRIMARY KEY, loginCount INT, claimedCount INT, lastClaimedDate DATE)";
         mysqlManager.execute(query, 0);
-        query = "CREATE TABLE IF NOT EXISTS loginbonus_rewards (day INT PRIMARY KEY, reward VARCHAR(255))";
-        mysqlManager.execute(query, 0);
-        query = "CREATE TABLE IF NOT EXISTS connection_log (uuid VARCHAR(36) PRIMARY KEY, connected_time DATETIME, server VARCHAR(16))";
+        query = "CREATE TABLE IF NOT EXISTS connection_log (uuid VARCHAR(36), connected_time DATETIME, server VARCHAR(16))";
         mysqlManager.execute(query, 1);
 
         //デバッグ：DBに適当なログイン日時を入力
-        //setLastLoginDate(UUID.fromString("7f05cd38-a2fa-44fc-8c9e-825e86c86efe"), LocalDateTime.of(2025,1,7,10,0), "Paper");
+        //setLastClaimedDate(UUID.fromString("7f05cd38-a2fa-44fc-8c9e-825e86c86efe"), LocalDateTime.of(2025,1,7,10,0), "Paper");
     }
 }
