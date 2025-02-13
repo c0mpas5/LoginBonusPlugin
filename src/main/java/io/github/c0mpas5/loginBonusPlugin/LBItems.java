@@ -298,12 +298,12 @@ public class LBItems {
         return item;
     }
 
-    // adminRewardSettingGui
+    // adminNormalRewardSettingGui
     public static ItemStack normalRewardSettingTutorialBookIS() {
         ItemStack item = new ItemStack(Material.BOOK, 1);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "各報酬枠について");
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "通常枠について");
             meta.setLore(List.of(
                     ChatColor.WHITE + "【通常枠について】────────────────",
                     ChatColor.of("#C2C2C2") + "・特別枠/ボーナス枠が与えられない場合に与えられる報酬枠です。",
@@ -315,6 +315,112 @@ public class LBItems {
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    // adminSpecialRewardSettingGui
+    public static ItemStack specialRewardSettingTutorialBookIS() {
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "特別枠について");
+            meta.setLore(List.of(
+                    ChatColor.WHITE + "【特別枠について】────────────────",
+                    ChatColor.of("#C2C2C2") + "開催期間中に10の倍数日ログインした場合に与えられる報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
+                    ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + "サブアカウント設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定した回数を上限に受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【特別枠報酬プールについて】──────────────",
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
+                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    // adminBonusRewardSettingGui
+    public static ItemStack bonusRewardSettingTutorialBookIS() {
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ボーナス枠について");
+            meta.setLore(List.of(
+                    ChatColor.WHITE + "【ボーナス枠について】────────────────",
+                    ChatColor.GOLD + "ボーナス枠条件設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定したログイン率を満たしたプレイヤーに対して",
+                    ChatColor.of("#C2C2C2") + "開催期間最終日に与えられる報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
+                    ChatColor.of("#C2C2C2") + "この枠の報酬は" +  ChatColor.GOLD + "サブアカウント設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定した回数を上限に受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【ボーナス枠報酬プールについて】──────────────",
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
+                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    // adminContinuousRewardSettingGui
+    public static ItemStack continuousRewardSettingTutorialBookIS() {
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "連続ログインボーナスについて");
+            meta.setLore(List.of(
+                    ChatColor.WHITE + "【連続ログインボーナスについて】────────────────",
+                    ChatColor.of("#C2C2C2") + "開催期間中に10日間連続してログインした場合に与えられる報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、一度この報酬枠を受け取ると、連続ログインのカウントはリセットされます。",
+                    ChatColor.of("#C2C2C2") + "期間中、10日間連続ログインを達成する度に報酬を受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
+                    ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD + "サブアカウント設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定した回数を上限に受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【連続ログインボーナス報酬プールについて】──────────────",
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
+                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    // adminBonusRewardConditionSettingGui
+    public static ItemStack bonusRewardConditionTutorialBookIS(){
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ボーナス枠について");
+            meta.setLore(List.of(
+                    ChatColor.WHITE + "【ボーナス枠条件設定について】────────────────",
+                    ChatColor.of("#C2C2C2") + "ボーナス枠の報酬を受け取るために必要なログイン日数の割合を",
+                    ChatColor.of("#C2C2C2") + "このGUIの名前欄に入力し、右の「保存する」をクリックすることで設定できます。",
+                    ChatColor.of("#C2C2C2") + "" + ChatColor.BOLD + "・【ログインした日数（日）/ログインボーナスの開催期間（日）* 100】" + "" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") +  "で割合（百分率）を算出します。",
+                    ChatColor.of("#C2C2C2") + "・算出された値が当項目で設定した割合以上のプレイヤーに対し、",
+                    ChatColor.of("#C2C2C2") + "　開催期間最終日にボーナス枠の報酬を与えます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.of("#DF2E8F") + "" + ChatColor.BOLD + "【注意】受付可能な入力範囲：0~100（整数）"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack noNamePaperIS(){
+        ItemStack item = new ItemStack(Material.PAPER, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName("0~100の整数を入力(%)");
             item.setItemMeta(meta);
         }
         return item;

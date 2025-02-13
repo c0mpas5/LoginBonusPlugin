@@ -70,11 +70,10 @@ public class EventListener implements Listener {
         player.sendMessage("連続ログイン" + loginBonusData.getLoginStreak(playerUUID, dailyResetHour) + "日目！");
 
         if(loginBonusData.getLastClaimedDate(playerUUID).isBefore(baseDate)){
-            TextComponent message = new TextComponent("test");
+            TextComponent message = new TextComponent("ログボ受取");
             message.setColor(ChatColor.YELLOW);
             // クリック時に "/executeMethod" コマンドを実行する ClickEvent を設定する
             message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/admingui")); //adminguiは仮置き
-
             // プレイヤーに送信（プレイヤーの場合は spigot() を使って送信）
             player.spigot().sendMessage(message);
             // ログボGUIを開くためのメッセージ送信処理

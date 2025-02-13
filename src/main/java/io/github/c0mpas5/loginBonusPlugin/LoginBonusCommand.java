@@ -28,9 +28,11 @@ public class LoginBonusCommand implements CommandExecutor {
                     // loginbonus コマンドの処理
                     break;
                 case "test":
-                    int loginCount = loginBonusData.getLoginCount(player.getUniqueId());
-                    player.sendMessage("あなたの連続ログイン日数は " + loginCount + " 日です。");
-                    player.sendMessage("あなたのUUIDは " + player.getUniqueId().toString() + " です。");
+                    if(sender != player){
+                        sender.sendMessage("プレイヤーでないと実行できません");
+                        return false;
+                    }
+                    adminGui.getAdminTestGui().show(player);
                     break;
                 case "admingui":
                     if(sender != player){

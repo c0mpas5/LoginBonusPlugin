@@ -9,7 +9,7 @@ commands:
     usage: '/<command>'
 
   test:
-    description: 'streakとその所有者のUUIDを表示します'
+    description: 'テスト用のコマンド'
     usage: '/<command>'
 
   admingui:

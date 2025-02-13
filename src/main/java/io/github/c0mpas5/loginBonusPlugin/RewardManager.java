@@ -13,12 +13,13 @@ public class RewardManager {
     private static final File rewardFile = new File("plugins/LoginBonusPlugin/reward.yml");
     private static final YamlConfiguration rewardConfig = YamlConfiguration.loadConfiguration(rewardFile);
 
+    /////////////////////////// プールの保存・読込・サイズカウント ///////////////////////////
     // 保存
     public static void saveRewards(String poolType, ArrayList<ItemStack> items) {
         for (int i = 0; i < items.size(); i++) {
-            rewardConfig.set(poolType + ".rewards.slot_" + i, items.get(i));
+            rewardConfig.set("pool." + poolType + ".rewards.slot_" + i, items.get(i));
         }
-            rewardConfig.set(poolType + ".poolSize", items.size());
+        rewardConfig.set("pool." + poolType + ".poolSize", items.size());
         try {
             rewardConfig.save(rewardFile);
         } catch (IOException e) {
@@ -28,7 +29,7 @@ public class RewardManager {
 
     // 指定したプールの情報を削除
     public static void deleteRewardsInfo(String poolType) {
-        rewardConfig.set(poolType, null);
+        rewardConfig.set("pool." + poolType, null);
         try {
             rewardConfig.save(rewardFile);
         } catch (IOException e) {
@@ -38,14 +39,25 @@ public class RewardManager {
 
     // プールサイズ読込
     public static int loadPoolSize(String poolType) {
-        return rewardConfig.getInt(poolType + ".poolSize");
+        return rewardConfig.getInt("pool." + poolType + ".poolSize");
     }
 
     // ランダムに報酬を取得
     public static ItemStack loadRandomRewards(String poolType) {
         int poolSize = loadPoolSize(poolType);
         Random random = new Random();
-        ItemStack item = rewardConfig.getItemStack(poolType + ".rewards.slot_" + random.nextInt(poolSize));
+        ItemStack item = rewardConfig.getItemStack("pool." + poolType + ".rewards.slot_" + random.nextInt(poolSize));
         return item;
+    }
+
+    /////////////////////////// 報酬関連設定 ///////////////////////////
+    // ボーナス枠条件設定
+    public static void setBonusRewardCondition(int percentage) {
+        rewardConfig.set("bonusRewardCondition", percentage);
+        try {
+            rewardConfig.save(rewardFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
