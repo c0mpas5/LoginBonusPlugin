@@ -1,6 +1,5 @@
 package io.github.c0mpas5.loginBonusPlugin;
 
-import com.github.stefvanschie.inventoryframework.font.util.Font;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.AnvilGui;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
@@ -9,18 +8,18 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 
 
-import com.github.stefvanschie.inventoryframework.pane.component.Label;
-import com.github.stefvanschie.inventoryframework.pane.component.PercentageBar;
 import com.github.stefvanschie.inventoryframework.pane.component.Slider;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 
 public class LoginBonusAdminGUI implements Listener {
     private ChestGui adminHomeGui;
+    private AnvilGui adminFirstNameSettingGui;
     private ChestGui adminCreateGui;
     private ChestGui adminRewardSettingGui;
     private ChestGui adminNormalRewardSettingGui;
@@ -34,6 +33,7 @@ public class LoginBonusAdminGUI implements Listener {
 
     public LoginBonusAdminGUI(){
         adminHomeGui();
+        adminFirstNameSettingGui();
         adminCreateGui();
         adminRewardSettingGui();
         adminNormalRewardSettingGui();
@@ -69,7 +69,7 @@ public class LoginBonusAdminGUI implements Listener {
         createItemPane.addItem(new GuiItem(LBItems.createPickaxeIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("ログボ作成ボタンがクリックされました");
-            getAdminCreateGui().show(player);
+            getAdminFirstNameSettingGui().show(player);
         }), 0, 0);
         adminHomeGui.addPane(createItemPane);
 
@@ -82,9 +82,43 @@ public class LoginBonusAdminGUI implements Listener {
         adminHomeGui.addPane(editItemPane);
     }
 
+    public void adminFirstNameSettingGui(){
+        adminFirstNameSettingGui = new AnvilGui("新規ログボ名設定");
+        adminFirstNameSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
 
+        // 左端の適当なアイテム
+        StaticPane paperPane = new StaticPane(0, 0, 1, 1);
 
-    public void adminCreateGui(){
+        paperPane.addItem(new GuiItem(LBItems.firstNamePaperIS(), event -> {
+        }), 0, 0);
+        adminFirstNameSettingGui.getFirstItemComponent().addPane(paperPane);
+
+        // チュートリアル
+        StaticPane tutorialPane = new StaticPane(0, 0, 1, 1);
+        tutorialPane.addItem(new GuiItem(LBItems.firstNameSettingTutorialBookIS(), event -> {
+        }), 0, 0);
+        adminFirstNameSettingGui.getSecondItemComponent().addPane(tutorialPane);
+
+        // 保存
+        StaticPane saveItemPane = new StaticPane(0, 0, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            String inputText = adminFirstNameSettingGui.getRenameText();
+            if (!inputText.isEmpty()) {
+                //inputTextをreward.ymlに保存する処理
+
+                player.sendMessage("設定が保存されました");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
+                getAdminCreateGui().show(player);
+            } else {
+                player.sendMessage("入力が空白です。1文字以上入力してください。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+        adminFirstNameSettingGui.getResultComponent().addPane(saveItemPane);
+    }
+
+        public void adminCreateGui(){
         adminCreateGui = new ChestGui(6, "ログボ作成");
         adminCreateGui.setOnGlobalClick(event -> event.setCancelled(true));
 
@@ -237,7 +271,7 @@ public class LoginBonusAdminGUI implements Listener {
         tutorialPane.addItem(new GuiItem(LBItems.rewardSettingTutorialBookIS(), event -> {
             // 仮置き
             Player player = (Player) event.getWhoClicked();
-            ItemStack item = RewardManager.loadRandomRewards("normal");
+            ItemStack item = RewardManager.getRandomRewards("normal");
             player.getInventory().addItem(item);
             player.sendMessage("報酬が付与されました");
         }), 0, 0);
@@ -448,7 +482,12 @@ public class LoginBonusAdminGUI implements Listener {
 
         // 左端の適当なアイテム
         StaticPane paperPane = new StaticPane(0, 0, 1, 1);
-        paperPane.addItem(new GuiItem(LBItems.noNamePaperIS(), event -> {
+        ItemStack paper = LBItems.defaultNamePaperIS();
+        ItemMeta paperMeta = paper.getItemMeta();
+        paperMeta.setDisplayName(String.valueOf(RewardManager.getBonusRewardCondition()) + " / 0~100（整数）");
+        paper.setItemMeta(paperMeta);
+
+        paperPane.addItem(new GuiItem(paper, event -> {
         }), 0, 0);
         adminBonusRewardConditionGui.getFirstItemComponent().addPane(paperPane);
 
@@ -542,6 +581,10 @@ public class LoginBonusAdminGUI implements Listener {
 
     public ChestGui getAdminHomeGui(){
         return adminHomeGui;
+    }
+
+    public AnvilGui getAdminFirstNameSettingGui(){
+        return adminFirstNameSettingGui;
     }
 
     public ChestGui getAdminCreateGui(){

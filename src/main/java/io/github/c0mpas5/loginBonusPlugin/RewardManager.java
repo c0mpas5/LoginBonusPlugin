@@ -38,13 +38,13 @@ public class RewardManager {
     }
 
     // プールサイズ読込
-    public static int loadPoolSize(String poolType) {
+    public static int getPoolSize(String poolType) {
         return rewardConfig.getInt("pool." + poolType + ".poolSize");
     }
 
     // ランダムに報酬を取得
-    public static ItemStack loadRandomRewards(String poolType) {
-        int poolSize = loadPoolSize(poolType);
+    public static ItemStack getRandomRewards(String poolType) {
+        int poolSize = getPoolSize(poolType);
         Random random = new Random();
         ItemStack item = rewardConfig.getItemStack("pool." + poolType + ".rewards.slot_" + random.nextInt(poolSize));
         return item;
@@ -58,6 +58,14 @@ public class RewardManager {
             rewardConfig.save(rewardFile);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static int getBonusRewardCondition() {
+        if (rewardConfig.contains("bonusRewardCondition")) {
+            return rewardConfig.getInt("bonusRewardCondition");
+        } else {
+            return 80; // デフォルト値を返す
         }
     }
 }

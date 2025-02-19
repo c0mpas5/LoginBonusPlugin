@@ -54,6 +54,36 @@ public class LBItems {
     }
 
 
+    // adminFirstNameSettingGui
+    public static ItemStack firstNamePaperIS(){
+        ItemStack item = new ItemStack(Material.PAPER, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName("作成したいログボの名前を入力");
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack firstNameSettingTutorialBookIS(){
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ボーナス枠について");
+            meta.setLore(List.of(
+                    ChatColor.WHITE + "【新規ログインボーナス名設定について】────────────────",
+                    ChatColor.of("#C2C2C2") + "" + ChatColor.BOLD + "作成するログインボーナスの名前を名前欄に入力してください。",
+                    ChatColor.of("#C2C2C2") + "ここで設定した名前はあとから変更することもできます。"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+
     // adminCreateGui
     public static ItemStack rewardSettingChestIS(){
         ItemStack item = new ItemStack(Material.CHEST, 1);
@@ -415,7 +445,7 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack noNamePaperIS(){
+    public static ItemStack defaultNamePaperIS(){
         ItemStack item = new ItemStack(Material.PAPER, 1);
         ItemMeta meta = item.getItemMeta();
 
