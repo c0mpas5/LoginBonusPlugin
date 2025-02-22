@@ -5,6 +5,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
 
 public class LoginBonusCommand implements CommandExecutor {
 
@@ -28,11 +31,7 @@ public class LoginBonusCommand implements CommandExecutor {
                     // loginbonus コマンドの処理
                     break;
                 case "test":
-                    if(sender != player){
-                        sender.sendMessage("プレイヤーでないと実行できません");
-                        return false;
-                    }
-                    adminGui.getAdminTestGui().show(player);
+                    ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "normal");
                     break;
                 case "admingui":
                     if(sender != player){

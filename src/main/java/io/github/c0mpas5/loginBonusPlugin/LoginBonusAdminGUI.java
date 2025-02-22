@@ -10,12 +10,15 @@ import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 
 import com.github.stefvanschie.inventoryframework.pane.component.Slider;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+
+import static org.bukkit.Bukkit.getServer;
 
 public class LoginBonusAdminGUI implements Listener {
     private ChestGui adminHomeGui;
@@ -27,9 +30,12 @@ public class LoginBonusAdminGUI implements Listener {
     private ChestGui adminBonusRewardSettingGui;
     private ChestGui adminContinuousRewardSettingGui;
     private AnvilGui adminBonusRewardConditionGui;
+    private AnvilGui adminNameSettingGui;
     private ChestGui adminSubAccountSettingGui;
 
     private ChestGui adminTestGui;
+    
+    private String currentLoginBonusName;
 
     public LoginBonusAdminGUI(){
         adminHomeGui();
@@ -41,6 +47,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminBonusRewardSettingGui();
         adminContinuousRewardSettingGui();
         adminBonusRewardConditionGui();
+        adminNameSettingGui();
         //adminSubAccountSettingGui();
 
         adminTestGui();
@@ -83,7 +90,7 @@ public class LoginBonusAdminGUI implements Listener {
     }
 
     public void adminFirstNameSettingGui(){
-        adminFirstNameSettingGui = new AnvilGui("新規ログボ名設定");
+        adminFirstNameSettingGui = new AnvilGui("新規ログボ内部名設定");
         adminFirstNameSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
 
         // 左端の適当なアイテム
@@ -104,10 +111,10 @@ public class LoginBonusAdminGUI implements Listener {
         saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             String inputText = adminFirstNameSettingGui.getRenameText();
-            if (!inputText.isEmpty()) {
-                //inputTextをreward.ymlに保存する処理
-
-                player.sendMessage("設定が保存されました");
+            // 空白でないかつ、入力されたログボ名が既存のものと重複していない場合
+            if (!inputText.isEmpty() && RewardManager.setNewLoginBonusName(inputText, player)) {
+                player.sendMessage("§a新しいログボが作成されました");
+                currentLoginBonusName = inputText;
                 player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
                 getAdminCreateGui().show(player);
             } else {
@@ -175,6 +182,7 @@ public class LoginBonusAdminGUI implements Listener {
         namePane.addItem(new GuiItem(LBItems.nameSettingNametagIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("内部名設定がクリックされました");
+            getAdminNameSettingGui().show(player);
         }), 0, 0);
         adminCreateGui.addPane(namePane);
 
@@ -271,7 +279,7 @@ public class LoginBonusAdminGUI implements Listener {
         tutorialPane.addItem(new GuiItem(LBItems.rewardSettingTutorialBookIS(), event -> {
             // 仮置き
             Player player = (Player) event.getWhoClicked();
-            ItemStack item = RewardManager.getRandomRewards("normal");
+            ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, "normal");
             player.getInventory().addItem(item);
             player.sendMessage("報酬が付与されました");
         }), 0, 0);
@@ -305,16 +313,16 @@ public class LoginBonusAdminGUI implements Listener {
         saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("保存がクリックされました");
-            RewardManager.deleteRewardsInfo("normal");
+            RewardManager.deleteRewardsInfo(currentLoginBonusName, "normal");
 
             ArrayList<ItemStack> items = new ArrayList<>();
-            for (int i = 0; i <= 44; i++){
+            for (int i = 0; i <= 44; i++){ // 45スロットまで
                 if(adminNormalRewardSettingGui.getInventory().getItem(i) == null){
                     break;
                 }
                 items.add(adminNormalRewardSettingGui.getInventory().getItem(i));
             }
-            RewardManager.saveRewards("normal", items);
+            RewardManager.saveRewards(currentLoginBonusName, "normal", items);
             player.sendMessage("報酬が保存されました");
 
             getAdminRewardSettingGui().show(player);
@@ -325,8 +333,29 @@ public class LoginBonusAdminGUI implements Listener {
         StaticPane tutorialPane = new StaticPane(8, 5, 1, 1);
         tutorialPane.addItem(new GuiItem(LBItems.normalRewardSettingTutorialBookIS(), event -> {
             event.setCancelled(true);
+            Player player = (Player) event.getWhoClicked();
+            ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "normal");
+            for (int i = 0; i < rewardItems.size(); i++){
+                player.getInventory().addItem(rewardItems.get(i));
+                player.sendMessage("付与された報酬：" + rewardItems.get(i));
+            }
         }), 0, 0);
         adminNormalRewardSettingGui.addPane(tutorialPane);
+
+        // 登録中のアイテムを並べる
+        StaticPane rewardItemPane = new StaticPane(0, 0, 9, 5, Pane.Priority.NORMAL);
+        ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "normal");
+        for (int i = 0; i < rewardItems.size(); i++) {
+            ItemStack item = rewardItems.get(i);
+            if (item != null && item.getItemMeta() != null) {
+                rewardItemPane.addItem(new GuiItem(item), i % 9, i / 9);
+                getServer().getConsoleSender().sendMessage("Added: " + i);
+            } else {
+                rewardItemPane.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()), i % 9, i / 9);
+                getServer().getConsoleSender().sendMessage("Null ItemStack or ItemMeta at index: " + i);
+            }
+        }
+        adminNormalRewardSettingGui.addPane(rewardItemPane);
     }
 
     public void adminSpecialRewardSettingGui(){
@@ -354,7 +383,7 @@ public class LoginBonusAdminGUI implements Listener {
         saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("保存がクリックされました");
-            RewardManager.deleteRewardsInfo("special");
+            RewardManager.deleteRewardsInfo(currentLoginBonusName, "special");
 
             ArrayList<ItemStack> items = new ArrayList<>();
             for (int i = 0; i <= 44; i++){
@@ -363,7 +392,7 @@ public class LoginBonusAdminGUI implements Listener {
                 }
                 items.add(adminSpecialRewardSettingGui.getInventory().getItem(i));
             }
-            RewardManager.saveRewards("special", items);
+            RewardManager.saveRewards(currentLoginBonusName, "special", items);
             player.sendMessage("報酬が保存されました");
 
             getAdminRewardSettingGui().show(player);
@@ -403,7 +432,7 @@ public class LoginBonusAdminGUI implements Listener {
         saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("保存がクリックされました");
-            RewardManager.deleteRewardsInfo("bonus");
+            RewardManager.deleteRewardsInfo(currentLoginBonusName, "bonus");
 
             ArrayList<ItemStack> items = new ArrayList<>();
             for (int i = 0; i <= 44; i++){
@@ -412,7 +441,7 @@ public class LoginBonusAdminGUI implements Listener {
                 }
                 items.add(adminBonusRewardSettingGui.getInventory().getItem(i));
             }
-            RewardManager.saveRewards("bonus", items);
+            RewardManager.saveRewards(currentLoginBonusName, "bonus", items);
             player.sendMessage("報酬が保存されました");
 
             getAdminRewardSettingGui().show(player);
@@ -452,7 +481,7 @@ public class LoginBonusAdminGUI implements Listener {
         saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("保存がクリックされました");
-            RewardManager.deleteRewardsInfo("continuous");
+            RewardManager.deleteRewardsInfo(currentLoginBonusName, "continuous");
 
             ArrayList<ItemStack> items = new ArrayList<>();
             for (int i = 0; i <= 44; i++){
@@ -461,7 +490,7 @@ public class LoginBonusAdminGUI implements Listener {
                 }
                 items.add(adminContinuousRewardSettingGui.getInventory().getItem(i));
             }
-            RewardManager.saveRewards("continuous", items);
+            RewardManager.saveRewards(currentLoginBonusName, "continuous", items);
             player.sendMessage("報酬が保存されました");
 
             getAdminRewardSettingGui().show(player);
@@ -484,7 +513,7 @@ public class LoginBonusAdminGUI implements Listener {
         StaticPane paperPane = new StaticPane(0, 0, 1, 1);
         ItemStack paper = LBItems.defaultNamePaperIS();
         ItemMeta paperMeta = paper.getItemMeta();
-        paperMeta.setDisplayName(String.valueOf(RewardManager.getBonusRewardCondition()) + " / 0~100（整数）");
+        paperMeta.setDisplayName(String.valueOf(RewardManager.getBonusRewardCondition(currentLoginBonusName)) + " / 0~100（整数）");
         paper.setItemMeta(paperMeta);
 
         paperPane.addItem(new GuiItem(paper, event -> {
@@ -504,7 +533,7 @@ public class LoginBonusAdminGUI implements Listener {
             String inputText = adminBonusRewardConditionGui.getRenameText();
             if (inputText.matches("\\d+") && Integer.parseInt(inputText) >= 0 && Integer.parseInt(inputText) <= 100) {
                 int percentage = Integer.parseInt(inputText);
-                RewardManager.setBonusRewardCondition(percentage);
+                RewardManager.setBonusRewardCondition(currentLoginBonusName, percentage);
                 player.sendMessage("設定が保存されました");
                 player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
                 getAdminRewardSettingGui().show(player);
@@ -514,61 +543,47 @@ public class LoginBonusAdminGUI implements Listener {
             }
         }), 0, 0);
         adminBonusRewardConditionGui.getResultComponent().addPane(saveItemPane);
-
-//        adminBonusRewardConditionGui = new ChestGui(7, "ボーナス枠条件設定");
-//        adminRewardSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
-//
-//        // 外周背景
-//        OutlinePane background = new OutlinePane(0, 0, 9, 7, Pane.Priority.LOWEST);
-//        Mask mask = new Mask(
-//                "000000000",
-//                "111111111",
-//                "111000111",
-//                "111000111",
-//                "111000111",
-//                "111101111",
-//                "111101110"
-//        );
-//        background.applyMask(mask);
-//        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
-//        background.setRepeat(true);
-//        adminRewardSettingGui.addPane(background);
-//
-//        // 数字入力
-//        Label input = new Label(3, 2, 3, 4, Font.LIGHT_GRAY);
-//        Mask inputMask = new Mask(
-//                "111",
-//                "111",
-//                "111",
-//                "010"
-//        );
-//        background.applyMask(inputMask);
-//        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
-//        background.setRepeat(true);
-//        int inputValue = 0;
-//
-//        input.setText("7894561230", (character, item) -> new GuiItem(item, event -> {
-//            // event
-//        }));
-//        // 保存ボタン
-//        StaticPane saveItemPane = new StaticPane(4, 5, 1, 1);
-//        saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
-//            Player player = (Player) event.getWhoClicked();
-//            player.sendMessage("保存がクリックされました");
-//            // 保存処理
-//            player.sendMessage("設定が保存されました");
-//
-//            getAdminRewardSettingGui().show(player);
-//        }), 0, 0);
-//        adminBonusRewardConditionGui.addPane(saveItemPane);
-//
-//        // チュートリアル
-//        StaticPane tutorialPane = new StaticPane(8, 5, 1, 1);
-//        tutorialPane.addItem(new GuiItem(LBItems.bonusRewardConditionTutorialBookIS(), event -> {
-//            event.setCancelled(true);
-//        }), 0, 0);
-//        adminBonusRewardConditionGui.addPane(tutorialPane);
     }
+
+    public void adminNameSettingGui(){
+        adminNameSettingGui = new AnvilGui("ログボ内部名設定");
+        adminNameSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // 左端の適当なアイテム
+        StaticPane paperPane = new StaticPane(0, 0, 1, 1);
+        ItemStack paper = LBItems.defaultNamePaperIS();
+        ItemMeta paperMeta = paper.getItemMeta();
+        paperMeta.setDisplayName(currentLoginBonusName);
+        paper.setItemMeta(paperMeta);
+
+        paperPane.addItem(new GuiItem(paper, event -> {
+        }), 0, 0);
+        adminNameSettingGui.getFirstItemComponent().addPane(paperPane);
+
+        // チュートリアル
+        StaticPane tutorialPane = new StaticPane(0, 0, 1, 1);
+        tutorialPane.addItem(new GuiItem(LBItems.firstNameSettingTutorialBookIS(), event -> {
+        }), 0, 0);
+        adminNameSettingGui.getSecondItemComponent().addPane(tutorialPane);
+
+        // 保存
+        StaticPane saveItemPane = new StaticPane(0, 0, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            String inputText = adminNameSettingGui.getRenameText();
+            if (!inputText.isEmpty() && RewardManager.updateLoginBonusName(currentLoginBonusName, inputText, player)) {
+                currentLoginBonusName = inputText;
+                player.sendMessage("設定が保存されました");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
+                getAdminCreateGui().show(player);
+            } else {
+                player.sendMessage("入力が空白です。1文字以上入力してください。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+        adminNameSettingGui.getResultComponent().addPane(saveItemPane);
+    }
+
 
     public void adminTestGui(){
         adminTestGui = new ChestGui(6, "テスト");
@@ -613,6 +628,10 @@ public class LoginBonusAdminGUI implements Listener {
 
     public AnvilGui getAdminBonusRewardConditionGui(){
         return adminBonusRewardConditionGui;
+    }
+
+    public AnvilGui getAdminNameSettingGui(){
+        return adminNameSettingGui;
     }
 
     public ChestGui getAdminTestGui(){
