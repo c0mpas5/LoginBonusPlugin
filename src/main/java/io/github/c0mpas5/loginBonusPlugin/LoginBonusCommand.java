@@ -31,7 +31,6 @@ public class LoginBonusCommand implements CommandExecutor {
                     // loginbonus コマンドの処理
                     break;
                 case "test":
-                    ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "normal");
                     break;
                 case "admingui":
                     if(sender != player){
