@@ -100,14 +100,14 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack periodSettingClockIS(){
+    public static ItemStack timeSettingClockIS(){
         ItemStack item = new ItemStack(Material.CLOCK, 1);
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "開催期間設定");
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "時間系設定");
             meta.setLore(List.of(
-                    ChatColor.GRAY + "当該ログインボーナスの開催期間を設定します"
+                    ChatColor.GRAY + "当該ログインボーナスの開催期間・日付変更時刻を設定します"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -422,7 +422,7 @@ public class LBItems {
     }
 
     // adminBonusRewardConditionSettingGui
-    public static ItemStack bonusRewardConditionTutorialBookIS(){
+    public static ItemStack bonusRewardConditionSettingTutorialBookIS(){
         ItemStack item = new ItemStack(Material.BOOK, 1);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -436,6 +436,87 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + "　開催期間最終日にボーナス枠の報酬を与えます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.of("#DF2E8F") + "" + ChatColor.BOLD + "【注意】受付可能な入力範囲：0~100（整数）"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack periodSettingClockIS() {
+        ItemStack item = new ItemStack(Material.CLOCK, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "開催期間設定");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "当該ログインボーナスの開始日と終了日を設定します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack dailyResetTimeSettingCompassIS() {
+        ItemStack item = new ItemStack(Material.COMPASS, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "日付変更時刻設定");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "当該ログインボーナスの、「日付が変更したと判定する時刻」を設定します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack periodSettingTutorialBookIS(){
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "開催期間設定について");
+            meta.setLore(List.of(
+                    ChatColor.of("#C2C2C2") + "当該ログインボーナスの開始日と終了日を設定します。",
+                    ChatColor.of("#C2C2C2") + "名前欄に以下の形式に従って入力してください。",
+                    ChatColor.GOLD + "" + ChatColor.BOLD + "【形式】(年)/(月)/(日)-(年)/(月)/(日)",
+                    ChatColor.of("#C2C2C2") + "【注意事項】",
+                    ChatColor.of("#C2C2C2") + "・前の年月日は開始日、後の年月日は終了日を表します。",
+                    ChatColor.of("#C2C2C2") + "・(年)は西暦4桁、(月)と(日)は2桁で入力してください。",
+                    ChatColor.of("#C2C2C2") + "・入力に空白は含めないでください。",
+                    ChatColor.of("#C2C2C2") + "・日付変更時刻が0時以外に設定されている場合、その分だけ開催期間がずれます。",
+                    ChatColor.of("#C2C2C2") + "　例えば、日付変更時刻が5時で、入力が以下の例の場合、",
+                    ChatColor.of("#C2C2C2") + "　開催期間は2025/01/01 5:00 ~ 2025/02/01 4:59となります。",
+                    ChatColor.of("#C2C2C2") + "・入力例:2025/01/01-2025/01/31"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack dailyResetTimeTutorialBookIS(){
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "日付変更時刻設定について");
+            meta.setLore(List.of(
+                    ChatColor.of("#C2C2C2") + "当該ログインボーナスの、「日付が変更したと判定する時刻」を設定します。",
+                    ChatColor.of("#C2C2C2") + "名前欄に以下の形式に従って入力してください。",
+                    ChatColor.GOLD + "" + ChatColor.BOLD + "【形式】(0~23の整数)",
+                    ChatColor.of("#C2C2C2") + "【注意事項】",
+                    ChatColor.of("#C2C2C2") + "・この設定は1時間単位で行えます。",
+                    ChatColor.of("#C2C2C2") + "・例えば、この設定が5(時)の場合、",
+                    ChatColor.of("#C2C2C2") + "　特定の日の5:00から翌日の4:59までが1日と見なされます。",
+                    ChatColor.of("#C2C2C2") + "・入力例:5"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);

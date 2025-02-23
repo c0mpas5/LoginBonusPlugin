@@ -10,7 +10,6 @@ import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 
 import com.github.stefvanschie.inventoryframework.pane.component.Slider;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +29,9 @@ public class LoginBonusAdminGUI implements Listener {
     private ChestGui adminBonusRewardSettingGui;
     private ChestGui adminContinuousRewardSettingGui;
     private AnvilGui adminBonusRewardConditionGui;
+    private ChestGui adminTimeSettingGui;
+    private AnvilGui adminPeriodSettingGui;
+    private AnvilGui adminDailyResetTimeSettingGui;
     private AnvilGui adminNameSettingGui;
     private ChestGui adminSubAccountSettingGui;
 
@@ -47,6 +49,9 @@ public class LoginBonusAdminGUI implements Listener {
         adminBonusRewardSettingGui();
         adminContinuousRewardSettingGui();
         adminBonusRewardConditionGui();
+        adminTimeSettingGui();
+        adminPeriodSettingGui();
+        adminDailyResetTimeSettingGui();
         adminNameSettingGui();
         //adminSubAccountSettingGui();
 
@@ -161,13 +166,14 @@ public class LoginBonusAdminGUI implements Listener {
         }), 0, 0);
         adminCreateGui.addPane(rewardPane);
 
-        // 開催期間設定
-        StaticPane periodPane = new StaticPane(4, 2, 1, 1);
-        periodPane.addItem(new GuiItem(LBItems.periodSettingClockIS(), event -> {
+        // 時間系設定
+        StaticPane timePane = new StaticPane(4, 2, 1, 1);
+        timePane.addItem(new GuiItem(LBItems.timeSettingClockIS(), event -> {
             Player player = (Player) event.getWhoClicked();
-            player.sendMessage("開催期間設定がクリックされました");
+            player.sendMessage("時間系設定がクリックされました");
+            getAdminTimeSettingGui().show(player);
         }), 0, 0);
-        adminCreateGui.addPane(periodPane);
+        adminCreateGui.addPane(timePane);
 
         // バナー設定
         StaticPane bannerPane = new StaticPane(6, 2, 1, 1);
@@ -204,7 +210,7 @@ public class LoginBonusAdminGUI implements Listener {
     }
 
 
-
+////////////////////// 報酬系設定（「ログボ作成orログボ編集」>「報酬設定」>... 部分） //////////////////////
     public void adminRewardSettingGui(){
         adminRewardSettingGui = new ChestGui(3, "報酬設定");
         adminRewardSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
@@ -522,7 +528,7 @@ public class LoginBonusAdminGUI implements Listener {
 
         // チュートリアル
         StaticPane tutorialPane = new StaticPane(0, 0, 1, 1);
-        tutorialPane.addItem(new GuiItem(LBItems.bonusRewardConditionTutorialBookIS(), event -> {
+        tutorialPane.addItem(new GuiItem(LBItems.bonusRewardConditionSettingTutorialBookIS(), event -> {
         }), 0, 0);
         adminBonusRewardConditionGui.getSecondItemComponent().addPane(tutorialPane);
 
@@ -543,6 +549,119 @@ public class LoginBonusAdminGUI implements Listener {
             }
         }), 0, 0);
         adminBonusRewardConditionGui.getResultComponent().addPane(saveItemPane);
+    }
+
+////////////////////// 期間系設定（「ログボ作成orログボ編集」>「報酬設定」>... 部分） //////////////////////
+    public void adminTimeSettingGui(){
+        adminTimeSettingGui = new ChestGui(3, "時間系設定");
+        adminTimeSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        OutlinePane background = new OutlinePane(0, 0, 9, 3, Pane.Priority.LOWEST);
+        Mask mask = new Mask(
+                "111111111",
+                "000000000",
+                "111111111"
+        );
+        background.applyMask(mask);
+        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS(), event -> {
+            event.setCancelled(true);
+        }));
+        background.setRepeat(true);
+        adminTimeSettingGui.addPane(background);
+
+        // 期間設定
+        StaticPane createItemPane = new StaticPane(3, 1, 1, 1);
+        createItemPane.addItem(new GuiItem(LBItems.periodSettingClockIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("期間設定くりっくされた");
+            getAdminPeriodSettingGui().show(player);
+        }), 0, 0);
+        adminTimeSettingGui.addPane(createItemPane);
+
+        // 日付変更時刻設定
+        StaticPane editItemPane = new StaticPane(5, 1, 1, 1);
+        editItemPane.addItem(new GuiItem(LBItems.dailyResetTimeSettingCompassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("日付変更時刻設定がクリックされました");
+            getAdminDailyResetTimeSettingGui().show(player);
+        }), 0, 0);
+        adminTimeSettingGui.addPane(editItemPane);
+    }
+
+    public void adminPeriodSettingGui(){
+        adminPeriodSettingGui = new AnvilGui("ログボ期間設定");
+        adminPeriodSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // 左端の適当なアイテム
+        StaticPane paperPane = new StaticPane(0, 0, 1, 1);
+        ItemStack paper = LBItems.defaultNamePaperIS();
+        ItemMeta paperMeta = paper.getItemMeta();
+        paperMeta.setDisplayName(RewardManager.getOriginalPeriod(currentLoginBonusName));
+        paper.setItemMeta(paperMeta);
+
+        paperPane.addItem(new GuiItem(paper, event -> {
+        }), 0, 0);
+        adminPeriodSettingGui.getFirstItemComponent().addPane(paperPane);
+
+        // チュートリアル
+        StaticPane tutorialPane = new StaticPane(0, 0, 1, 1);
+        tutorialPane.addItem(new GuiItem(LBItems.periodSettingTutorialBookIS(), event -> {
+        }), 0, 0);
+        adminPeriodSettingGui.getSecondItemComponent().addPane(tutorialPane);
+
+        // 保存
+        StaticPane saveItemPane = new StaticPane(0, 0, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            String inputText = adminPeriodSettingGui.getRenameText();
+            if (!inputText.isEmpty() && RewardManager.setPeriod(currentLoginBonusName, inputText, player)) {
+                //player.sendMessage("設定が保存されました");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
+                getAdminCreateGui().show(player);
+            } else {
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+        adminPeriodSettingGui.getResultComponent().addPane(saveItemPane);
+    }
+
+    public void adminDailyResetTimeSettingGui(){
+        adminDailyResetTimeSettingGui = new AnvilGui("ログボ日付変更時刻設定");
+        adminDailyResetTimeSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // 左端の適当なアイテム
+        StaticPane paperPane = new StaticPane(0, 0, 1, 1);
+        ItemStack paper = LBItems.defaultNamePaperIS();
+        ItemMeta paperMeta = paper.getItemMeta();
+        paperMeta.setDisplayName(String.valueOf(RewardManager.getDailyResetTime(currentLoginBonusName)));
+        paper.setItemMeta(paperMeta);
+
+        paperPane.addItem(new GuiItem(paper, event -> {
+        }), 0, 0);
+        adminDailyResetTimeSettingGui.getFirstItemComponent().addPane(paperPane);
+
+        // チュートリアル
+        StaticPane tutorialPane = new StaticPane(0, 0, 1, 1);
+        tutorialPane.addItem(new GuiItem(LBItems.dailyResetTimeTutorialBookIS(), event -> {
+        }), 0, 0);
+        adminDailyResetTimeSettingGui.getSecondItemComponent().addPane(tutorialPane);
+
+        // 保存
+        StaticPane saveItemPane = new StaticPane(0, 0, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.backgroundLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            String inputText = adminDailyResetTimeSettingGui.getRenameText();
+            if (inputText.matches("\\D+")) {
+                player.sendMessage("§c入力が無効です。数字のみを入力してください。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            } else if (!inputText.isEmpty() && RewardManager.setDailyResetTime(currentLoginBonusName, Integer.parseInt(inputText), player)) {
+                player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
+                getAdminCreateGui().show(player);
+            } else {
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+        adminDailyResetTimeSettingGui.getResultComponent().addPane(saveItemPane);
     }
 
     public void adminNameSettingGui(){
@@ -628,6 +747,18 @@ public class LoginBonusAdminGUI implements Listener {
 
     public AnvilGui getAdminBonusRewardConditionGui(){
         return adminBonusRewardConditionGui;
+    }
+
+    public ChestGui getAdminTimeSettingGui(){
+        return adminTimeSettingGui;
+    }
+
+    public AnvilGui getAdminPeriodSettingGui(){
+        return adminPeriodSettingGui;
+    }
+
+    public AnvilGui getAdminDailyResetTimeSettingGui(){
+        return adminDailyResetTimeSettingGui;
     }
 
     public AnvilGui getAdminNameSettingGui(){
