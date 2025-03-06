@@ -184,7 +184,7 @@ public class LBItems {
 
 
     // adminRewardSettingGui
-    public static ItemStack normalRewardPlayerHeadIS(){
+    public static ItemStack normalRewardPoolPlayerHeadIS(){
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2MxYjJmNTkyY2ZjOGQzNzJkY2Y1ZmQ0NGVlZDY5ZGRkYzY0NjAxZDc4NDZkNzI2MTlmNzA1MTFkODA0M2E4OSJ9fX0=");
         ItemMeta meta = item.getItemMeta();
 
@@ -202,7 +202,7 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack specialRewardPlayerHeadIS(){
+    public static ItemStack specialRewardPoolPlayerHeadIS(){
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDQ2NzUxNThjMDc2N2VlNTA4YzUyZDUyNDI2Y2VmM2EyYzJiMjliN2U0ODdjOTI5NTNhMzgyM2Y1NjFkMDZhZiJ9fX0=");
         ItemMeta meta = item.getItemMeta();
 
@@ -220,7 +220,7 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack bonusRewardPlayerHeadIS(){
+    public static ItemStack bonusRewardPoolPlayerHeadIS(){
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTdiYzI1MWE2Y2IwZDZkOWYwNWM1NzExOTExYTZlYzI0YjIwOWRiZTY0MjY3OTAxYTRiMDM3NjFkZWJjZjczOCJ9fX0=");
         ItemMeta meta = item.getItemMeta();
 
@@ -238,7 +238,7 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack continuousRewardPlayerHeadIS(){
+    public static ItemStack continuousRewardPoolPlayerHeadIS(){
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTdiODMyNGQxYjI5ZWZkNjY3YmZiZDY5MTM0ZTdkODkxNzExMDc5MWI4MWJhZjgwZmRiNmUyYzIwN2FmZTE4MSJ9fX0=");
         ItemMeta meta = item.getItemMeta();
 
@@ -536,6 +536,71 @@ public class LBItems {
         return item;
     }
 
+    //////////// User用 /////////////
+    public static ItemStack nextPageAquaPlayerHeadIS() {
+        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjgyYWQxYjljYjRkZDIxMjU5YzBkNzVhYTMxNWZmMzg5YzNjZWY3NTJiZTM5NDkzMzgxNjRiYWM4NGE5NmUifX19");
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "次のページ");
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack prevPageAquaPlayerHeadIS() {
+        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzdhZWU5YTc1YmYwZGY3ODk3MTgzMDE1Y2NhMGIyYTdkNzU1YzYzMzg4ZmYwMTc1MmQ1ZjQ0MTlmYzY0NSJ9fX0=");
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "前のページ");
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack normalRewardForUserPlayerHeadIS(){
+        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2MxYjJmNTkyY2ZjOGQzNzJkY2Y1ZmQ0NGVlZDY5ZGRkYzY0NjAxZDc4NDZkNzI2MTlmNzA1MTFkODA0M2E4OSJ9fX0=");
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "デイリー報酬（コモン）");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "ふつうの報酬をランダムに受け取れます",
+                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack specialRewardForUserPlayerHeadIS(){
+        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDQ2NzUxNThjMDc2N2VlNTA4YzUyZDUyNDI2Y2VmM2EyYzJiMjliN2U0ODdjOTI5NTNhMzgyM2Y1NjFkMDZhZiJ9fX0=");
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "デイリー報酬（レア）");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "レアな報酬をランダムに受け取れます",
+                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     //汎用
     public static ItemStack backgroundBlackGlassIS() {
         ItemStack item = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
@@ -549,12 +614,29 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack backgroundLimeGlassIS() {
+    public static ItemStack saveLimeGlassIS() {
         ItemStack item = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "保存する");
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack cancelRedGlassIS(){
+        ItemStack item = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "保存せず前に戻る");
+            meta.setLore(List.of(
+                    ChatColor.RED + "[左クリック] 保存せず前に戻る"
+            ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
             item.setItemMeta(meta);

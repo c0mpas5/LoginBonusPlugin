@@ -1,6 +1,7 @@
 // LoginBonusCommand.java
 package io.github.c0mpas5.loginBonusPlugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,11 +15,13 @@ public class LoginBonusCommand implements CommandExecutor {
     private final LoginBonusPlugin plugin;
     private final LoginBonusData loginBonusData;
     private final LoginBonusAdminGUI adminGui;
+    private final LoginBonusUserGUI userGui;
 
-    public LoginBonusCommand(LoginBonusPlugin plugin, LoginBonusData loginBonusData, LoginBonusAdminGUI adminGUI) {
+    public LoginBonusCommand(LoginBonusPlugin plugin, LoginBonusData loginBonusData, LoginBonusAdminGUI adminGUI, LoginBonusUserGUI userGui) {
         this.plugin = plugin;
         this.loginBonusData = loginBonusData;
         this.adminGui = adminGUI;
+        this.userGui = userGui;
     }
 
     @Override
@@ -27,10 +30,8 @@ public class LoginBonusCommand implements CommandExecutor {
             Player player = (Player) sender;
 
             switch (command.getName().toLowerCase()) {
-                case "loginbonus":
-                    // loginbonus コマンドの処理
-                    break;
                 case "test":
+                    userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                     break;
                 case "admingui":
                     if(sender != player){
@@ -38,6 +39,10 @@ public class LoginBonusCommand implements CommandExecutor {
                         return false;
                     }
                     adminGui.getAdminHomeGui().show(player);
+                    break;
+                case "loginbonus":
+                    userGui.updateUserAccumulatedLoginBonusClaimGui();
+                    userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                     break;
             }
         }

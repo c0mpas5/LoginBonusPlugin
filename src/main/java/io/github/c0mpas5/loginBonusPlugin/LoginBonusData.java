@@ -328,11 +328,34 @@ public class LoginBonusData {
         return null;
     }
 
+    public void setClaimedItemStack(UUID playerUUID, String claimedItemStack, LocalDateTime claimedDate) {
+        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
+        this.con = this.MySQL.open();
+        if(this.con == null){
+            Bukkit.getLogger().info("failed to open MYSQL");
+            return;
+        }
+        try {
+            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_reward_log (uuid, claimed_item_stack, claimed_date) VALUES (?, ?, ?)");
+            ps.setString(1, playerUUID.toString());
+            ps.setString(2, claimedItemStack);
+            ps.setTimestamp(3, java.sql.Timestamp.valueOf(claimedDate));
+            ps.executeUpdate();
+            ps.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        this.mysqlManager.close();
+    }
+
     private void createTableIfNotExists() {
         String query = "CREATE TABLE IF NOT EXISTS loginbonus_info (uuid VARCHAR(36) PRIMARY KEY, loginCount INT, claimedCount INT, lastClaimedDate DATE)";
         mysqlManager.execute(query, 0);
         query = "CREATE TABLE IF NOT EXISTS connection_log (uuid VARCHAR(36), connected_time DATETIME, server VARCHAR(16))";
         mysqlManager.execute(query, 1);
+        query = "CREATE TABLE IF NOT EXISTS loginbonus_reward_log (uuid VARCHAR(36), claimed_item_stack TEXT, claimed_date DATETIME)";
+        mysqlManager.execute(query, 0);
 
         //デバッグ：DBに適当なログイン日時を入力
         //setLastClaimedDate(UUID.fromString("7f05cd38-a2fa-44fc-8c9e-825e86c86efe"), LocalDateTime.of(2025,1,7,10,0), "Paper");

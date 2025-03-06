@@ -7,6 +7,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -17,6 +19,21 @@ public class RewardManager {
 
     private static final File rewardFile = new File("plugins/LoginBonusPlugin/reward.yml");
     private static final YamlConfiguration rewardConfig = YamlConfiguration.loadConfiguration(rewardFile);
+
+    static {
+        createFileIfNotExists();
+    }
+
+    private static void createFileIfNotExists() {
+        if (!rewardFile.exists()) {
+            try {
+                Files.createDirectories(Paths.get("plugins/LoginBonusPlugin"));
+                rewardFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /////////////////////////// プールの保存・読込・サイズカウント ///////////////////////////
     // 保存
@@ -166,12 +183,18 @@ public class RewardManager {
 
     public static LocalDate getPeriodStartDate(String bonusName) {
         String startDateStr = rewardConfig.getString("loginBonuses." + bonusName + ".startDate");
+        if(startDateStr == null){
+            return null;
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         return LocalDate.parse(startDateStr, formatter);
     }
 
     public static LocalDate getPeriodEndDate(String bonusName) {
         String endDateStr = rewardConfig.getString("loginBonuses." + bonusName + ".endDate");
+        if(endDateStr == null){
+            return null;
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         return LocalDate.parse(endDateStr, formatter);
     }
