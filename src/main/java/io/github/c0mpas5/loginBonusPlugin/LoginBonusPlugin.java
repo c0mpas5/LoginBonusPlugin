@@ -7,8 +7,6 @@ public final class LoginBonusPlugin extends JavaPlugin {
 
     private LoginBonusData loginBonusData;
     private MySQLManager mysqlManager;
-    private LoginBonusAdminGUI adminGui;
-    private LoginBonusUserGUI userGui;
 
     @Override
     public void onEnable() {
@@ -20,16 +18,11 @@ public final class LoginBonusPlugin extends JavaPlugin {
 
         // データ管理クラスの初期化
         loginBonusData = new LoginBonusData(this, mysqlManager);
-
-        adminGui = new LoginBonusAdminGUI();
-
-        userGui = new LoginBonusUserGUI();
-
         // イベントリスナーの登録
         getServer().getPluginManager().registerEvents(new EventListener(this, loginBonusData), this);
 
         // コマンドの登録
-        LoginBonusCommand loginBonusCommand = new LoginBonusCommand(this, loginBonusData, adminGui, userGui);
+        LoginBonusCommand loginBonusCommand = new LoginBonusCommand(this, loginBonusData);
         getCommand("loginbonus").setExecutor(loginBonusCommand);
         getCommand("test").setExecutor(loginBonusCommand);
         getCommand("admingui").setExecutor(loginBonusCommand);

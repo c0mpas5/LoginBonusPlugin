@@ -26,7 +26,7 @@ public class LoginBonusUserGUI implements Listener {
     private ChestGui adminTestGui;
 
     // 仮置き（開催中のログボを判断して代入する必要あり）
-    private String currentLoginBonusName = "test";
+    private String currentLoginBonusName = RewardManager.getCurrentBonusName();
 
     public LoginBonusUserGUI(){
         userAccumulatedLoginBonusClaimGui();

@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Set;
 
 public class RewardManager {
 
@@ -230,6 +231,25 @@ public class RewardManager {
         } else {
             return 0; // デフォルト値を返す
         }
+    }
+
+    public static String getCurrentBonusName() {
+        if(rewardConfig.getConfigurationSection("loginBonuses") == null){
+            return null;
+        }
+
+        Set<String> bonusNames = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
+        LocalDate currentDate = LocalDate.now();
+
+        for (String bonusName : bonusNames) {
+            LocalDate startDate = getPeriodStartDate(bonusName);
+            LocalDate endDate = getPeriodEndDate(bonusName);
+
+            if (startDate != null && endDate != null && (currentDate.isEqual(startDate) || currentDate.isEqual(endDate) || (currentDate.isAfter(startDate) && currentDate.isBefore(endDate)))) {
+                return bonusName;
+            }
+        }
+        return null;
     }
 
 }

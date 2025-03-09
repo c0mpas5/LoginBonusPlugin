@@ -14,14 +14,10 @@ public class LoginBonusCommand implements CommandExecutor {
 
     private final LoginBonusPlugin plugin;
     private final LoginBonusData loginBonusData;
-    private final LoginBonusAdminGUI adminGui;
-    private final LoginBonusUserGUI userGui;
 
-    public LoginBonusCommand(LoginBonusPlugin plugin, LoginBonusData loginBonusData, LoginBonusAdminGUI adminGUI, LoginBonusUserGUI userGui) {
+    public LoginBonusCommand(LoginBonusPlugin plugin, LoginBonusData loginBonusData) {
         this.plugin = plugin;
         this.loginBonusData = loginBonusData;
-        this.adminGui = adminGUI;
-        this.userGui = userGui;
     }
 
     @Override
@@ -31,16 +27,22 @@ public class LoginBonusCommand implements CommandExecutor {
 
             switch (command.getName().toLowerCase()) {
                 case "test":
-                    userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
+                    // 空
                     break;
                 case "admingui":
                     if(sender != player){
                         sender.sendMessage("プレイヤーでないと実行できません");
                         return false;
                     }
+                    LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
                     adminGui.getAdminHomeGui().show(player);
                     break;
                 case "loginbonus":
+                    if(RewardManager.getCurrentBonusName() == null){
+                        sender.sendMessage("現在開催中のログインボーナスはありません");
+                        return false;
+                    }
+                    LoginBonusUserGUI userGui = new LoginBonusUserGUI();
                     userGui.updateUserAccumulatedLoginBonusClaimGui();
                     userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                     break;
