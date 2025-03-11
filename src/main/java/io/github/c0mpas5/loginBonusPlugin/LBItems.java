@@ -565,37 +565,71 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack normalRewardForUserPlayerHeadIS(){
-        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2MxYjJmNTkyY2ZjOGQzNzJkY2Y1ZmQ0NGVlZDY5ZGRkYzY0NjAxZDc4NDZkNzI2MTlmNzA1MTFkODA0M2E4OSJ9fX0=");
+    public static ItemStack alreadyClaimedRewardForUserGlassIS(int day){
+        ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "デイリー報酬（コモン）");
+            meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "[DAY " + day + "] 無効な報酬");
             meta.setLore(List.of(
-                    ChatColor.GRAY + "ふつうの報酬をランダムに受け取れます",
-                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
-                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                    ChatColor.GRAY + "この報酬は受取済みであるか、受取可能な日を逃がしてしまっているため、受け取ることができません。"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
             item.setItemMeta(meta);
         }
+
+        return item;
+    }
+    public static ItemStack normalRewardForUserPlayerHeadIS(int day, boolean canClaim){
+        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2MxYjJmNTkyY2ZjOGQzNzJkY2Y1ZmQ0NGVlZDY5ZGRkYzY0NjAxZDc4NDZkNzI2MTlmNzA1MTFkODA0M2E4OSJ9fX0=");
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "[DAY " + day + "] " + ChatColor.GRAY + "" + ChatColor.BOLD + "デイリー報酬（コモン）");
+            if (canClaim) {
+                meta.setLore(List.of(
+                        ChatColor.GREEN + "" + ChatColor.BOLD + "受取可能",
+                        ChatColor.GRAY + "ふつうの報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+
+                ));
+                meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            } else {
+                meta.setLore(List.of(
+                        ChatColor.GRAY + "ふつうの報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+            }
+            item.setItemMeta(meta);
+        }
         return item;
     }
 
-    public static ItemStack specialRewardForUserPlayerHeadIS(){
+    public static ItemStack specialRewardForUserPlayerHeadIS(int day, boolean canClaim){
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDQ2NzUxNThjMDc2N2VlNTA4YzUyZDUyNDI2Y2VmM2EyYzJiMjliN2U0ODdjOTI5NTNhMzgyM2Y1NjFkMDZhZiJ9fX0=");
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "デイリー報酬（レア）");
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "[DAY " + day + "] " + ChatColor.AQUA + "" + ChatColor.BOLD + "デイリー報酬（レア）");
+            if(canClaim){
+                meta.setLore(List.of(
+                        ChatColor.GREEN + "" + ChatColor.BOLD + "受取可能",
+                        ChatColor.GRAY + "レアな報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+                meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            }
             meta.setLore(List.of(
                     ChatColor.GRAY + "レアな報酬をランダムに受け取れます",
                     ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
                     ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
             ));
-            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
-            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
             item.setItemMeta(meta);
         }
         return item;

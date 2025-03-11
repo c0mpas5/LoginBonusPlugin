@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 public class EventListener implements Listener {
@@ -32,64 +33,41 @@ public class EventListener implements Listener {
         LocalDate baseDate = null; // 基準とする日時。ここから24時間先まで1日とみなす。
 
         String currentBonusName = RewardManager.getCurrentBonusName();
+        if(currentBonusName == null){
+            player.sendMessage("現在開催中のログインボーナスはありません");
+            return;
+        }
         int dailyResetHour = RewardManager.getDailyResetTime(currentBonusName);
 
-        // 現在時刻を取得
-        LocalDateTime currentDate = LocalDateTime.now();
-
-        // 基準とする日時を決定する。
-        if(currentDate.getHour() >= dailyResetHour){
-            baseDate = LocalDate.now();
-        }else{
-            baseDate = LocalDate.now().minusDays(1);
-        }
-
-        // 最終報酬取得日を取得
-        LocalDateTime lastClaimedDateTime = loginBonusData.getLastClaimedDate(playerUUID);
-        if(lastClaimedDateTime == null){
-            loginBonusData.setClaimedCount(playerUUID, 0);
-            lastClaimedDateTime = LocalDateTime.now().minusDays(1); //仮置き 昨日受け取ったことにする
-        }
-        LocalDate lastClaimedDate = null;
-        if(lastClaimedDateTime.getHour() >= dailyResetHour){
-            lastClaimedDate = lastClaimedDateTime.toLocalDate();
-        }else{
-            lastClaimedDate = lastClaimedDateTime.toLocalDate().minusDays(1);
-        }
-
-//        LocalDateTime lastLoginDateTime = loginBonusData.getLastLoginDateTime(playerUUID);
-//        LocalDate lastLoginDate = null;
-//        if(lastLoginDateTime.getHour() >= dailyResetHour){
-//            lastLoginDate = lastLoginDateTime.toLocalDate();
+//        // 現在時刻を取得
+//        LocalDateTime currentDate = LocalDateTime.now();
+//
+//        // 基準とする日時を決定する。
+//        if(currentDate.getHour() >= dailyResetHour){
+//            baseDate = LocalDate.now();
 //        }else{
-//            lastLoginDate = lastLoginDateTime.toLocalDate().minusDays(1);
+//            baseDate = LocalDate.now().minusDays(1);
+//        }
+//
+//        // 最終報酬取得日を取得
+//        LocalDateTime lastClaimedDateTime = loginBonusData.getLastClaimedDate(playerUUID);
+//        if(lastClaimedDateTime == null){
+//            loginBonusData.setClaimedCount(playerUUID, 0); //TODO:←いる？
+//            lastClaimedDateTime = LocalDateTime.now().minusDays(1); //temp:仮置き 昨日受け取ったことにする
+//        }
+//        LocalDate lastClaimedDate = null;
+//        if(lastClaimedDateTime.getHour() >= dailyResetHour){
+//            lastClaimedDate = lastClaimedDateTime.toLocalDate();
+//        }else{
+//            lastClaimedDate = lastClaimedDateTime.toLocalDate().minusDays(1);
 //        }
 
-        // gui開くメッセージを送信する -> ついでに日付が変わっているならdbのlogin_countを1増やす -> 最終ログイン日時更新（旧）
-//        if(lastClaimedDateTime == null) {
-//            loginBonusData.setAllData(playerUUID, 0, 0, currentDate);
-//            sendOpenGuiMessage(player);
-//        }else if(lastClaimedDate.isAfter(baseDate)){
-//            sendOpenGuiMessage(player);
-//            if(lastLoginDate.isAfter(baseDate)){
-//                int loginCount = loginBonusData.getLoginCount(playerUUID);
-//                loginCount++;
-//                player.sendMessage("ログイン" + loginCount + "日目！");
-//                loginBonusData.setLoginCount(playerUUID, loginCount);
-//                loginBonusData.setLastLoginDateTime(playerUUID, currentDate);
-//            }
-//        }else{
-//            player.sendMessage("あなたは既にログインボーナスをすべて受け取っています。");
-//        }
-
-        if (lastClaimedDate.isBefore(baseDate)) {
+        if (!hasClaimedToday(playerUUID)) {
             sendOpenGuiMessage(player);
-            int loginCount = loginBonusData.getLoginCount(playerUUID, dailyResetHour, RewardManager.getPeriodStartDate(currentBonusName), RewardManager.getPeriodEndDate(currentBonusName));
+            int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
             player.sendMessage("ログイン" + loginCount + "日目！");
         } else {
             player.sendMessage("受取可能なログインボーナスはありません。");
-            player.sendMessage("lastClaimedDate:" + lastClaimedDate);
-            player.sendMessage("baseDate:" + baseDate);
         }
         player.sendMessage("連続ログイン" + loginBonusData.getLoginStreak(playerUUID, dailyResetHour) + "日目！");
     }
@@ -99,5 +77,26 @@ public class EventListener implements Listener {
         message.setColor(ChatColor.YELLOW);
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/loginbonus"));
         player.spigot().sendMessage(message);
+    }
+
+    public boolean hasClaimedToday(UUID playerUUID) {
+        LocalDateTime lastClaimedDate = loginBonusData.getLastClaimedDate(playerUUID);
+        if (lastClaimedDate == null) {
+            return false;
+        }
+
+        String currentBonusName = RewardManager.getCurrentBonusName();
+        int resetHour = RewardManager.getDailyResetTime(currentBonusName);
+        LocalDateTime resetDateTime = LocalDate.now().atTime(LocalTime.of(resetHour, 0));
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(resetDateTime)) {
+            resetDateTime = resetDateTime.minusDays(1);
+        }
+
+        Bukkit.getPlayer(playerUUID).sendMessage("lastClaimedDate: " + lastClaimedDate);
+        Bukkit.getPlayer(playerUUID).sendMessage("resetDateTime: " + resetDateTime);
+
+        return lastClaimedDate.isAfter(resetDateTime);
     }
 }

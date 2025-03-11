@@ -30,10 +30,6 @@ public class LoginBonusCommand implements CommandExecutor {
                     // 空
                     break;
                 case "admingui":
-                    if(sender != player){
-                        sender.sendMessage("プレイヤーでないと実行できません");
-                        return false;
-                    }
                     LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
                     adminGui.getAdminHomeGui().show(player);
                     break;
@@ -42,7 +38,12 @@ public class LoginBonusCommand implements CommandExecutor {
                         sender.sendMessage("現在開催中のログインボーナスはありません");
                         return false;
                     }
-                    LoginBonusUserGUI userGui = new LoginBonusUserGUI();
+                    // TODO:テスト。削除必要
+                    if(loginBonusData == null){
+                        sender.sendMessage("loginBonusDataがnull");
+                        return false;
+                    }
+                    LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
                     userGui.updateUserAccumulatedLoginBonusClaimGui();
                     userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                     break;

@@ -40,7 +40,7 @@ public class LoginBonusAdminGUI implements Listener {
     
     private String currentLoginBonusName;
 
-    public LoginBonusAdminGUI(){
+    public LoginBonusAdminGUI() {
         adminHomeGui();
         adminFirstNameSettingGui();
         adminCreateGui();
