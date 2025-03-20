@@ -135,6 +135,23 @@ public class LBItems {
         return item;
     }
 
+    public static ItemStack invalidTimeSettingClockIS(){
+        ItemStack item = new ItemStack(Material.BARRIER, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "【無効】時間系設定");
+            meta.setLore(List.of(
+                    ChatColor.RED + "" + ChatColor.BOLD + "現在当該ログインボーナス開催中につき、この設定は編集できません",
+                    ChatColor.GRAY + "当該ログインボーナスの開催期間・日付変更時刻を設定します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     public static ItemStack bannerSettingPaintingIS(){
         ItemStack item = new ItemStack(Material.PAINTING, 1);
         ItemMeta meta = item.getItemMeta();
@@ -628,6 +645,74 @@ public class LBItems {
         return item;
     }
 
+    //////////// ログボ編集用 /////////////
+    public static ItemStack loginBonusNameChestIS(String bonusName, String period){
+        ItemStack item = new ItemStack(Material.CHEST, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + bonusName);
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "開催期間: " + period,
+                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "当該ログインボーナスを編集します。開催期間中は時間関連の設定は編集できません",
+                    ChatColor.RED + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.RED + "当該ログインボーナスを削除します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack noLoginBonusNamePaperIS(){
+        ItemStack item = new ItemStack(Material.PAPER, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "設定済みのログインボーナスはありません");
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack confirmDeleteRedGlassIS() {
+        ItemStack item = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "はい");
+            meta.setLore(List.of(
+                    ChatColor.RED + "" + ChatColor.BOLD + "クリックして削除を確定します",
+                    ChatColor.RED + "" + ChatColor.BOLD + "※この操作は取り消せません"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack cancelDeleteGreenGlassIS() {
+        ItemStack item = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "いいえ");
+            meta.setLore(List.of(
+                    ChatColor.GREEN + "クリックしてキャンセルします"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
     //////////// User用 /////////////
     public static ItemStack nextPageAquaPlayerHeadIS() {
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjgyYWQxYjljYjRkZDIxMjU5YzBkNzVhYTMxNWZmMzg5YzNjZWY3NTJiZTM5NDkzMzgxNjRiYWM4NGE5NmUifX19");
@@ -678,7 +763,7 @@ public class LBItems {
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "[DAY " + day + "] 無効な報酬");
             meta.setLore(List.of(
-                    ChatColor.GRAY + "この報酬は受取済みであるか、受取可能な日を逃がしてしまっているため、受け取ることができません。"
+                    ChatColor.GRAY + "この報酬は受取済みであるか、受取可能な日を逃がしてしまっているため、受け取ることができません"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);

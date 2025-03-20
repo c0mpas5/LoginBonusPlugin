@@ -395,7 +395,7 @@ public class LoginBonusUserGUI implements Listener {
                                     ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
                                     player.getInventory().addItem(item);
                                     loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
-                                    player.sendMessage(item.getType().name() + "×" + item.getAmount() + " §aを受け取りました！");
+                                    player.sendMessage(item.getItemMeta().displayName() + "×" + item.getAmount() + " §aを受け取りました！");
                                 }else{
                                     player.sendMessage("§cこの報酬は無効であるため、受け取れません");
                                 }

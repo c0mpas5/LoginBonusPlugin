@@ -4,6 +4,7 @@ import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.AnvilGui;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
+import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 
@@ -35,6 +36,10 @@ public class LoginBonusAdminGUI implements Listener {
     private AnvilGui adminDailyResetTimeSettingGui;
     private AnvilGui adminNameSettingGui;
     private ChestGui adminSubAccountSettingGui;
+
+    private ChestGui adminEditGui;
+    private ChestGui adminDeleteConfirmGui;
+
     private ChestGui adminGlobalSettingGui;
     private AnvilGui adminRecoverDateSettingGui;
 
@@ -57,6 +62,10 @@ public class LoginBonusAdminGUI implements Listener {
         adminDailyResetTimeSettingGui();
         adminNameSettingGui();
         //adminSubAccountSettingGui();
+
+        adminEditGui();
+        adminDeleteConfirmGui();
+
         adminGlobalSettingGui();
         adminRecoverDateSettingGui();
 
@@ -86,6 +95,7 @@ public class LoginBonusAdminGUI implements Listener {
         createItemPane.addItem(new GuiItem(LBItems.createPickaxeIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("ログボ作成ボタンがクリックされました");
+            updateAdminCreateGui(false, null);
             getAdminFirstNameSettingGui().show(player);
         }), 0, 0);
         adminHomeGui.addPane(createItemPane);
@@ -95,6 +105,8 @@ public class LoginBonusAdminGUI implements Listener {
         editItemPane.addItem(new GuiItem(LBItems.editAnvilIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("ログボ編集ボタンがクリックされました");
+            updateAdminEditGui();
+            getAdminEditGui().show(player);
         }), 0, 0);
         adminHomeGui.addPane(editItemPane);
 
@@ -191,7 +203,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminCreateGui.addPane(rewardPane);
 
         // 時間系設定
-        StaticPane timePane = new StaticPane(4, 2, 1, 1);
+        StaticPane timePane = new StaticPane(4, 2, 1, 1, Pane.Priority.HIGH);
         timePane.addItem(new GuiItem(LBItems.timeSettingClockIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("時間系設定がクリックされました");
@@ -786,6 +798,277 @@ public class LoginBonusAdminGUI implements Listener {
         }), 0, 0);
         adminNameSettingGui.getResultComponent().addPane(saveItemPane);
     }
+    ///////////////// ログボ編集系 /////////////////
+    public void adminEditGui(){
+        ArrayList<String> bonusNames = RewardManager.getAllBonusNames();
+        int bonusNameCount = bonusNames.size();
+        adminEditGui = new ChestGui(6, "ログボ編集");
+        adminEditGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        if(bonusNames.isEmpty()){
+            StaticPane errorPane = new StaticPane(3, 2, 1, 1);
+            errorPane.addItem(new GuiItem(LBItems.noLoginBonusNamePaperIS(), event -> {
+            }), 0, 0);
+            adminEditGui.addPane(errorPane);
+
+            StaticPane returnPane = new StaticPane(5, 2, 1, 1);
+            returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                player.sendMessage("前に戻るがクリックされました");
+                getAdminHomeGui().show(player);
+            }), 0, 0);
+            adminEditGui.addPane(returnPane);
+
+            return;
+        }
+
+        //全ページ
+        PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
+
+        ItemStack[] chests = new ItemStack[bonusNameCount];
+
+        // 表示するchestの配列作る
+        for(int i = 0; i < bonusNameCount; i++){
+            String bonusName = bonusNames.get(i);
+            chests[i] = LBItems.loginBonusNameChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName));
+        }
+
+        int pageCount = (bonusNameCount / 28) + 1; //28=1ページに表示するアイテム数
+
+        // 外周背景
+        OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);
+        Mask mask = new Mask(
+                "111111111",
+                "100000001",
+                "100000001",
+                "100000001",
+                "100000001",
+                "010101110"
+        );
+        background.applyMask(mask);
+        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
+        background.setRepeat(true);
+
+        // 次のページ
+        StaticPane nextPagePane = new StaticPane(8, 5, 1, 1);
+        nextPagePane.addItem(new GuiItem(LBItems.nextPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() < pageCount - 1) {
+                paginatedPane.setPage(paginatedPane.getPage() + 1);
+                adminEditGui.update();
+            } else {
+                player.sendMessage("§cこのページが末尾のページであるため、次ページを開けません。");
+            }
+        }), 0, 0);
+
+        // 前のページ
+        StaticPane prevPagePane = new StaticPane(0, 5, 1, 1);
+        prevPagePane.addItem(new GuiItem(LBItems.prevPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() > 0) {
+                paginatedPane.setPage(paginatedPane.getPage() - 1);
+                adminEditGui.update();
+            } else {
+                player.sendMessage("§cこのページが先頭のページであるため、前ページを開けません。");
+            }
+        }), 0, 0);
+
+        StaticPane returnPane = new StaticPane(2, 5, 1, 1);
+        returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("前に戻るがクリックされました");
+            getAdminHomeGui().show(player);
+        }), 0, 0);
+
+        // 表示するplayerHead、現在のページ数の表示を各ページに追加
+        OutlinePane[] chestsPanes = new OutlinePane[pageCount];
+        StaticPane[] currentPageCountPane = new StaticPane[pageCount];
+        for(int i = 0; i < pageCount; i++){
+            // 各ページで表示が変わらんところは同じように表示
+            paginatedPane.addPane(i, background);
+            paginatedPane.addPane(i, nextPagePane);
+            paginatedPane.addPane(i, prevPagePane);
+            paginatedPane.addPane(i, returnPane);
+
+            // 現在のページ数の表示
+            currentPageCountPane[i] = new StaticPane(4, 5, 1, 1);
+            currentPageCountPane[i].addItem(new GuiItem(LBItems.displayPageCountGlassIS(i + 1, pageCount), event -> {
+            }), 0, 0);
+            paginatedPane.addPane(i, currentPageCountPane[i]);
+
+            chestsPanes[i] = new OutlinePane(1, 1, 7, 4);
+            for (int j = 0; j < 28; j++) {
+                int index = i * 28 + j;
+
+                // playerHeadを表示し終えたらbreak
+                if (index >= bonusNameCount) {
+                    break;
+                }
+
+                chestsPanes[i].addItem(new GuiItem(chests[index], event -> {
+                    Player player = (Player) event.getWhoClicked();
+                    if (event.isLeftClick()) {
+                        String editingBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());;
+                        currentLoginBonusName = editingBonusName;
+                        updateAdminCreateGui(true, editingBonusName);
+                        getAdminCreateGui().show(player);
+                    } else if (event.isRightClick()) {
+                        //削除処理するgui
+                        updateAdminDeleteConfirmGui(ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName()));
+                        getAdminDeleteConfirmGui().show(player);
+                    }
+                }));
+            }
+            paginatedPane.addPane(i, chestsPanes[i]);
+        }
+        adminEditGui.addPane(paginatedPane);
+    }
+
+    public void updateAdminEditGui(){
+        adminEditGui.getPanes().clear();
+
+        ArrayList<String> bonusNames = RewardManager.getAllBonusNames();
+        int bonusNameCount = bonusNames.size();
+
+        if(bonusNames.isEmpty()){
+            StaticPane errorPane = new StaticPane(3, 2, 1, 1);
+            errorPane.addItem(new GuiItem(LBItems.noLoginBonusNamePaperIS(), event -> {
+            }), 0, 0);
+            adminEditGui.addPane(errorPane);
+
+            StaticPane returnPane = new StaticPane(5, 2, 1, 1);
+            returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                player.sendMessage("前に戻るがクリックされました");
+                getAdminHomeGui().show(player);
+            }), 0, 0);
+            adminEditGui.addPane(returnPane);
+
+            return;
+        }
+
+        //全ページ
+        PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
+
+        ItemStack[] chests = new ItemStack[bonusNameCount];
+
+        // 表示するchestの配列作る
+        for(int i = 0; i < bonusNameCount; i++){
+            String bonusName = bonusNames.get(i);
+            chests[i] = LBItems.loginBonusNameChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName));
+        }
+
+        int pageCount = (bonusNameCount / 28) + 1; //28=1ページに表示するアイテム数
+
+        // 外周背景
+        OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);
+        Mask mask = new Mask(
+                "111111111",
+                "100000001",
+                "100000001",
+                "100000001",
+                "100000001",
+                "010101110"
+        );
+        background.applyMask(mask);
+        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
+        background.setRepeat(true);
+
+        // 次のページ
+        StaticPane nextPagePane = new StaticPane(8, 5, 1, 1);
+        nextPagePane.addItem(new GuiItem(LBItems.nextPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() < pageCount - 1) {
+                paginatedPane.setPage(paginatedPane.getPage() + 1);
+                adminEditGui.update();
+            } else {
+                player.sendMessage("§cこのページが末尾のページであるため、次ページを開けません。");
+            }
+        }), 0, 0);
+
+        // 前のページ
+        StaticPane prevPagePane = new StaticPane(0, 5, 1, 1);
+        prevPagePane.addItem(new GuiItem(LBItems.prevPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() > 0) {
+                paginatedPane.setPage(paginatedPane.getPage() - 1);
+                adminEditGui.update();
+            } else {
+                player.sendMessage("§cこのページが先頭のページであるため、前ページを開けません。");
+            }
+        }), 0, 0);
+
+        StaticPane returnPane = new StaticPane(2, 5, 1, 1);
+        returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("前に戻るがクリックされました");
+            getAdminHomeGui().show(player);
+        }), 0, 0);
+
+        // 表示するplayerHead、現在のページ数の表示を各ページに追加
+        OutlinePane[] chestsPanes = new OutlinePane[pageCount];
+        StaticPane[] currentPageCountPane = new StaticPane[pageCount];
+        for(int i = 0; i < pageCount; i++){
+            // 各ページで表示が変わらんところは同じように表示
+            paginatedPane.addPane(i, background);
+            paginatedPane.addPane(i, nextPagePane);
+            paginatedPane.addPane(i, prevPagePane);
+            paginatedPane.addPane(i, returnPane);
+
+            // 現在のページ数の表示
+            currentPageCountPane[i] = new StaticPane(4, 5, 1, 1);
+            currentPageCountPane[i].addItem(new GuiItem(LBItems.displayPageCountGlassIS(i + 1, pageCount), event -> {
+            }), 0, 0);
+            paginatedPane.addPane(i, currentPageCountPane[i]);
+
+            chestsPanes[i] = new OutlinePane(1, 1, 7, 4);
+            for (int j = 0; j < 28; j++) {
+                int index = i * 28 + j;
+
+                // playerHeadを表示し終えたらbreak
+                if (index >= bonusNameCount) {
+                    break;
+                }
+
+                chestsPanes[i].addItem(new GuiItem(chests[index], event -> {
+                    Player player = (Player) event.getWhoClicked();
+                    if (event.isLeftClick()) {
+                        String editingBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+                        currentLoginBonusName = editingBonusName;
+                        updateAdminCreateGui(true, editingBonusName);
+                        getAdminCreateGui().show(player);
+                    } else if (event.isRightClick()) {
+                        //削除処理するgui
+                        updateAdminDeleteConfirmGui(ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName()));
+                        getAdminDeleteConfirmGui().show(player);
+                    }
+                }));
+            }
+            paginatedPane.addPane(i, chestsPanes[i]);
+        }
+        adminEditGui.addPane(paginatedPane);
+    }
+
+    public void adminDeleteConfirmGui() {
+        adminDeleteConfirmGui = new ChestGui(3, "本当に削除しますか？");
+        adminDeleteConfirmGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // 削除しない
+        StaticPane cancelPane = new StaticPane(3, 1, 1, 1);
+        cancelPane.addItem(new GuiItem(LBItems.cancelDeleteGreenGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            updateAdminEditGui();
+            getAdminEditGui().show(player);
+        }), 0, 0);
+        adminDeleteConfirmGui.addPane(cancelPane);
+
+        // 削除する
+        StaticPane deletePane = new StaticPane(5, 1, 1, 1, Pane.Priority.HIGH);
+        deletePane.addItem(new GuiItem(LBItems.confirmDeleteRedGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+        }), 0, 0);
+        adminDeleteConfirmGui.addPane(deletePane);
+    }
 
     ///////////////// globalSetting系 /////////////////
     public void adminGlobalSettingGui(){
@@ -886,6 +1169,28 @@ public class LoginBonusAdminGUI implements Listener {
         return adminCreateGui;
     }
 
+    public void updateAdminCreateGui(boolean isEditMode, String editingBonusName) {
+        // 編集時、ログインボーナス開催中の時に無効化
+        adminCreateGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
+        String currentHoldBonusName = RewardManager.getCurrentBonusName();
+
+        StaticPane timePane = new StaticPane(4, 2, 1, 1, Pane.Priority.HIGH);
+        // 編集中であり、編集対象のログインボーナスが開催期間中の時、時間系設定を無効化
+        if(isEditMode && (currentHoldBonusName == null || currentHoldBonusName.equals(editingBonusName))){
+            timePane.addItem(new GuiItem(LBItems.invalidTimeSettingClockIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                player.sendMessage("§c現在、ログインボーナスが開催中のため、時間系設定は無効化されています");
+            }), 0, 0);
+        }else{
+            timePane.addItem(new GuiItem(LBItems.timeSettingClockIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                player.sendMessage("時間系設定がクリックされました");
+                getAdminTimeSettingGui().show(player);
+            }), 0, 0);
+        }
+        adminCreateGui.addPane(timePane);
+    }
+
     public ChestGui getAdminRewardSettingGui(){
         return adminRewardSettingGui;
     }
@@ -939,6 +1244,34 @@ public class LoginBonusAdminGUI implements Listener {
 
     public AnvilGui getAdminNameSettingGui(){
         return adminNameSettingGui;
+    }
+
+    public ChestGui getAdminEditGui(){
+        return adminEditGui;
+    }
+
+    public ChestGui getAdminDeleteConfirmGui(){
+        return adminDeleteConfirmGui;
+    }
+
+    public void updateAdminDeleteConfirmGui(String bonusName) {
+        adminDeleteConfirmGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
+
+        // 削除する
+        StaticPane yesPane = new StaticPane(5, 1, 1, 1);
+        yesPane.addItem(new GuiItem(LBItems.confirmDeleteRedGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if(RewardManager.deleteLoginBonus(bonusName)){
+                player.sendMessage("§aログインボーナス「" + bonusName + "」を削除しました");
+                updateAdminEditGui();
+                getAdminEditGui().show(player);
+            }else{
+                player.sendMessage("§cログインボーナス「" + bonusName + "」の削除に失敗しました");
+                updateAdminEditGui();
+                getAdminEditGui().show(player);
+            }
+        }), 0, 0);
+        adminDeleteConfirmGui.addPane(yesPane);
     }
 
     public ChestGui getAdminGlobalSettingGui(){

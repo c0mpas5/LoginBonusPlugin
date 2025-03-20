@@ -146,6 +146,52 @@ public class RewardManager {
         }
     }
 
+    public static String getCurrentBonusName() {
+        if(rewardConfig.getConfigurationSection("loginBonuses") == null){
+            return null;
+        }
+
+        Set<String> bonusNames = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
+        LocalDate currentDate = LocalDate.now();
+
+        for (String bonusName : bonusNames) {
+            LocalDate startDate = getPeriodStartDate(bonusName);
+            LocalDate endDate = getPeriodEndDate(bonusName);
+
+            if (startDate != null && endDate != null && (currentDate.isEqual(startDate) || currentDate.isEqual(endDate) || (currentDate.isAfter(startDate) && currentDate.isBefore(endDate)))) {
+                return bonusName;
+            }
+        }
+        return null;
+    }
+
+    public static ArrayList<String> getAllBonusNames() {
+        ArrayList<String> bonusNames = new ArrayList<>();
+        if (rewardConfig.getConfigurationSection("loginBonuses") != null) {
+            Set<String> keys = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
+            for (String key : keys) {
+                bonusNames.add(key);
+            }
+        }
+        return bonusNames;
+    }
+
+    // ログインボーナスの削除（指定したボーナス名とその関連データを全て削除）
+    public static boolean deleteLoginBonus(String bonusName) {
+        if (rewardConfig.contains("loginBonuses." + bonusName)) {
+            rewardConfig.set("loginBonuses." + bonusName, null);
+            try {
+                rewardConfig.save(rewardFile);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
+    }
+
+
     /////////////////////////// 時間関連設定 ///////////////////////////
 
     // 期間設定（開始日時と終了日時に分けてymlに保存）
@@ -313,24 +359,7 @@ public class RewardManager {
         return true; // 重複なし
     }
 
-    public static String getCurrentBonusName() {
-        if(rewardConfig.getConfigurationSection("loginBonuses") == null){
-            return null;
-        }
 
-        Set<String> bonusNames = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
-        LocalDate currentDate = LocalDate.now();
-
-        for (String bonusName : bonusNames) {
-            LocalDate startDate = getPeriodStartDate(bonusName);
-            LocalDate endDate = getPeriodEndDate(bonusName);
-
-            if (startDate != null && endDate != null && (currentDate.isEqual(startDate) || currentDate.isEqual(endDate) || (currentDate.isAfter(startDate) && currentDate.isBefore(endDate)))) {
-                return bonusName;
-            }
-        }
-        return null;
-    }
 
 
     ////////////////////////////// 全体設定 ///////////////////////////
