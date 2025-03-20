@@ -6,7 +6,8 @@ prefix: '&7[&6LoginBonusPlugin&7] &r'
 commands:
   loginbonus:
     description: 'ログインボーナス受取画面を開きます'
-    usage: '/<command>'
+    usage: '/<command> [total|streak]'
+    aliases: [lb]
 
   test:
     description: 'テスト用のコマンド'

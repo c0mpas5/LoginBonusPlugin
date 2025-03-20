@@ -25,30 +25,54 @@ public class LoginBonusCommand implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            switch (command.getName().toLowerCase()) {
-                case "test":
-                    // 空
-                    break;
-                case "admingui":
-                    LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
-                    adminGui.getAdminHomeGui().show(player);
-                    break;
-                case "loginbonus":
-                    if(RewardManager.getCurrentBonusName() == null){
-                        sender.sendMessage("現在開催中のログインボーナスはありません");
-                        return false;
+            if (command.getName().equalsIgnoreCase("loginbonus")) {
+                // 現在のボーナス名がnullの場合はエラーメッセージを表示
+                if (RewardManager.getCurrentBonusName() == null) {
+                    sender.sendMessage("現在開催中のログインボーナスはありません");
+                    return false;
+                }
+
+                // loginBonusDataがnullの場合はエラーメッセージを表示
+                if (loginBonusData == null) {
+                    sender.sendMessage("loginBonusDataがnull");
+                    return false;
+                }
+
+                LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
+
+                // サブコマンドの処理
+                if (args.length > 0) {
+                    switch (args[0].toLowerCase()) {
+                        case "total":
+                            // 累計ログイン日数を表示
+                            userGui.updateUserAccumulatedLoginBonusClaimGui();
+                            userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
+                            return true;
+                        case "streak":
+                            // 連続ログイン日数を表示
+                            userGui.updateUserContinuousLoginBonusClaimGui();
+                            userGui.getUserContinuousLoginBonusClaimGui().show(player);
+                            return true;
+                        default:
+                            // 引数がわからない場合はGUIを表示
+                            player.sendMessage("§cコマンドが誤っています");
                     }
-                    // TODO:テスト。削除必要
-                    if(loginBonusData == null){
-                        sender.sendMessage("loginBonusDataがnull");
-                        return false;
-                    }
-                    LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
+                } else {
+                    // 引数がない場合はデフォルトでGUIを表示
                     userGui.updateUserAccumulatedLoginBonusClaimGui();
                     userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
-                    break;
+                    return true;
+                }
+            } else if (command.getName().equalsIgnoreCase("test")) {
+                // テスト用コマンドの処理
+                return true;
+            } else if (command.getName().equalsIgnoreCase("admingui")) {
+                // 管理者GUI表示
+                LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
+                adminGui.getAdminHomeGui().show(player);
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

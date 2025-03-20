@@ -50,7 +50,7 @@ public class EventListener implements Listener {
 //        }
 //
 //        // 最終報酬取得日を取得
-//        LocalDateTime lastClaimedDateTime = loginBonusData.getLastClaimedDate(playerUUID);
+//        LocalDateTime lastClaimedDateTime = loginBonusData.getLastAccumulatedRewardClaimedDate(playerUUID);
 //        if(lastClaimedDateTime == null){
 //            loginBonusData.setClaimedCount(playerUUID, 0); //TODO:←いる？
 //            lastClaimedDateTime = LocalDateTime.now().minusDays(1); //temp:仮置き 昨日受け取ったことにする
@@ -62,25 +62,43 @@ public class EventListener implements Listener {
 //            lastClaimedDate = lastClaimedDateTime.toLocalDate().minusDays(1);
 //        }
 
-        if (!hasClaimedToday(playerUUID)) {
-            sendOpenGuiMessage(player);
+        if (!hasClaimedToday(playerUUID, "accumulative")) {
+            sendOpenAccumulatedRewardGuiMessage(player);
             int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
             player.sendMessage("ログイン" + loginCount + "日目！");
         } else {
             player.sendMessage("受取可能なログインボーナスはありません。");
         }
-        player.sendMessage("連続ログイン" + loginBonusData.getLoginStreak(playerUUID, dailyResetHour) + "日目！");
+        if (!hasClaimedToday(playerUUID, "continuous") && loginBonusData.getLoginStreak(playerUUID, currentBonusName) == 10) {
+            player.sendMessage("連続ログイン" + loginBonusData.getLoginStreak(playerUUID, currentBonusName) + "日目！以下をクリックで連続ログインボーナス報酬を受け取れます");
+            sendOpenContinuousRewardGuiMessage(player);
+        }else{
+            player.sendMessage("連続ログイン" + loginBonusData.getLoginStreak(playerUUID, currentBonusName) + "日目！");
+        }
     }
 
-    public void sendOpenGuiMessage(Player player){
+    public void sendOpenAccumulatedRewardGuiMessage(Player player){
         TextComponent message = new TextComponent("ログボ受取");
         message.setColor(ChatColor.YELLOW);
-        message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/loginbonus"));
+        message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/loginbonus total"));
         player.spigot().sendMessage(message);
     }
 
-    public boolean hasClaimedToday(UUID playerUUID) {
-        LocalDateTime lastClaimedDate = loginBonusData.getLastClaimedDate(playerUUID);
+    public void sendOpenContinuousRewardGuiMessage(Player player){
+        TextComponent message = new TextComponent("連続ログボ受取");
+        message.setColor(ChatColor.YELLOW);
+        message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/loginbonus streak"));
+        player.spigot().sendMessage(message);
+    }
+
+    public boolean hasClaimedToday(UUID playerUUID, String poolType) {
+        LocalDateTime lastClaimedDate = null;
+        if (poolType.equals("accumulative")) {
+            lastClaimedDate = loginBonusData.getLastAccumulatedRewardClaimedDate(playerUUID);
+        }else if(poolType.equals("continuous")){
+            lastClaimedDate = loginBonusData.getLastContinuousRewardClaimedDate(playerUUID);
+        }
+
         if (lastClaimedDate == null) {
             return false;
         }
@@ -93,9 +111,6 @@ public class EventListener implements Listener {
         if (now.isBefore(resetDateTime)) {
             resetDateTime = resetDateTime.minusDays(1);
         }
-
-        Bukkit.getPlayer(playerUUID).sendMessage("lastClaimedDate: " + lastClaimedDate);
-        Bukkit.getPlayer(playerUUID).sendMessage("resetDateTime: " + resetDateTime);
 
         return lastClaimedDate.isAfter(resetDateTime);
     }

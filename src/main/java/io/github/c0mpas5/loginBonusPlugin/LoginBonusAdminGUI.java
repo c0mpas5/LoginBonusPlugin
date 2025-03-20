@@ -35,6 +35,8 @@ public class LoginBonusAdminGUI implements Listener {
     private AnvilGui adminDailyResetTimeSettingGui;
     private AnvilGui adminNameSettingGui;
     private ChestGui adminSubAccountSettingGui;
+    private ChestGui adminGlobalSettingGui;
+    private AnvilGui adminRecoverDateSettingGui;
 
     private ChestGui adminTestGui;
     
@@ -55,6 +57,8 @@ public class LoginBonusAdminGUI implements Listener {
         adminDailyResetTimeSettingGui();
         adminNameSettingGui();
         //adminSubAccountSettingGui();
+        adminGlobalSettingGui();
+        adminRecoverDateSettingGui();
 
         adminTestGui();
     }
@@ -78,7 +82,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminHomeGui.addPane(lowerBackground);
 
         // ログボ作成ボタン
-        StaticPane createItemPane = new StaticPane(3, 1, 1, 1);
+        StaticPane createItemPane = new StaticPane(2, 1, 1, 1);
         createItemPane.addItem(new GuiItem(LBItems.createPickaxeIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("ログボ作成ボタンがクリックされました");
@@ -87,12 +91,21 @@ public class LoginBonusAdminGUI implements Listener {
         adminHomeGui.addPane(createItemPane);
 
         // ログボ編集ボタン
-        StaticPane editItemPane = new StaticPane(5, 1, 1, 1);
+        StaticPane editItemPane = new StaticPane(4, 1, 1, 1);
         editItemPane.addItem(new GuiItem(LBItems.editAnvilIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("ログボ編集ボタンがクリックされました");
         }), 0, 0);
         adminHomeGui.addPane(editItemPane);
+
+        // グローバル設定
+        StaticPane globalSettingPane = new StaticPane(6, 1, 1, 1);
+        globalSettingPane.addItem(new GuiItem(LBItems.globalSettingEnderEyeIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("グローバル設定がクリックされました");
+            getAdminGlobalSettingGui().show(player);
+        }), 0, 0);
+        adminHomeGui.addPane(globalSettingPane);
     }
 
     public void adminFirstNameSettingGui(){
@@ -308,8 +321,8 @@ public class LoginBonusAdminGUI implements Listener {
         adminRewardSettingGui.addPane(tutorialPane);
 
         //保存ボタン
-        StaticPane saveItemPane = new StaticPane(0, 2, 1, 1);
-        saveItemPane.addItem(new GuiItem(LBItems.saveLimeGlassIS(), event -> {
+        StaticPane saveItemPane = new StaticPane(4, 2, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("保存がクリックされました");
             getAdminCreateGui().show(player);
@@ -774,6 +787,83 @@ public class LoginBonusAdminGUI implements Listener {
         adminNameSettingGui.getResultComponent().addPane(saveItemPane);
     }
 
+    ///////////////// globalSetting系 /////////////////
+    public void adminGlobalSettingGui(){
+        adminGlobalSettingGui = new ChestGui(3, "グローバル設定");
+        adminGlobalSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // 外周背景
+        OutlinePane background = new OutlinePane(0, 0, 9, 3, Pane.Priority.LOWEST);
+        Mask mask = new Mask(
+                "111111111",
+                "000000000",
+                "111101111"
+        );
+        background.applyMask(mask);
+        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
+        background.setRepeat(true);
+        adminGlobalSettingGui.addPane(background);
+
+        // ログイン情報修正
+        StaticPane recoverDatePane = new StaticPane(0, 1, 1, 1);
+        recoverDatePane.addItem(new GuiItem(LBItems.recoverDateBrushIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("通常報酬がクリックされました");
+            updateAdminRecoverDateSettingGui();
+            getAdminRecoverDateSettingGui().show(player);
+        }), 0, 0);
+        adminGlobalSettingGui.addPane(recoverDatePane);
+
+        //保存ボタン
+        StaticPane saveItemPane = new StaticPane(4, 2, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("保存がクリックされました");
+            getAdminHomeGui().show(player);
+        }), 0, 0);
+        adminGlobalSettingGui.addPane(saveItemPane);
+    }
+
+    public void adminRecoverDateSettingGui(){
+        adminRecoverDateSettingGui = new AnvilGui("ログイン情報修正");
+        adminRecoverDateSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // 左端の適当なアイテム（キャンセル兼用）
+        StaticPane cancelPane = new StaticPane(0, 0, 1, 1);
+        ItemStack cancel = LBItems.cancelRedGlassIS();
+        ItemMeta cancelMeta = cancel.getItemMeta();
+        cancelMeta.setDisplayName("日付を入力");
+        cancel.setItemMeta(cancelMeta);
+
+        cancelPane.addItem(new GuiItem(cancel, event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("キャンセルがクリックされました");
+            getAdminGlobalSettingGui().show(player);
+        }), 0, 0);
+        adminRecoverDateSettingGui.getFirstItemComponent().addPane(cancelPane);
+
+        // チュートリアル
+        StaticPane tutorialPane = new StaticPane(0, 0, 1, 1, Pane.Priority.HIGH);
+        tutorialPane.addItem(new GuiItem(LBItems.recoverDateTutorialBookIS(), event -> {
+        }), 0, 0);
+        adminRecoverDateSettingGui.getSecondItemComponent().addPane(tutorialPane);
+
+        // 保存
+        StaticPane saveItemPane = new StaticPane(0, 0, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.saveLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            String inputText = adminRecoverDateSettingGui.getRenameText();
+            if (!inputText.isEmpty() && RewardManager.setRecoverLoginMissedDate(currentLoginBonusName, inputText, player)) {
+                //player.sendMessage("設定が保存されました");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
+                getAdminGlobalSettingGui().show(player);
+            } else {
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+        adminRecoverDateSettingGui.getResultComponent().addPane(saveItemPane);
+    }
+
 
     public void adminTestGui(){
         adminTestGui = new ChestGui(6, "テスト");
@@ -849,6 +939,24 @@ public class LoginBonusAdminGUI implements Listener {
 
     public AnvilGui getAdminNameSettingGui(){
         return adminNameSettingGui;
+    }
+
+    public ChestGui getAdminGlobalSettingGui(){
+        return adminGlobalSettingGui;
+    }
+
+    public AnvilGui getAdminRecoverDateSettingGui(){
+        return adminRecoverDateSettingGui;
+    }
+
+    public void updateAdminRecoverDateSettingGui() {
+        adminRecoverDateSettingGui.getFirstItemComponent().getPanes().removeIf(pane -> pane instanceof StaticPane && pane.getPriority() == Pane.Priority.HIGH);
+
+        // チュートリアルパネルを動的に
+        StaticPane tutorialPane = new StaticPane(0, 0, 1, 1);
+        tutorialPane.addItem(new GuiItem(LBItems.recoverDateTutorialBookIS(), event -> {
+        }), 0, 0);
+        adminRecoverDateSettingGui.getSecondItemComponent().addPane(tutorialPane);
     }
 
     public ChestGui getAdminTestGui(){

@@ -10,9 +10,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -107,6 +109,11 @@ public class RewardManager {
     public static boolean setNewLoginBonusName(String bonusName, Player player) {
         if (!rewardConfig.contains("loginBonuses." + bonusName)) {
             rewardConfig.createSection("loginBonuses." + bonusName);
+
+            //以下デフォルト値
+            rewardConfig.set("loginBonuses." + bonusName + ".bonusRewardCondition", 80);
+            rewardConfig.set("loginBonuses." + bonusName + ".dailyResetTime", 5);
+
             try {
                 rewardConfig.save(rewardFile);
             } catch (IOException e) {
@@ -168,6 +175,15 @@ public class RewardManager {
                 return false;
             }
 
+            // リセット時間を取得
+            int resetHour = getDailyResetTime(bonusName);
+
+            // 期間の重複チェック
+            if (!isPeriodAvailable(bonusName, startDate, endDate, resetHour)) {
+                player.sendMessage("§c指定された期間は他のログインボーナスと重複しています。別の期間を設定してください。");
+                return false;
+            }
+
             // 開始日時と終了日時をreward.ymlに保存
             rewardConfig.set("loginBonuses." + bonusName + ".startDate", startDateStr);
             rewardConfig.set("loginBonuses." + bonusName + ".endDate", endDateStr);
@@ -213,6 +229,19 @@ public class RewardManager {
             player.sendMessage("§c時間は0~23の範囲で指定してください。");
             return false;
         }
+
+        LocalDate startDate = getPeriodStartDate(bonusName);
+        LocalDate endDate = getPeriodEndDate(bonusName);
+
+        // 期間が設定されている場合、重複チェックを行う
+        if(!(startDate == null || endDate == null)){
+            if (!isPeriodAvailable(bonusName, startDate, endDate, hour)) {
+                player.sendMessage("§c指定された時間は、他のログインボーナスとの期間の重複を生むため設定できません。別の時間を設定してください。");
+                return false;
+            }
+        }
+
+
         rewardConfig.set("loginBonuses." + bonusName + ".dailyResetTime", hour);
         try {
             rewardConfig.save(rewardFile);
@@ -233,6 +262,57 @@ public class RewardManager {
         }
     }
 
+    public static boolean isPeriodAvailable(String bonusName, LocalDate startDate, LocalDate endDate, int dailyResetHour) {
+        if (startDate == null || endDate == null || startDate.isAfter(endDate)) {
+            return false; // 開始日が終了日より後の場合は不正
+        }
+
+        // 登録済みのすべてのログインボーナスを取得
+        if (rewardConfig.getConfigurationSection("loginBonuses") == null) {
+            return true; // 登録されているログインボーナスがない場合は重複なし
+        }
+
+        Set<String> existingBonusNames = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
+
+        for (String existingName : existingBonusNames) {
+            // 自分自身との比較はスキップ
+            if (existingName.equals(bonusName)) {
+                continue;
+            }
+
+            // 既存のログインボーナスの期間を取得
+            LocalDate existingStartDate = getPeriodStartDate(existingName);
+            LocalDate existingEndDate = getPeriodEndDate(existingName);
+            int existingResetHour = getDailyResetTime(existingName);
+
+            // 期間が設定されていない場合はスキップ
+            if (existingStartDate == null || existingEndDate == null) {
+                continue;
+            }
+
+            // 日付と時間を考慮した厳密な比較
+            // 新規ボーナスの実際の開始時間
+            LocalDateTime newStartDateTime = startDate.atTime(dailyResetHour, 0);
+            // 新規ボーナスの実際の終了時間
+            LocalDateTime newEndDateTime = endDate.plusDays(1).atTime(dailyResetHour, 0);
+
+            // 既存ボーナスの実際の開始時間
+            LocalDateTime existingStartDateTime = existingStartDate.atTime(existingResetHour, 0);
+            // 既存ボーナスの実際の終了時間
+            LocalDateTime existingEndDateTime = existingEndDate.plusDays(1).atTime(existingResetHour, 0);
+
+            // 期間重複チェック
+            boolean overlap = !(newEndDateTime.isBefore(existingStartDateTime) || newStartDateTime.isAfter(existingEndDateTime));
+
+            if (overlap) {
+                // 重複がある場合は常にfalseを返す（リセット時間に関係なく）
+                return false;
+            }
+        }
+
+        return true; // 重複なし
+    }
+
     public static String getCurrentBonusName() {
         if(rewardConfig.getConfigurationSection("loginBonuses") == null){
             return null;
@@ -250,6 +330,66 @@ public class RewardManager {
             }
         }
         return null;
+    }
+
+
+    ////////////////////////////// 全体設定 ///////////////////////////
+    ///
+    public static boolean setRecoverLoginMissedDate(String bonusName, String dateStr, Player player) {
+        try {
+            // 日付フォーマットを定義
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+
+            // 日付文字列が規定の形式に従っているかを判別し、存在する日付であることを確認
+            LocalDate date;
+            try {
+                date = LocalDate.parse(dateStr, formatter);
+            } catch (DateTimeParseException e) {
+                player.sendMessage("§c日付の形式が正しくないか、存在しない日付です。（例: 2025/03/01）");
+                return false;
+            }
+
+            // 既存の日付リストを取得
+            List<String> dateStrings = rewardConfig.getStringList("recoverLoginMissedDates");
+
+            // 既に同じ日付が存在するかチェック
+            if (dateStrings.contains(dateStr)) {
+                player.sendMessage("§cこの日付は既に回復対象リストに追加されています。");
+                return false;
+            }
+
+            // 新しい日付をリストに追加
+            dateStrings.add(dateStr);
+
+            // 更新したリストを保存
+            rewardConfig.set("recoverLoginMissedDates", dateStrings);
+            rewardConfig.save(rewardFile);
+
+            player.sendMessage("§a日付が正常に追加されました。");
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            player.sendMessage("§c日付の設定中にエラーが発生しました。");
+            return false;
+        }
+    }
+
+    public static ArrayList<LocalDate> getRecoverLoginMissedDate() {
+        ArrayList<LocalDate> recoverDates = new ArrayList<>();
+        if (rewardConfig.contains("recoverLoginMissedDates")) {
+            List<String> dateStrings = rewardConfig.getStringList("recoverLoginMissedDates");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            for (String dateString : dateStrings) {
+                try {
+                    LocalDate date = LocalDate.parse(dateString, formatter);
+                    recoverDates.add(date);
+                } catch (DateTimeParseException e) {
+                    // 不正な形式の日付はスキップ
+                    e.printStackTrace();
+                }
+            }
+        }
+        return recoverDates;
     }
 
 }

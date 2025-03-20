@@ -12,6 +12,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerTextures;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.Base64;
@@ -44,6 +46,23 @@ public class LBItems {
             meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ログボ編集");
             meta.setLore(List.of(
                     ChatColor.GRAY + "既存のログインボーナスを編集・削除します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack globalSettingEnderEyeIS() {
+        ItemStack item = new ItemStack(Material.ENDER_EYE, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "グローバル設定");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "ログイン情報修正などが行えます"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -421,6 +440,22 @@ public class LBItems {
         return item;
     }
 
+    public static ItemStack tempPaperIS() {
+        ItemStack item = new ItemStack(Material.PAPER, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "仮置きの紙");
+            meta.setLore(List.of(
+                    ChatColor.of("#C2C2C2") + "このプールの設定を保存するには、",
+                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、一度この報酬枠を受け取ると、連続ログインのカウントはリセットされます。"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     // adminBonusRewardConditionSettingGui
     public static ItemStack bonusRewardConditionSettingTutorialBookIS(){
         ItemStack item = new ItemStack(Material.BOOK, 1);
@@ -536,6 +571,63 @@ public class LBItems {
         return item;
     }
 
+    public static ItemStack recoverDateBrushIS(){
+        ItemStack item = new ItemStack(Material.BRUSH, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ログイン情報修正");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "指定した日付を、データベースに記録されているかに関わらず、",
+                    ChatColor.GRAY + "このプラグインでは「プレイヤー全員がログインした」と見なすように設定します",
+                    ChatColor.GRAY + "メンテナンスの影響でプレイヤーがログインを逃がした場合などに有効です"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack recoverDateTutorialBookIS(){
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ログイン情報修正について");
+            meta.setLore(List.of(
+                    ChatColor.of("#C2C2C2") + "指定した日付を、データベースに記録されているかに関わらず、",
+                    ChatColor.of("#C2C2C2") + "このプラグインでは「プレイヤー全員がログインした」と見なすように設定します。",
+                    ChatColor.GOLD + "" + ChatColor.BOLD + "【形式】(年)/(月)/(日)",
+                    ChatColor.of("#C2C2C2") + "【注意事項】",
+                    ChatColor.of("#C2C2C2") + "・(年)は西暦4桁、(月)と(日)は2桁で入力してください。",
+                    ChatColor.of("#C2C2C2") + "・入力に空白は含めないでください。",
+                    ChatColor.of("#C2C2C2") + "・入力例:2025/01/01",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.of("#C2C2C2") + "【現在登録済みの日付】"
+            ));
+            ArrayList<LocalDate> existingDates = RewardManager.getRecoverLoginMissedDate();
+            StringBuilder currentRow = new StringBuilder();
+
+            for(int i = 0; i < existingDates.size(); i++) {
+                currentRow.append(existingDates.get(i).toString().replace("-", "/"));
+
+                // 3つごと、または最後の要素で改行
+                if ((i + 1) % 3 == 0 || i == existingDates.size() - 1) {
+                    meta.getLore().add(ChatColor.of("#C2C2C2") + currentRow.toString());
+                    currentRow = new StringBuilder();
+                } else {
+                    currentRow.append(", ");
+                }
+            }
+
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     //////////// User用 /////////////
     public static ItemStack nextPageAquaPlayerHeadIS() {
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjgyYWQxYjljYjRkZDIxMjU5YzBkNzVhYTMxNWZmMzg5YzNjZWY3NTJiZTM5NDkzMzgxNjRiYWM4NGE5NmUifX19");
@@ -565,6 +657,20 @@ public class LBItems {
         return item;
     }
 
+    public static ItemStack displayPageCountGlassIS(int currentPage, int maxPage) {
+        ItemStack item = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + currentPage + ChatColor.RESET + ChatColor.WHITE + "/" + maxPage + " ページ");
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
     public static ItemStack alreadyClaimedRewardForUserGlassIS(int day){
         ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
         ItemMeta meta = item.getItemMeta();
@@ -581,6 +687,7 @@ public class LBItems {
 
         return item;
     }
+
     public static ItemStack normalRewardForUserPlayerHeadIS(int day, boolean canClaim){
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2MxYjJmNTkyY2ZjOGQzNzJkY2Y1ZmQ0NGVlZDY5ZGRkYzY0NjAxZDc4NDZkNzI2MTlmNzA1MTFkODA0M2E4OSJ9fX0=");
         ItemMeta meta = item.getItemMeta();
@@ -624,12 +731,142 @@ public class LBItems {
                 ));
                 meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
                 meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            } else {
+                meta.setLore(List.of(
+                        ChatColor.GRAY + "レアな報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+                item.setItemMeta(meta);
             }
+        }
+        return item;
+    }
+
+    public static ItemStack bonusRewardForUserPlayerHeadIS(int day, boolean canClaim, int daysBetween, int loginCount, String currentBonusName){
+        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTdiYzI1MWE2Y2IwZDZkOWYwNWM1NzExOTExYTZlYzI0YjIwOWRiZTY0MjY3OTAxYTRiMDM3NjFkZWJjZjczOCJ9fX0=");
+        ItemMeta meta = item.getItemMeta();
+
+        float loginRate = (float) loginCount * 100 / (float) daysBetween;
+        loginRate = (float) Math.floor(loginRate * 100) / 100;
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "[DAY " + day + "] " + ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "デイリー報酬（エピック）");
+            if(canClaim && loginRate >= RewardManager.getBonusRewardCondition(currentBonusName)){
+                meta.setLore(List.of(
+                        ChatColor.GREEN + "" + ChatColor.BOLD + "受取可能（現在のログイン率：" + loginRate + "%）",
+                        ChatColor.GRAY + "豪華な報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+                meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            } else if(canClaim) {
+                meta.setLore(List.of(
+                        ChatColor.RED + "" + ChatColor.BOLD + "受取不可（現在のログイン率：" + loginRate + "%）",
+                        ChatColor.RED + "" + ChatColor.BOLD + "この報酬の受取にはログイン率" + ChatColor.UNDERLINE + RewardManager.getBonusRewardCondition(currentBonusName) + "%" + ChatColor.RESET + "" + ChatColor.RED + "" + ChatColor.BOLD + "が必要です",
+                        ChatColor.GRAY + "豪華な報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+            } else if(loginRate >= RewardManager.getBonusRewardCondition(currentBonusName)) {
+                meta.setLore(List.of(
+                        ChatColor.GREEN + "" + ChatColor.BOLD + "受取条件達成中（現在のログイン率：" + loginRate + "%） " + ChatColor.RESET + ChatColor.WHITE + "" + ChatColor.BOLD + "/ 必要：" + RewardManager.getBonusRewardCondition(currentBonusName) + "%",
+                        ChatColor.GRAY + "豪華な報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+            } else {
+                meta.setLore(List.of(
+                        ChatColor.RED + "" + ChatColor.BOLD + "受取条件未達（現在のログイン率：" + loginRate + "%） " + ChatColor.RESET + ChatColor.WHITE + "" + ChatColor.BOLD + "/ 必要：" + RewardManager.getBonusRewardCondition(currentBonusName) + "%",
+                        ChatColor.GRAY + "豪華な報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack loginStreakShowingPaperIS(int loginStreak){
+        ItemStack item = new ItemStack(Material.PAPER, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "現在の連続ログイン日数：" + loginStreak + "日");
             meta.setLore(List.of(
-                    ChatColor.GRAY + "レアな報酬をランダムに受け取れます",
-                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
-                    ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                    ChatColor.GRAY + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.GRAY + "連続ログインボーナス受取画面を開く"
             ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack alreadyClaimedContinuousRewardForUserGlassIS(){
+        ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "無効な報酬");
+            meta.setLore(List.of(
+                    ChatColor.RED + "この報酬は受取済みです",
+                    ChatColor.GRAY + "明日以降にログインすると連続ログインボーナスの進捗が戻り、",
+                    ChatColor.GRAY + "再度10日連続でログインすることで、この報酬を受け取ることができます"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack continuousRewardForUserPlayerHeadIS(int streak, int needDayToClaim){
+        ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTdiODMyNGQxYjI5ZWZkNjY3YmZiZDY5MTM0ZTdkODkxNzExMDc5MWI4MWJhZjgwZmRiNmUyYzIwN2FmZTE4MSJ9fX0=");
+        ItemMeta meta = item.getItemMeta();
+
+
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "連続ログイン報酬");
+            if(streak >= needDayToClaim){
+                meta.setLore(List.of(
+                        ChatColor.GREEN + "" + ChatColor.BOLD + "受取可能",
+                        ChatColor.GRAY + "連続ログイン報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+                meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            } else {
+                meta.setLore(List.of(
+                        ChatColor.RED + "" + ChatColor.BOLD + "受取不可（現在の連続ログイン日数：" + streak + "日）",
+                        ChatColor.RED + "" + ChatColor.BOLD + "この報酬の受取にはログイン率" + needDayToClaim + "日" + ChatColor.RESET + "" + ChatColor.RED + "" + ChatColor.BOLD + "が必要です",
+                        ChatColor.GRAY + "連続ログイン報酬をランダムに受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
+                        ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
+                ));
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack poolForUserTutorialBookIS() {
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "報酬プールについて");
+            meta.setLore(List.of(
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
+                    ChatColor.of("#C2C2C2") + "・報酬を受け取る際、各スロットの" + ChatColor.GOLD + ChatColor.BOLD + "排出確率が等分" + ChatColor.RESET + ChatColor.of("#C2C2C2") + "されて抽選されます"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
             item.setItemMeta(meta);
         }
         return item;
@@ -654,6 +891,20 @@ public class LBItems {
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "保存する");
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack returnLimeGlassIS() {
+        ItemStack item = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "前に戻る");
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
             item.setItemMeta(meta);
