@@ -187,7 +187,7 @@ public class LoginBonusUserGUI implements Listener {
                                     ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
                                     player.getInventory().addItem(item);
                                     loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
-                                    player.sendMessage(item.getType().name() + "×" + item.getAmount() + " §aを受け取りました！");
+                                    player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
                                 }else{
                                     player.sendMessage("§cこの報酬は無効であるため、受け取れません");
                                 }
@@ -395,7 +395,7 @@ public class LoginBonusUserGUI implements Listener {
                                     ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
                                     player.getInventory().addItem(item);
                                     loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
-                                    player.sendMessage(item.getItemMeta().displayName() + "×" + item.getAmount() + " §aを受け取りました！");
+                                    player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
                                 }else{
                                     player.sendMessage("§cこの報酬は無効であるため、受け取れません");
                                 }
@@ -551,7 +551,7 @@ public class LoginBonusUserGUI implements Listener {
                             ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
                             player.getInventory().addItem(item);
                             loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
-                            player.sendMessage(item.getType().name() + "×" + item.getAmount() + " §aを受け取りました！");
+                            player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
                         }
                     } else if (event.isRightClick()) {
                         updateUserRewardListGui(currentLoginBonusName, poolType);
@@ -610,7 +610,7 @@ public class LoginBonusUserGUI implements Listener {
                             ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
                             player.getInventory().addItem(item);
                             loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
-                            player.sendMessage(item.getType().name() + "×" + item.getAmount() + " §aを受け取りました！");
+                            player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
                         }
                     } else if (event.isRightClick()) {
                         updateUserRewardListGui(currentLoginBonusName, poolType);
@@ -655,12 +655,22 @@ public class LoginBonusUserGUI implements Listener {
     }
 
     private boolean isInventoryFull(Player player) {
-        for (ItemStack item : player.getInventory().getContents()) {
+        // メインインベントリ（0-35）のみをチェック
+        ItemStack[] contents = player.getInventory().getStorageContents();
+        for (ItemStack item : contents) {
             if (item == null || item.getType().isAir()) {
                 return false;
             }
         }
         return true;
+    }
+
+    private String getItemDisplayName(ItemStack item) {
+        if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
+            return item.getItemMeta().getDisplayName();
+        } else {
+            return item.getType().name();
+        }
     }
 
     public boolean hasClaimedToday(UUID playerUUID, String poolType) {

@@ -224,6 +224,7 @@ public class LoginBonusAdminGUI implements Listener {
         namePane.addItem(new GuiItem(LBItems.nameSettingNametagIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("内部名設定がクリックされました");
+            updateAdminNameSettingGui();
             getAdminNameSettingGui().show(player);
         }), 0, 0);
         adminCreateGui.addPane(namePane);
@@ -287,6 +288,7 @@ public class LoginBonusAdminGUI implements Listener {
         specialRewardPane.addItem(new GuiItem(LBItems.specialRewardPoolPlayerHeadIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("特別報酬がクリックされました");
+            updateAdminSpecialRewardSettingGui();
             getAdminSpecialRewardSettingGui().show(player);
         }), 0, 0);
         adminRewardSettingGui.addPane(specialRewardPane);
@@ -296,6 +298,7 @@ public class LoginBonusAdminGUI implements Listener {
         bonusRewardPane.addItem(new GuiItem(LBItems.bonusRewardPoolPlayerHeadIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("ボーナス報酬がクリックされました");
+            updateAdminBonusRewardSettingGui();
             getAdminBonusRewardSettingGui().show(player);
         }), 0, 0);
         adminRewardSettingGui.addPane(bonusRewardPane);
@@ -305,6 +308,7 @@ public class LoginBonusAdminGUI implements Listener {
         continuousRewardPane.addItem(new GuiItem(LBItems.continuousRewardPoolPlayerHeadIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("連続ログインボーナスがクリックされました");
+            updateAdminContinuousRewardSettingGui();
             getAdminContinuousRewardSettingGui().show(player);
         }), 0, 0);
         adminRewardSettingGui.addPane(continuousRewardPane);
@@ -314,6 +318,7 @@ public class LoginBonusAdminGUI implements Listener {
         bonusRewardConditionPane.addItem(new GuiItem(LBItems.bonusRewardConditionCommandBlockIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("ボーナス枠条件設定がクリックされました");
+            updateAdminBonusRewardConditionGui();
             getAdminBonusRewardConditionGui().show(player);
         }), 0, 0);
         adminRewardSettingGui.addPane(bonusRewardConditionPane);
@@ -468,6 +473,15 @@ public class LoginBonusAdminGUI implements Listener {
             event.setCancelled(true);
         }), 0, 0);
         adminSpecialRewardSettingGui.addPane(tutorialPane);
+
+        // 登録中のアイテムを並べる
+        OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.NORMAL);
+        ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "reward");
+        for (int i = 0; i < rewardItems.size(); i++) {
+            ItemStack item = rewardItems.get(i);
+            rewardItemPane.addItem(new GuiItem(item));
+        }
+        adminSpecialRewardSettingGui.addPane(rewardItemPane);
     }
 
     public void adminBonusRewardSettingGui(){
@@ -526,6 +540,15 @@ public class LoginBonusAdminGUI implements Listener {
             event.setCancelled(true);
         }), 0, 0);
         adminBonusRewardSettingGui.addPane(tutorialPane);
+
+        // 登録中のアイテムを並べる
+        OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.NORMAL);
+        ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "bonus");
+        for (int i = 0; i < rewardItems.size(); i++) {
+            ItemStack item = rewardItems.get(i);
+            rewardItemPane.addItem(new GuiItem(item));
+        }
+        adminBonusRewardSettingGui.addPane(rewardItemPane);
     }
 
     public void adminContinuousRewardSettingGui(){
@@ -584,6 +607,15 @@ public class LoginBonusAdminGUI implements Listener {
             event.setCancelled(true);
         }), 0, 0);
         adminContinuousRewardSettingGui.addPane(tutorialPane);
+
+        // 登録中のアイテムを並べる
+        OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.NORMAL);
+        ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "continuous");
+        for (int i = 0; i < rewardItems.size(); i++) {
+            ItemStack item = rewardItems.get(i);
+            rewardItemPane.addItem(new GuiItem(item));
+        }
+        adminContinuousRewardSettingGui.addPane(rewardItemPane);
     }
 
     public void adminBonusRewardConditionGui(){
@@ -591,7 +623,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminBonusRewardConditionGui.setOnGlobalClick(event -> event.setCancelled(true));
 
         // 左端の適当なアイテム（キャンセル兼用）
-        StaticPane cancelPane = new StaticPane(0, 0, 1, 1);
+        StaticPane cancelPane = new StaticPane(0, 0, 1, 1, Pane.Priority.HIGH);
         ItemStack cancel = LBItems.cancelRedGlassIS();
         ItemMeta cancelMeta = cancel.getItemMeta();
         cancelMeta.setDisplayName(String.valueOf(RewardManager.getBonusRewardCondition(currentLoginBonusName)) + " / 0~100（整数）");
@@ -652,6 +684,7 @@ public class LoginBonusAdminGUI implements Listener {
         createItemPane.addItem(new GuiItem(LBItems.periodSettingClockIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("期間設定くりっくされた");
+            updateAdminPeriodSettingGui();
             getAdminPeriodSettingGui().show(player);
         }), 0, 0);
         adminTimeSettingGui.addPane(createItemPane);
@@ -661,6 +694,7 @@ public class LoginBonusAdminGUI implements Listener {
         editItemPane.addItem(new GuiItem(LBItems.dailyResetTimeSettingCompassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("日付変更時刻設定がクリックされました");
+            updateAdminDailyResetTimeSettingGui();
             getAdminDailyResetTimeSettingGui().show(player);
         }), 0, 0);
         adminTimeSettingGui.addPane(editItemPane);
@@ -1218,16 +1252,79 @@ public class LoginBonusAdminGUI implements Listener {
         return adminSpecialRewardSettingGui;
     }
 
+    public void updateAdminSpecialRewardSettingGui() {
+        adminSpecialRewardSettingGui.getPanes().removeIf(pane -> pane instanceof OutlinePane && pane.getPriority() == Pane.Priority.NORMAL);
+
+        // 新しいrewardItemPaneを追加
+        OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.NORMAL);
+        ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "special");
+        for (int i = 0; i < rewardItems.size(); i++) {
+            ItemStack item = rewardItems.get(i);
+            // GuiItemを作成
+            GuiItem guiItem = new GuiItem(item);
+            rewardItemPane.addItem(guiItem);
+        }
+        adminSpecialRewardSettingGui.addPane(rewardItemPane);
+    }
+
     public ChestGui getAdminBonusRewardSettingGui(){
         return adminBonusRewardSettingGui;
+    }
+
+    public void updateAdminBonusRewardSettingGui() {
+        adminBonusRewardSettingGui.getPanes().removeIf(pane -> pane instanceof OutlinePane && pane.getPriority() == Pane.Priority.NORMAL);
+
+        // 新しいrewardItemPaneを追加
+        OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.NORMAL);
+        ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "bonus");
+        for (int i = 0; i < rewardItems.size(); i++) {
+            ItemStack item = rewardItems.get(i);
+            // GuiItemを作成
+            GuiItem guiItem = new GuiItem(item);
+            rewardItemPane.addItem(guiItem);
+        }
+        adminBonusRewardSettingGui.addPane(rewardItemPane);
     }
 
     public ChestGui getAdminContinuousRewardSettingGui(){
         return adminContinuousRewardSettingGui;
     }
 
+    public void updateAdminContinuousRewardSettingGui() {
+        adminContinuousRewardSettingGui.getPanes().removeIf(pane -> pane instanceof OutlinePane && pane.getPriority() == Pane.Priority.NORMAL);
+
+        // 新しいrewardItemPaneを追加
+        OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.NORMAL);
+        ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "continuous");
+        for (int i = 0; i < rewardItems.size(); i++) {
+            ItemStack item = rewardItems.get(i);
+            // GuiItemを作成
+            GuiItem guiItem = new GuiItem(item);
+            rewardItemPane.addItem(guiItem);
+        }
+        adminContinuousRewardSettingGui.addPane(rewardItemPane);
+    }
+
     public AnvilGui getAdminBonusRewardConditionGui(){
         return adminBonusRewardConditionGui;
+    }
+
+    public void updateAdminBonusRewardConditionGui() {
+        adminBonusRewardConditionGui.getFirstItemComponent().getPanes().clear();
+
+        // 左端の適当なアイテム（キャンセル兼用）
+        StaticPane cancelPane = new StaticPane(0, 0, 1, 1, Pane.Priority.HIGH);
+        ItemStack cancel = LBItems.cancelRedGlassIS();
+        ItemMeta cancelMeta = cancel.getItemMeta();
+        cancelMeta.setDisplayName(String.valueOf(RewardManager.getBonusRewardCondition(currentLoginBonusName)) + " / 0~100（整数）");
+        cancel.setItemMeta(cancelMeta);
+
+        cancelPane.addItem(new GuiItem(cancel, event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("キャンセルがクリックされました");
+            getAdminRewardSettingGui().show(player);
+        }), 0, 0);
+        adminBonusRewardConditionGui.getFirstItemComponent().addPane(cancelPane);
     }
 
     public ChestGui getAdminTimeSettingGui(){
@@ -1238,12 +1335,67 @@ public class LoginBonusAdminGUI implements Listener {
         return adminPeriodSettingGui;
     }
 
+    public void updateAdminPeriodSettingGui() {
+        adminPeriodSettingGui.getFirstItemComponent().getPanes().clear();
+
+        // 左端の適当なアイテム（キャンセル兼用）
+        StaticPane cancelPane = new StaticPane(0, 0, 1, 1, Pane.Priority.HIGH);
+        ItemStack cancel = LBItems.cancelRedGlassIS();
+        ItemMeta cancelMeta = cancel.getItemMeta();
+        cancelMeta.setDisplayName(RewardManager.getOriginalPeriod(currentLoginBonusName));
+        cancel.setItemMeta(cancelMeta);
+
+        cancelPane.addItem(new GuiItem(cancel, event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("キャンセルがクリックされました");
+            getAdminTimeSettingGui().show(player);
+        }), 0, 0);
+        adminPeriodSettingGui.getFirstItemComponent().addPane(cancelPane);
+
+    }
+
     public AnvilGui getAdminDailyResetTimeSettingGui(){
         return adminDailyResetTimeSettingGui;
     }
 
+    public void updateAdminDailyResetTimeSettingGui() {
+        adminDailyResetTimeSettingGui.getFirstItemComponent().getPanes().clear();
+
+        // 左端の適当なアイテム（キャンセル兼用）
+        StaticPane cancelPane = new StaticPane(0, 0, 1, 1, Pane.Priority.HIGH);
+        ItemStack cancel = LBItems.cancelRedGlassIS();
+        ItemMeta cancelMeta = cancel.getItemMeta();
+        cancelMeta.setDisplayName(RewardManager.getDailyResetTime(currentLoginBonusName) + " / 0~23（整数）");
+        cancel.setItemMeta(cancelMeta);
+
+        cancelPane.addItem(new GuiItem(cancel, event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("キャンセルがクリックされました");
+            getAdminTimeSettingGui().show(player);
+        }), 0, 0);
+        adminDailyResetTimeSettingGui.getFirstItemComponent().addPane(cancelPane);
+    }
+
     public AnvilGui getAdminNameSettingGui(){
         return adminNameSettingGui;
+    }
+
+    public void updateAdminNameSettingGui() {
+        adminNameSettingGui.getFirstItemComponent().getPanes().clear();
+
+        // 左端の適当なアイテム（キャンセル兼用）
+        StaticPane cancelPane = new StaticPane(0, 0, 1, 1, Pane.Priority.HIGH);
+        ItemStack cancel = LBItems.cancelRedGlassIS();
+        ItemMeta cancelMeta = cancel.getItemMeta();
+        cancelMeta.setDisplayName(currentLoginBonusName);
+        cancel.setItemMeta(cancelMeta);
+
+        cancelPane.addItem(new GuiItem(cancel, event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("キャンセルがクリックされました");
+            getAdminCreateGui().show(player);
+        }), 0, 0);
+        adminNameSettingGui.getFirstItemComponent().addPane(cancelPane);
     }
 
     public ChestGui getAdminEditGui(){
@@ -1258,7 +1410,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminDeleteConfirmGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
 
         // 削除する
-        StaticPane yesPane = new StaticPane(5, 1, 1, 1);
+        StaticPane yesPane = new StaticPane(5, 1, 1, 1, Pane.Priority.HIGH);
         yesPane.addItem(new GuiItem(LBItems.confirmDeleteRedGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             if(RewardManager.deleteLoginBonus(bonusName)){

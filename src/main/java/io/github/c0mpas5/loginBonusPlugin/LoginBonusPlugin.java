@@ -38,7 +38,5 @@ public final class LoginBonusPlugin extends JavaPlugin {
 
 //TODO:期間設定とか、現在設定されている値を表示したい場合は更新したいので↓のようにpane削除とかする必要があるっぽい
 //TODO:ログボの作成を完了するときに設定がすべて完了していなければ弾く処理
-//TODO:バグ）ログボ削除が2回目以降できない。回数はインスタンス生成し直しでリセットされる？
 //NOTICE:インベントリ操作中に開催中のログインボーナス、つまりcurrentLoginBonusNameが変わった時に、アイテムを不正に得られたりしないように対策必要
 //  →至る所（主に推移先）で受け取ったcurrentLoginBonusNameと実行直後に得たcurrentLoginBonusNameが一致するか確かめて、一致しないならcloseInv
-//NOTICE:報酬プールにアイテムが入っていない時、報酬用のplayerHeadが「プレイヤーの頭」という名前になる？報酬プールを空に出来ないようにするなら対策不要そう→一時保存できるようにして、本格的な設定は全部の設定埋める必要がある形にする
