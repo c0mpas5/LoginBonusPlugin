@@ -4,7 +4,12 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.io.BukkitObjectInputStream;
+import org.bukkit.util.io.BukkitObjectOutputStream;
+import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,7 +47,8 @@ public class RewardManager {
     // 保存
     public static void saveRewards(String bonusName, String poolType, ArrayList<ItemStack> items) {
         for (int i = 0; i < items.size(); i++) {
-            rewardConfig.set("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_" + i, items.get(i));
+            String itemStr = itemToBase64(items.get(i));
+            rewardConfig.set("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_" + i, itemStr);
         }
         rewardConfig.set("loginBonuses." + bonusName + ".pool." + poolType + ".poolSize", items.size());
         try {
@@ -71,8 +77,8 @@ public class RewardManager {
     public static ItemStack getRandomRewards(String bonusName, String poolType) {
         int poolSize = getPoolSize(bonusName, poolType);
         Random random = new Random();
-        ItemStack item = rewardConfig.getItemStack("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_" + random.nextInt(poolSize));
-        return item;
+        String itemStr = rewardConfig.getString("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_" + random.nextInt(poolSize));
+        return itemFromBase64(itemStr);
     }
 
     // すべての報酬を取得
@@ -80,9 +86,52 @@ public class RewardManager {
         int poolSize = getPoolSize(bonusName, poolType);
         ArrayList<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < poolSize; i++) {
-            items.add(rewardConfig.getItemStack("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_" + i));
+            String itemStr = rewardConfig.getString("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_" + i);
+            items.add(itemFromBase64(itemStr));
         }
         return items;
+    }
+
+    // ItemStackをBase64に変換
+    private static String itemToBase64(ItemStack item) throws IllegalStateException {
+        if (item == null || item.getType() == Material.AIR) return null;
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
+            ItemStack[] items = new ItemStack[1];
+            items[0] = item;
+            dataOutput.writeInt(items.length);
+
+            for (int i = 0; i < items.length; i++) {
+                dataOutput.writeObject(items[i]);
+            }
+
+            dataOutput.close();
+
+            return Base64Coder.encodeLines(outputStream.toByteArray());
+
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to save item stacks.", e);
+        }
+    }
+
+    // Base64からItemStackを取得
+    private static ItemStack itemFromBase64(String data) {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
+            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
+            ItemStack[] items = new ItemStack[dataInput.readInt()];
+
+            // シリアライズされたインベントリを読み込む
+            for (int i = 0; i < items.length; i++) {
+                items[i] = (ItemStack) dataInput.readObject();
+            }
+
+            dataInput.close();
+            return items[0];
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /////////////////////////// 報酬関連設定 ///////////////////////////
@@ -113,6 +162,7 @@ public class RewardManager {
             //以下デフォルト値
             rewardConfig.set("loginBonuses." + bonusName + ".bonusRewardCondition", 80);
             rewardConfig.set("loginBonuses." + bonusName + ".dailyResetTime", 5);
+            rewardConfig.set("loginBonuses." + bonusName + ".status", "disabled");
 
             try {
                 rewardConfig.save(rewardFile);
@@ -158,7 +208,7 @@ public class RewardManager {
             LocalDate startDate = getPeriodStartDate(bonusName);
             LocalDate endDate = getPeriodEndDate(bonusName);
 
-            if (startDate != null && endDate != null && (currentDate.isEqual(startDate) || currentDate.isEqual(endDate) || (currentDate.isAfter(startDate) && currentDate.isBefore(endDate)))) {
+            if (startDate != null && endDate != null && (currentDate.isEqual(startDate) || currentDate.isEqual(endDate) || (currentDate.isAfter(startDate) && currentDate.isBefore(endDate))) && isLBEnabled(bonusName)) {
                 return bonusName;
             }
         }
@@ -306,6 +356,109 @@ public class RewardManager {
         } else {
             return 0; // デフォルト値を返す
         }
+    }
+
+    // ログボの有効・無効を切り替え
+    public static boolean setStatus(String bonusName, String currentStatus) {
+        if(!isAllSettingsComplete(bonusName)){
+            rewardConfig.set("loginBonuses." + bonusName + ".status", "disabled");
+            try {
+                rewardConfig.save(rewardFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+        if(currentStatus.equals("disabled")) {
+            rewardConfig.set("loginBonuses." + bonusName + ".status", "enabled");
+        } else if (currentStatus.equals("enabled")) {
+            rewardConfig.set("loginBonuses." + bonusName + ".status", "disabled");
+        }
+        try {
+            rewardConfig.save(rewardFile);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean isLBEnabled(String bonusName) {
+        return rewardConfig.getString("loginBonuses." + bonusName + ".status").equals("enabled");
+    }
+
+    // bonusName以下のすべての項目が設定されているかチェック
+    public static boolean isAllSettingsComplete(String bonusName) {
+        if (rewardConfig.contains("loginBonuses." + bonusName)) {
+            Set<String> upperKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName).getKeys(false);
+
+            if (rewardConfig.contains("loginBonuses." + bonusName + ".pool")){
+                Set<String> poolKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName + ".pool").getKeys(false);
+                return upperKeys.contains("bonusRewardCondition") &&
+                        upperKeys.contains("dailyResetTime") &&
+                        upperKeys.contains("startDate") &&
+                        upperKeys.contains("endDate") &&
+                        upperKeys.contains("pool") &&
+                        poolKeys.contains("normal") &&
+                        poolKeys.contains("special") &&
+                        poolKeys.contains("bonus") &&
+                        poolKeys.contains("continuous");
+            } else{
+                return false; // poolが存在しない場合はそもそもfalse
+            }
+        } else {
+            return false; // 存在しないボーナス名の場合はfalse
+        }
+    }
+
+    public static ArrayList<String> getLackingSettings(String bonusName) {
+        ArrayList<String> missingSettings = new ArrayList<>();
+        if (rewardConfig.contains("loginBonuses." + bonusName)) {
+            Set<String> upperKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName).getKeys(false);
+
+            if (rewardConfig.contains("loginBonuses." + bonusName + ".pool")){
+                Set<String> poolKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName + ".pool").getKeys(false);
+                if (!upperKeys.contains("bonusRewardCondition")) {
+                    missingSettings.add("報酬設定-ボーナス枠条件設定");
+                }
+                if (!upperKeys.contains("dailyResetTime")) {
+                    missingSettings.add("時間系設定-日付変更時刻設定");
+                }
+                if (!upperKeys.contains("startDate")) {
+                    missingSettings.add("時間系設定-開催期間設定");
+                }
+                if (!poolKeys.contains("normal")) {
+                    missingSettings.add("通常枠報酬設定");
+                }
+                if (!poolKeys.contains("special")) {
+                    missingSettings.add("特別枠報酬設定");
+                }
+                if (!poolKeys.contains("bonus")) {
+                    missingSettings.add("ボーナス枠報酬設定");
+                }
+                if (!poolKeys.contains("continuous")) {
+                    missingSettings.add("連続ログボ報酬設定");
+                }
+            }else{
+                if (!upperKeys.contains("bonusRewardCondition")) {
+                    missingSettings.add("報酬設定-ボーナス枠条件設定");
+                }
+                if (!upperKeys.contains("dailyResetTime")) {
+                    missingSettings.add("時間系設定-日付変更時刻設定");
+                }
+                if (!upperKeys.contains("startDate")) {
+                    missingSettings.add("時間系設定-開催期間設定");
+                }
+                // poolが存在しない場合は、すべての報酬設定が不足しているとみなす
+                missingSettings.add("通常枠報酬設定");
+                missingSettings.add("特別枠報酬設定");
+                missingSettings.add("ボーナス枠報酬設定");
+                missingSettings.add("連続ログボ報酬設定");
+            }
+        } else {
+            missingSettings.add("存在しないログインボーナス名です。");
+        }
+        return missingSettings;
     }
 
     public static boolean isPeriodAvailable(String bonusName, LocalDate startDate, LocalDate endDate, int dailyResetHour) {

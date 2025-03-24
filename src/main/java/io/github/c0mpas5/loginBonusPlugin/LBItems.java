@@ -191,7 +191,8 @@ public class LBItems {
         if (meta != null) {
             meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "その他の設定");
             meta.setLore(List.of(
-                    ChatColor.GRAY + "当該ログインボーナスのその他の設定を行います"
+                    ChatColor.GRAY + "当該ログインボーナスのその他の設定を行います",
+                    ChatColor.GRAY + "有効化設定などが行えます"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -587,6 +588,46 @@ public class LBItems {
         }
         return item;
     }
+
+    public static ItemStack enabledEmeraldBlockIS(){
+        ItemStack item = new ItemStack(Material.EMERALD_BLOCK, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "現在有効化中");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.GRAY + "当該ログインボーナスを" + ChatColor.RED + "無効化" + ChatColor.GRAY + "します",
+                    ChatColor.of("#797979") + "当該ログインボーナスが期間中開催されるようにするかどうかを設定します",
+                    ChatColor.of("#797979") + "デフォルトでは無効化されており、全ての項目を設定した状態でないと有効化させることはできません"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public static ItemStack disabledRedStoneBlockIS(){
+        ItemStack item = new ItemStack(Material.REDSTONE_BLOCK, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "現在無効化中");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.GRAY + "当該ログインボーナスを" + ChatColor.GREEN + "有効化" + ChatColor.GRAY + "します",
+                    ChatColor.of("#797979") + "当該ログインボーナスが期間中開催されるようにするかどうかを設定します",
+                    ChatColor.of("#797979") + "デフォルトでは無効化されており、全ての項目を設定した状態でないと有効化させることはできません"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    /////////// グローバル設定 ////////////
 
     public static ItemStack recoverDateBrushIS(){
         ItemStack item = new ItemStack(Material.BRUSH, 1);

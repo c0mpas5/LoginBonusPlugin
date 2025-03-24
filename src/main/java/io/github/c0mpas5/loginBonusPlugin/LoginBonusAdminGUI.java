@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class LoginBonusAdminGUI implements Listener {
     private AnvilGui adminPeriodSettingGui;
     private AnvilGui adminDailyResetTimeSettingGui;
     private AnvilGui adminNameSettingGui;
+    private ChestGui adminOtherSettingGui;
     private ChestGui adminSubAccountSettingGui;
 
     private ChestGui adminEditGui;
@@ -61,6 +63,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminPeriodSettingGui();
         adminDailyResetTimeSettingGui();
         adminNameSettingGui();
+        adminOtherSettingGui();
         //adminSubAccountSettingGui();
 
         adminEditGui();
@@ -234,6 +237,7 @@ public class LoginBonusAdminGUI implements Listener {
         otherPane.addItem(new GuiItem(LBItems.otherSettingBookIS(), event -> {
             Player player = (Player) event.getWhoClicked();
             player.sendMessage("その他の設定がクリックされました");
+            updateAndShowAdminOtherSettingGui(player);
         }), 0, 0);
         adminCreateGui.addPane(otherPane);
 
@@ -700,13 +704,13 @@ public class LoginBonusAdminGUI implements Listener {
         adminTimeSettingGui.addPane(editItemPane);
 
         //キャンセルボタン
-        StaticPane cancelItemPane = new StaticPane(0, 2, 1, 1);
-        cancelItemPane.addItem(new GuiItem(LBItems.cancelRedGlassIS(), event -> {
+        StaticPane returnItemPane = new StaticPane(0, 2, 1, 1);
+        returnItemPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
-            player.sendMessage("キャンセルがクリックされました");
+            player.sendMessage("前に戻るがクリックされました");
             getAdminCreateGui().show(player);
         }), 0, 0);
-        adminTimeSettingGui.addPane(cancelItemPane);
+        adminTimeSettingGui.addPane(returnItemPane);
     }
 
     public void adminPeriodSettingGui(){
@@ -832,6 +836,74 @@ public class LoginBonusAdminGUI implements Listener {
         }), 0, 0);
         adminNameSettingGui.getResultComponent().addPane(saveItemPane);
     }
+
+    public void adminOtherSettingGui(){
+        adminOtherSettingGui = new ChestGui(3, "その他の設定");
+        adminOtherSettingGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // 外周背景
+        OutlinePane background = new OutlinePane(0, 0, 9, 3, Pane.Priority.LOWEST);
+        Mask mask = new Mask(
+                "111111111",
+                "000000000",
+                "111101111"
+        );
+        background.applyMask(mask);
+        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
+        background.setRepeat(true);
+        adminOtherSettingGui.addPane(background);
+
+        //保存ボタン
+        StaticPane saveItemPane = new StaticPane(4, 2, 1, 1);
+        saveItemPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            player.sendMessage("保存がクリックされました");
+            getAdminCreateGui().show(player);
+        }), 0, 0);
+        adminOtherSettingGui.addPane(saveItemPane);
+    }
+
+    public void updateAndShowAdminOtherSettingGui(Player targetPlayer){
+        adminOtherSettingGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
+
+        // status設定
+        StaticPane statusPane = new StaticPane(0, 1, 1, 1, Pane.Priority.HIGH);
+        if(RewardManager.isLBEnabled(currentLoginBonusName)){
+            statusPane.addItem(new GuiItem(LBItems.enabledEmeraldBlockIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                if(RewardManager.setStatus(currentLoginBonusName, "enabled")){
+                    player.sendMessage("§aログボが無効化されました");
+                    updateAndShowAdminOtherSettingGui(player);
+                } else {
+                    player.sendMessage("§c以下の設定を先に終える必要があります");
+                    ArrayList<String> lackedSettings = RewardManager.getLackingSettings(currentLoginBonusName);
+                    for (String setting : lackedSettings) {
+                        player.sendMessage("§c・" + setting);
+                    }
+                }
+            }), 0, 0);
+
+        }else{
+            statusPane.addItem(new GuiItem(LBItems.disabledRedStoneBlockIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                if(RewardManager.setStatus(currentLoginBonusName, "disabled")){
+                    player.sendMessage("§aログボが有効化されました");
+                    updateAndShowAdminOtherSettingGui(player);
+                } else {
+                    player.sendMessage("§c以下の設定を先に終える必要があります");
+                    ArrayList<String> lackedSettings = RewardManager.getLackingSettings(currentLoginBonusName);
+                    for (String setting : lackedSettings) {
+                        player.sendMessage("§c・" + setting);
+                    }
+                }
+            }), 0, 0);
+        }
+        adminOtherSettingGui.addPane(statusPane);
+        adminOtherSettingGui.update(); //要るんか知らん
+        targetPlayer.closeInventory(); //一回消さないと更新入らないので
+        adminOtherSettingGui.show(targetPlayer);
+    }
+
     ///////////////// ログボ編集系 /////////////////
     public void adminEditGui(){
         ArrayList<String> bonusNames = RewardManager.getAllBonusNames();

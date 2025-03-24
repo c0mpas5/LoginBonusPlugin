@@ -62,14 +62,14 @@ public class EventListener implements Listener {
 //            lastClaimedDate = lastClaimedDateTime.toLocalDate().minusDays(1);
 //        }
 
-        if (!hasClaimedToday(playerUUID, "accumulative")) {
+        if (!hasClaimedToday(playerUUID, "accumulative", currentBonusName)) {
             sendOpenAccumulatedRewardGuiMessage(player);
             int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
             player.sendMessage("ログイン" + loginCount + "日目！");
         } else {
             player.sendMessage("受取可能なログインボーナスはありません。");
         }
-        if (!hasClaimedToday(playerUUID, "continuous") && loginBonusData.getLoginStreak(playerUUID, currentBonusName) == 10) {
+        if (!hasClaimedToday(playerUUID, "continuous", currentBonusName) && loginBonusData.getLoginStreak(playerUUID, currentBonusName) == 10) {
             player.sendMessage("連続ログイン" + loginBonusData.getLoginStreak(playerUUID, currentBonusName) + "日目！以下をクリックで連続ログインボーナス報酬を受け取れます");
             sendOpenContinuousRewardGuiMessage(player);
         }else{
@@ -91,7 +91,7 @@ public class EventListener implements Listener {
         player.spigot().sendMessage(message);
     }
 
-    public boolean hasClaimedToday(UUID playerUUID, String poolType) {
+    public boolean hasClaimedToday(UUID playerUUID, String poolType, String currentBonusName) {
         LocalDateTime lastClaimedDate = null;
         if (poolType.equals("accumulative")) {
             lastClaimedDate = loginBonusData.getLastAccumulatedRewardClaimedDate(playerUUID);
@@ -103,7 +103,6 @@ public class EventListener implements Listener {
             return false;
         }
 
-        String currentBonusName = RewardManager.getCurrentBonusName();
         int resetHour = RewardManager.getDailyResetTime(currentBonusName);
         LocalDateTime resetDateTime = LocalDate.now().atTime(LocalTime.of(resetHour, 0));
         LocalDateTime now = LocalDateTime.now();

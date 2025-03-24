@@ -29,8 +29,13 @@ public class LoginBonusUserGUI implements Listener {
     private ChestGui adminTestGui;
     private LoginBonusData loginBonusData;
     private UUID playerUUID;
+    private String currentBonusName;
+    private LocalDateTime initDateTime;
 
     public LoginBonusUserGUI(LoginBonusData loginBonusData, UUID playerUUID){
+        currentBonusName = RewardManager.getCurrentBonusName();
+        initDateTime = LocalDateTime.now();
+
         this.loginBonusData = loginBonusData;
         this.playerUUID = playerUUID;
         userAccumulatedLoginBonusClaimGui();
@@ -43,14 +48,13 @@ public class LoginBonusUserGUI implements Listener {
 
 
     public void userAccumulatedLoginBonusClaimGui(){
-        String currentLoginBonusName = RewardManager.getCurrentBonusName();
         userAccumulatedLoginBonusClaimGui = new ChestGui(6, "累積ログボ受取");
         userAccumulatedLoginBonusClaimGui.setOnGlobalClick(event -> event.setCancelled(true));
 
         //全ページ
         PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
-        LocalDate startDate = RewardManager.getPeriodStartDate(currentLoginBonusName);
-        LocalDate endDate = RewardManager.getPeriodEndDate(currentLoginBonusName);
+        LocalDate startDate = RewardManager.getPeriodStartDate(currentBonusName);
+        LocalDate endDate = RewardManager.getPeriodEndDate(currentBonusName);
         int daysBetween;
         if(startDate == null || endDate == null){
             daysBetween = 10; // temp:仮置き
@@ -59,16 +63,19 @@ public class LoginBonusUserGUI implements Listener {
         }
         ItemStack[] chests = new ItemStack[daysBetween];
 
-        int canClaimRewardDay = loginBonusData.getLoginCount(playerUUID, currentLoginBonusName) - 1; // ログインボーナスを受け取れる日（インデックス番号）
+        int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName); // 当日も含めたログイン日数
+        int canClaimRewardDay = loginCount - 1; // ログインボーナスを受け取れる日（インデックス番号）
+        LocalDate currentDate = LocalDateTime.now().minusHours(RewardManager.getDailyResetTime(currentBonusName)).toLocalDate();
+        int daysSinceStart = (int) ChronoUnit.DAYS.between(startDate, currentDate) + 1; // 開催されてからの経過日数
 
         // 表示するplayerHeadの配列作る
         for(int i = 0; i < daysBetween; i++){
             if(i < canClaimRewardDay || i == canClaimRewardDay && hasClaimedToday(playerUUID, "accumulative")){
                 chests[i] = LBItems.alreadyClaimedRewardForUserGlassIS(i + 1);
-            }else if(i == canClaimRewardDay && i == daysBetween - 1){
-                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, true, daysBetween, loginBonusData.getLoginCount(playerUUID, currentLoginBonusName), currentLoginBonusName);
-            }else if(i == daysBetween - 1){
-                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, false, daysBetween, loginBonusData.getLoginCount(playerUUID, currentLoginBonusName), currentLoginBonusName);
+            }else if(i == canClaimRewardDay && i == daysBetween - (daysSinceStart - loginCount) - 1 ){ // 開催日数から逃がした日数を引く（後ろの-1はインデックス番号用に調整するもの）
+                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, true, daysBetween, loginBonusData.getLoginCount(playerUUID, currentBonusName), currentBonusName);
+            }else if(i == daysBetween - (daysSinceStart - loginCount) - 1){
+                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, false, daysBetween, loginBonusData.getLoginCount(playerUUID, currentBonusName), currentBonusName);
             }else if(i % 10 == 9 && i == canClaimRewardDay) {
                 chests[i] = LBItems.specialRewardForUserPlayerHeadIS(i + 1, true);
             }else if(i % 10 == 9){
@@ -121,10 +128,18 @@ public class LoginBonusUserGUI implements Listener {
             }
         }), 0, 0);
 
+
+
         // 連続ログイン日数
         StaticPane loginStreakPane = new StaticPane(6, 5, 1, 1);
-        loginStreakPane.addItem(new GuiItem(LBItems.loginStreakShowingPaperIS(loginBonusData.getLoginStreak(playerUUID, currentLoginBonusName)), event -> {
+        loginStreakPane.addItem(new GuiItem(LBItems.loginStreakShowingPaperIS(loginBonusData.getLoginStreak(playerUUID, currentBonusName)), event -> {
             Player player = (Player) event.getWhoClicked();
+
+            // クリック時、日付が変わってたらインベントリ閉じて処理中断
+            if(closeInvWhenDayChanged(player)){
+                return;
+            }
+
             updateUserContinuousLoginBonusClaimGui();
             getUserContinuousLoginBonusClaimGui().show(player);
         }), 0, 0);
@@ -159,13 +174,18 @@ public class LoginBonusUserGUI implements Listener {
                     rewardPanes[i].addItem(new GuiItem(chests[index], event -> {
                         Player player = (Player) event.getWhoClicked();
 
+                        // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                        if(closeInvWhenDayChanged(player)){
+                            return;
+                        }
+
                         // クリック時、抽選する報酬プールを変更するためにindexごとにpoolTypeを設定
                         String poolType;
-                        if(index == daysBetween - 1){
+                        if (index == daysBetween - (daysSinceStart - loginCount) - 1) {
                             poolType = "bonus";
-                        } else if(index % 10 == 9){
+                        } else if (index % 10 == 9) {
                             poolType = "special";
-                        }else{
+                        } else {
                             poolType = "normal";
                         }
 
@@ -174,7 +194,7 @@ public class LoginBonusUserGUI implements Listener {
                             if (isInventoryFull(player)) {
                                 player.sendMessage("§cインベントリに空きがないため、報酬を受け取れません");
                                 player.closeInventory();
-                            } else if(!(canClaimRewardDay == loginBonusData.getLoginCount(playerUUID, currentLoginBonusName) - 1)) {
+                            } else if(!(canClaimRewardDay == loginBonusData.getLoginCount(playerUUID, currentBonusName) - 1)) {
                                 player.sendMessage("§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
                                 player.closeInventory();
                             }else{
@@ -184,7 +204,7 @@ public class LoginBonusUserGUI implements Listener {
                                 if (!(clickedSlotItemMeta.getDisplayName().contains("無効"))) {
                                     player.closeInventory();
                                     //TODO: 連打して受け取れたりしないかの確認
-                                    ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
+                                    ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
                                     player.getInventory().addItem(item);
                                     loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
                                     player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
@@ -199,15 +219,15 @@ public class LoginBonusUserGUI implements Listener {
                             String clickedRewardPoolType = "";
                             if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
                                 clickedRewardPoolType = "normal";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("レア")){
                                 clickedRewardPoolType = "special";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("エピック")) {
                                 clickedRewardPoolType = "bonus";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("無効")) {
                                 player.sendMessage("§aこの報酬は無効であるため、報酬を閲覧できません");
@@ -217,6 +237,12 @@ public class LoginBonusUserGUI implements Listener {
                 } else {
                     rewardPanes[i].addItem(new GuiItem(chests[index], event -> {
                         Player player = (Player) event.getWhoClicked();
+
+                        // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                        if(closeInvWhenDayChanged(player)){
+                            return;
+                        }
+
                         if (event.isLeftClick()){
                             player.sendMessage("§aこの報酬は受取済か、本日が受取可能な日ではないため受け取れません");
                             // poolTypeごとに表示する報酬プールを変更（ここは報酬が得られる日じゃなかろうが変わらん）
@@ -226,15 +252,15 @@ public class LoginBonusUserGUI implements Listener {
                             String clickedRewardPoolType = "";
                             if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
                                 clickedRewardPoolType = "normal";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if((clickedSlotItemMeta.getDisplayName().contains("レア"))){
                                 clickedRewardPoolType = "special";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("エピック")) {
                                 clickedRewardPoolType = "bonus";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("無効")) {
                                 player.sendMessage("§aこの報酬は無効であるため、報酬を閲覧できません");
@@ -249,14 +275,13 @@ public class LoginBonusUserGUI implements Listener {
     }
 
     public void updateUserAccumulatedLoginBonusClaimGui(){
-        String currentLoginBonusName = RewardManager.getCurrentBonusName();
         // 一旦全部再生成。絶対重いので改善すべきではある
         userAccumulatedLoginBonusClaimGui.getPanes().clear();
 
         //全ページ
         PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
-        LocalDate startDate = RewardManager.getPeriodStartDate(currentLoginBonusName);
-        LocalDate endDate = RewardManager.getPeriodEndDate(currentLoginBonusName);
+        LocalDate startDate = RewardManager.getPeriodStartDate(currentBonusName);
+        LocalDate endDate = RewardManager.getPeriodEndDate(currentBonusName);
         int daysBetween;
         if(startDate == null || endDate == null){
             daysBetween = 10; // temp:仮置き
@@ -265,16 +290,19 @@ public class LoginBonusUserGUI implements Listener {
         }
         ItemStack[] chests = new ItemStack[daysBetween];
 
-        int canClaimRewardDay = loginBonusData.getLoginCount(playerUUID, currentLoginBonusName) - 1; // ログインボーナスを受け取れる日（インデックス番号）
+        int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName); // 当日も含めたログイン日数
+        int canClaimRewardDay = loginCount - 1; // ログインボーナスを受け取れる日（インデックス番号）
+        LocalDate currentDate = LocalDateTime.now().minusHours(RewardManager.getDailyResetTime(currentBonusName)).toLocalDate();
+        int daysSinceStart = (int) ChronoUnit.DAYS.between(startDate, currentDate) + 1; // 開催されてからの経過日数
 
         // 表示するplayerHeadの配列作る
         for(int i = 0; i < daysBetween; i++){
             if(i < canClaimRewardDay || i == canClaimRewardDay && hasClaimedToday(playerUUID, "accumulative")){
                 chests[i] = LBItems.alreadyClaimedRewardForUserGlassIS(i + 1);
-            }else if(i == canClaimRewardDay && i == daysBetween - 1){
-                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, true, daysBetween, loginBonusData.getLoginCount(playerUUID, currentLoginBonusName), currentLoginBonusName);
-            }else if(i == daysBetween - 1){
-                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, false, daysBetween, loginBonusData.getLoginCount(playerUUID, currentLoginBonusName), currentLoginBonusName);
+            }else if(i == canClaimRewardDay && i == daysBetween - (daysSinceStart - loginCount) - 1 ){ // 開催日数から逃がした日数を引く（後ろの-1はインデックス番号用に調整するもの）
+                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, true, daysBetween, loginBonusData.getLoginCount(playerUUID, currentBonusName), currentBonusName);
+            }else if(i == daysBetween - (daysSinceStart - loginCount) - 1){
+                chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, false, daysBetween, loginBonusData.getLoginCount(playerUUID, currentBonusName), currentBonusName);
             }else if(i % 10 == 9 && i == canClaimRewardDay) {
                 chests[i] = LBItems.specialRewardForUserPlayerHeadIS(i + 1, true);
             }else if(i % 10 == 9){
@@ -331,8 +359,14 @@ public class LoginBonusUserGUI implements Listener {
 
         // 連続ログイン日数
         StaticPane loginStreakPane = new StaticPane(6, 5, 1, 1);
-        loginStreakPane.addItem(new GuiItem(LBItems.loginStreakShowingPaperIS(loginBonusData.getLoginStreak(playerUUID, currentLoginBonusName)), event -> {
+        loginStreakPane.addItem(new GuiItem(LBItems.loginStreakShowingPaperIS(loginBonusData.getLoginStreak(playerUUID, currentBonusName)), event -> {
             Player player = (Player) event.getWhoClicked();
+
+            // クリック時、日付が変わってたらインベントリ閉じて処理中断
+            if(closeInvWhenDayChanged(player)){
+                return;
+            }
+
             updateUserContinuousLoginBonusClaimGui();
             getUserContinuousLoginBonusClaimGui().show(player);
         }), 0, 0);
@@ -367,13 +401,18 @@ public class LoginBonusUserGUI implements Listener {
                     rewardPanes[i].addItem(new GuiItem(chests[index], event -> {
                         Player player = (Player) event.getWhoClicked();
 
+                        // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                        if(closeInvWhenDayChanged(player)){
+                            return;
+                        }
+
                         // クリック時、抽選する報酬プールを変更するためにindexごとにpoolTypeを設定
                         String poolType;
-                        if(index == daysBetween - 1){
+                        if (index == daysBetween - (daysSinceStart - loginCount) - 1) {
                             poolType = "bonus";
-                        } else if(index % 10 == 9){
+                        } else if (index % 10 == 9) {
                             poolType = "special";
-                        }else{
+                        } else {
                             poolType = "normal";
                         }
 
@@ -382,7 +421,7 @@ public class LoginBonusUserGUI implements Listener {
                             if (isInventoryFull(player)) {
                                 player.sendMessage("§cインベントリに空きがないため、報酬を受け取れません");
                                 player.closeInventory();
-                            } else if(!(canClaimRewardDay == loginBonusData.getLoginCount(playerUUID, currentLoginBonusName) - 1)) {
+                            } else if(!(canClaimRewardDay == loginBonusData.getLoginCount(playerUUID, currentBonusName) - 1)) {
                                 player.sendMessage("§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
                                 player.closeInventory();
                             }else{
@@ -392,7 +431,7 @@ public class LoginBonusUserGUI implements Listener {
                                 if (!(clickedSlotItemMeta.getDisplayName().contains("無効"))) {
                                     player.closeInventory();
                                     //TODO: 連打して受け取れたりしないかの確認
-                                    ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
+                                    ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
                                     player.getInventory().addItem(item);
                                     loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
                                     player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
@@ -407,15 +446,15 @@ public class LoginBonusUserGUI implements Listener {
                             String clickedRewardPoolType = "";
                             if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
                                 clickedRewardPoolType = "normal";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("レア")){
                                 clickedRewardPoolType = "special";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("エピック")) {
                                 clickedRewardPoolType = "bonus";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("無効")) {
                                 player.sendMessage("§aこの報酬は無効であるため、報酬を閲覧できません");
@@ -425,6 +464,12 @@ public class LoginBonusUserGUI implements Listener {
                 } else {
                     rewardPanes[i].addItem(new GuiItem(chests[index], event -> {
                         Player player = (Player) event.getWhoClicked();
+
+                        // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                        if(closeInvWhenDayChanged(player)){
+                            return;
+                        }
+
                         if (event.isLeftClick()){
                             player.sendMessage("§aこの報酬は受取済か、本日が受取可能な日ではないため受け取れません");
                             // poolTypeごとに表示する報酬プールを変更（ここは報酬が得られる日じゃなかろうが変わらん）
@@ -434,15 +479,15 @@ public class LoginBonusUserGUI implements Listener {
                             String clickedRewardPoolType = "";
                             if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
                                 clickedRewardPoolType = "normal";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if((clickedSlotItemMeta.getDisplayName().contains("レア"))){
                                 clickedRewardPoolType = "special";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("エピック")) {
                                 clickedRewardPoolType = "bonus";
-                                updateUserRewardListGui(currentLoginBonusName, clickedRewardPoolType);
+                                updateUserRewardListGui(clickedRewardPoolType);
                                 getUserRewardListGui().show(player);
                             }else if(clickedSlotItemMeta.getDisplayName().contains("無効")) {
                                 player.sendMessage("§aこの報酬は無効であるため、報酬を閲覧できません");
@@ -480,6 +525,12 @@ public class LoginBonusUserGUI implements Listener {
         StaticPane saveItemPane = new StaticPane(4, 5, 1, 1);
         saveItemPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
+
+            // クリック時、日付が変わってたらインベントリ閉じて処理中断
+            if(closeInvWhenDayChanged(player)){
+                return;
+            }
+
             updateUserAccumulatedLoginBonusClaimGui();
             getUserAccumulatedLoginBonusClaimGui().show(player);
         }), 0, 0);
@@ -493,7 +544,7 @@ public class LoginBonusUserGUI implements Listener {
         userRewardListGui.addPane(tutorialPane);
     }
 
-    public void updateUserRewardListGui(String currentBonusName, String poolType) {
+    public void updateUserRewardListGui(String poolType) {
         userRewardListGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
 
         OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.HIGH);
@@ -511,8 +562,7 @@ public class LoginBonusUserGUI implements Listener {
         userContinuousLoginBonusClaimGui.setOnGlobalClick(event -> event.setCancelled(true));
 
         int needDayToClaim = 10;
-        int streak = loginBonusData.getLoginStreak(playerUUID, RewardManager.getCurrentBonusName());
-        String currentLoginBonusName = RewardManager.getCurrentBonusName();
+        int streak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
         String poolType = "continuous";
 
         // 外周背景
@@ -531,11 +581,23 @@ public class LoginBonusUserGUI implements Listener {
         if (hasClaimedToday(playerUUID, "continuous")) {
             continuousRewardPane.addItem(new GuiItem(LBItems.alreadyClaimedContinuousRewardForUserGlassIS(), event -> {
                 Player player = (Player) event.getWhoClicked();
+
+                // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                if(closeInvWhenDayChanged(player)){
+                    return;
+                }
+
                 player.sendMessage("§c報酬は受け取り済みです");
             }), 0, 0);
         } else {
             continuousRewardPane.addItem(new GuiItem(LBItems.continuousRewardForUserPlayerHeadIS(streak, needDayToClaim), event -> {
                 Player player = (Player) event.getWhoClicked();
+
+                // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                if(closeInvWhenDayChanged(player)){
+                    return;
+                }
+
                 if(streak >= needDayToClaim){
 
                     // 左クリック時、問題がなければ報酬渡す
@@ -548,20 +610,20 @@ public class LoginBonusUserGUI implements Listener {
                             ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
                             player.closeInventory();
                             //TODO: 連打して受け取れたりしないかの確認
-                            ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
+                            ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
                             player.getInventory().addItem(item);
                             loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
                             player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
                         }
                     } else if (event.isRightClick()) {
-                        updateUserRewardListGui(currentLoginBonusName, poolType);
+                        updateUserRewardListGui(poolType);
                         getUserRewardListGui().show(player);
                     }
                 } else {
                     if (event.isLeftClick()) {
                         player.sendMessage("§c連続ログイン日数が足りません。" + needDayToClaim + "日必要です。現在: " + streak + "日");
                     }else if(event.isRightClick()){
-                        updateUserRewardListGui(currentLoginBonusName, poolType);
+                        updateUserRewardListGui(poolType);
                         getUserRewardListGui().show(player);
                     }
                 }
@@ -572,6 +634,12 @@ public class LoginBonusUserGUI implements Listener {
         StaticPane returnPane = new StaticPane(4, 2, 1, 1);
         returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
+
+            // クリック時、日付が変わってたらインベントリ閉じて処理中断
+            if(closeInvWhenDayChanged(player)){
+                return;
+            }
+
             updateUserAccumulatedLoginBonusClaimGui();
             getUserAccumulatedLoginBonusClaimGui().show(player);
         }), 0, 0);
@@ -582,19 +650,30 @@ public class LoginBonusUserGUI implements Listener {
         userContinuousLoginBonusClaimGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
 
         int needDayToClaim = 10;
-        int streak = loginBonusData.getLoginStreak(playerUUID, RewardManager.getCurrentBonusName());
-        String currentLoginBonusName = RewardManager.getCurrentBonusName();
+        int streak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
         String poolType = "continuous";
 
         StaticPane continuousRewardPane = new StaticPane(4, 1, 1, 1, Pane.Priority.HIGH);
         if (hasClaimedToday(playerUUID, "continuous")) {
             continuousRewardPane.addItem(new GuiItem(LBItems.alreadyClaimedContinuousRewardForUserGlassIS(), event -> {
                 Player player = (Player) event.getWhoClicked();
+
+                // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                if(closeInvWhenDayChanged(player)){
+                    return;
+                }
+
                 player.sendMessage("§c報酬は受け取り済みです");
             }), 0, 0);
         } else {
             continuousRewardPane.addItem(new GuiItem(LBItems.continuousRewardForUserPlayerHeadIS(streak, needDayToClaim), event -> {
                 Player player = (Player) event.getWhoClicked();
+
+                // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                if(closeInvWhenDayChanged(player)){
+                    return;
+                }
+
                 if(streak >= needDayToClaim){
 
                     // 左クリック時、問題がなければ報酬渡す
@@ -607,20 +686,20 @@ public class LoginBonusUserGUI implements Listener {
                             ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
                             player.closeInventory();
                             //TODO: 連打して受け取れたりしないかの確認
-                            ItemStack item = RewardManager.getRandomRewards(currentLoginBonusName, poolType);
+                            ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
                             player.getInventory().addItem(item);
                             loginBonusData.setClaimedItemStack(playerUUID, poolType, item.toString(), LocalDateTime.now());
                             player.sendMessage(getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
                         }
                     } else if (event.isRightClick()) {
-                        updateUserRewardListGui(currentLoginBonusName, poolType);
+                        updateUserRewardListGui(poolType);
                         getUserRewardListGui().show(player);
                     }
                 } else {
                     if (event.isLeftClick()) {
                         player.sendMessage("§c連続ログイン日数が足りません。" + needDayToClaim + "日必要です。現在: " + streak + "日");
                     }else if(event.isRightClick()){
-                        updateUserRewardListGui(currentLoginBonusName, poolType);
+                        updateUserRewardListGui(poolType);
                         getUserRewardListGui().show(player);
                     }
                 }
@@ -685,7 +764,6 @@ public class LoginBonusUserGUI implements Listener {
             return false;
         }
 
-        String currentBonusName = RewardManager.getCurrentBonusName();
         int resetHour = RewardManager.getDailyResetTime(currentBonusName);
         LocalDateTime resetDateTime = LocalDate.now().atTime(LocalTime.of(resetHour, 0));
         LocalDateTime now = LocalDateTime.now();
@@ -695,5 +773,28 @@ public class LoginBonusUserGUI implements Listener {
         }
 
         return lastClaimedDate.isAfter(resetDateTime);
+    }
+
+    public boolean isCurrentBonusNameChanged() {
+        String accurateCurrentBonusName = RewardManager.getCurrentBonusName();
+        return !accurateCurrentBonusName.equals(this.currentBonusName);
+    }
+
+    public boolean closeInvWhenDayChanged(Player player) {
+        //dailyResetTimeを考慮した、インスタンス生成日
+        LocalDate initDate = initDateTime.minusHours(RewardManager.getDailyResetTime(currentBonusName)).toLocalDate();
+        //dailyResetTimeを考慮した、現在の日付
+        LocalDate nowDate = LocalDateTime.now().minusHours(RewardManager.getDailyResetTime(currentBonusName)).toLocalDate();
+        // もし、インスタンス生成日が現在の日付よりも前なら、日付が変わったとみなす
+
+        if(initDate.isBefore(nowDate)){
+            // 日付が変わった場合、開催中のログインボーナスを再取得
+            currentBonusName = RewardManager.getCurrentBonusName();
+            player.closeInventory();
+            player.sendMessage("§6§l[LoginBonusPlugin] §r§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
+            return true;
+        } else {
+            return false;
+        }
     }
 }

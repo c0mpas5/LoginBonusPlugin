@@ -35,8 +35,9 @@ public final class LoginBonusPlugin extends JavaPlugin {
     }
 }
 
-
-//TODO:期間設定とか、現在設定されている値を表示したい場合は更新したいので↓のようにpane削除とかする必要があるっぽい
-//TODO:ログボの作成を完了するときに設定がすべて完了していなければ弾く処理
-//NOTICE:インベントリ操作中に開催中のログインボーナス、つまりcurrentLoginBonusNameが変わった時に、アイテムを不正に得られたりしないように対策必要
-//  →至る所（主に推移先）で受け取ったcurrentLoginBonusNameと実行直後に得たcurrentLoginBonusNameが一致するか確かめて、一致しないならcloseInv
+//TODO: finally使ってないとこ確認
+//TODO: 音付ける
+//TODO: コマンド予測変換
+//TODO: ログボ変更時、booleanをfalseにしてそれ以降の処理が走らないようにする必要あり
+//TODO: thread処理
+//NOTICE:よくわからんnbtタグがつくのを治す→https://discord.com/channels/277712676371562496/757026124651036672/1352695936899612692→付与には付かなくなってたけどListにいれると付いちゃう
