@@ -38,39 +38,52 @@ public class LoginBonusCommand implements CommandExecutor {
                     return false;
                 }
 
-                LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
-
                 // サブコマンドの処理
                 if (args.length > 0) {
+                    LoginBonusUserGUI userGui;
                     switch (args[0].toLowerCase()) {
                         case "total":
                             // 累計ログイン日数を表示
+                            userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
                             userGui.updateUserAccumulatedLoginBonusClaimGui();
                             userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                             return true;
                         case "streak":
                             // 連続ログイン日数を表示
+                            userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
                             userGui.updateUserContinuousLoginBonusClaimGui();
                             userGui.getUserContinuousLoginBonusClaimGui().show(player);
                             return true;
+                        case "admin":
+                            if(sender.hasPermission("loginbonusplugin.op")){
+                                LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
+                                adminGui.getAdminHomeGui().show(player);
+                                return true;
+                            }
+                        case "help":
+                            // ヘルプを表示
+                            player.sendMessage("§f【ログインボーナスプラグインコマンド一覧】───────");
+                            player.sendMessage("§b/loginbonus[lb] §r§7- 累計ログインボーナスGUIを表示");
+                            player.sendMessage("§b/loginbonus[lb] total §r§7- 累計ログインボーナスGUIを表示");
+                            player.sendMessage("§b/loginbonus[lb] streak §r§7- 連続ログインボーナスGUIを表示");
+                            if (sender.hasPermission("loginbonusplugin.op")) {
+                                player.sendMessage("§b/loginbonus[lb] admin §r§7- 管理者用GUIを表示。ログボを作成・編集できます");
+                            }
+                            player.sendMessage("§b/loginbonus[lb] help §r§7- ヘルプを表示");
+                            player.sendMessage("§f（[]：括弧内の書き方に代替可能）");
+                            return true;
+
                         default:
                             // 引数がわからない場合はGUIを表示
                             player.sendMessage("§cコマンドが誤っています");
                     }
                 } else {
                     // 引数がない場合はデフォルトでGUIを表示
+                    LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
                     userGui.updateUserAccumulatedLoginBonusClaimGui();
                     userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                     return true;
                 }
-            } else if (command.getName().equalsIgnoreCase("test")) {
-                // テスト用コマンドの処理
-                return true;
-            } else if (command.getName().equalsIgnoreCase("admingui")) {
-                // 管理者GUI表示
-                LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
-                adminGui.getAdminHomeGui().show(player);
-                return true;
             }
         }
         return false;

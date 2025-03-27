@@ -2,17 +2,19 @@ name: LoginBonusPlugin
 version: '1.0-SNAPSHOT'
 main: io.github.c0mpas5.loginBonusPlugin.LoginBonusPlugin
 api-version: '1.20'
-prefix: '&7[&6LoginBonusPlugin&7] &r'
+prefix: '§6§l[LoginBonusPlugin] §r'
 commands:
   loginbonus:
     description: 'ログインボーナス受取画面を開きます'
-    usage: '/<command> [total|streak]'
+    usage: '/loginbonus help で使用法を確認'
     aliases: [lb]
+    permission: loginbonusplugin.player
+    permission-message: '§cこのコマンドを使用する権限がありません。'
 
-  test:
-    description: 'テスト用のコマンド'
-    usage: '/<command>'
-
-  admingui:
-    description: 'AdminGUIを開きます'
-    usage: '/<command>'
+permissions:
+  loginbonusplugin.op:
+    default: op
+    description: 'OP権限'
+  loginbonusplugin.player:
+    default: true
+    description: 'プレイヤー権限'

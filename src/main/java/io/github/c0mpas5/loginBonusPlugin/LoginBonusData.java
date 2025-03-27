@@ -4,7 +4,6 @@ package io.github.c0mpas5.loginBonusPlugin;
 import org.bukkit.Bukkit;
 
 import java.sql.*;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -172,7 +171,7 @@ public class LoginBonusData {
         return 0;
     }
 
-    public void setClaimedItemStack(UUID playerUUID, String claimedItemPoolType, String claimedItemStack, LocalDateTime claimedDateTime) {
+    public void setClaimedItemStack(UUID playerUUID, String bonusName, int day, String claimedItemPoolType, String claimedItemStack, LocalDateTime claimedDateTime) {
         this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
         this.con = this.MySQL.open();
         if(this.con == null){
@@ -180,11 +179,13 @@ public class LoginBonusData {
             return;
         }
         try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_reward_log (uuid, claimed_item_pool_type, claimed_item_stack, claimed_datetime) VALUES (?, ?, ?, ?)");
+            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_reward_log (uuid, login_bonus_name, day, claimed_item_pool_type, claimed_item_stack, claimed_datetime) VALUES (?, ?, ?, ?, ?, ?)");
             ps.setString(1, playerUUID.toString());
-            ps.setString(2, claimedItemPoolType);
-            ps.setString(3, claimedItemStack);
-            ps.setTimestamp(4, java.sql.Timestamp.valueOf(claimedDateTime));
+            ps.setString(2, bonusName);
+            ps.setInt(3, day);
+            ps.setString(4, claimedItemPoolType);
+            ps.setString(5, claimedItemStack);
+            ps.setTimestamp(6, java.sql.Timestamp.valueOf(claimedDateTime));
             ps.executeUpdate();
             ps.close();
         } catch (SQLException e) {
@@ -194,7 +195,7 @@ public class LoginBonusData {
         this.mysqlManager.close();
     }
 
-    public LocalDateTime getLastAccumulatedRewardClaimedDate(UUID playerUUID) {
+    public LocalDateTime getLastRewardClaimedDate(UUID playerUUID, String bonusType, String bonusName) {
         this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
         this.con = this.MySQL.open();
         if (this.con == null) {
@@ -203,12 +204,23 @@ public class LoginBonusData {
         }
         LocalDateTime lastClaimedDate = null;
         try {
-            PreparedStatement ps = this.con.prepareStatement(
+            PreparedStatement ps;
+            if(bonusType.equals("accumulated")){
+                ps = this.con.prepareStatement(
                     "SELECT claimed_datetime FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND claimed_item_pool_type IN ('normal', 'special', 'bonus') " +
+                            "WHERE uuid = ? AND claimed_item_pool_type IN ('normal', 'special', 'bonus') AND login_bonus_name = ? " +
                             "ORDER BY claimed_datetime DESC LIMIT 1"
-            );
+                );
+            } else {
+                ps = this.con.prepareStatement(
+                    "SELECT claimed_datetime FROM loginbonus_reward_log " +
+                            "WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? " +
+                            "ORDER BY claimed_datetime DESC LIMIT 1"
+                );
+            }
+
             ps.setString(1, playerUUID.toString());
+            ps.setString(2, bonusName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 lastClaimedDate = rs.getTimestamp("claimed_datetime").toLocalDateTime();
@@ -222,24 +234,21 @@ public class LoginBonusData {
         return lastClaimedDate;
     }
 
-    public LocalDateTime getLastContinuousRewardClaimedDate(UUID playerUUID) {
+    public int getNumOfClaimedContinuousReward(UUID playerUUID, String bonusName) {
         this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
         this.con = this.MySQL.open();
-        if (this.con == null) {
+        if(this.con == null){
             Bukkit.getLogger().info("failed to open MYSQL");
-            return null;
+            return 0;
         }
-        LocalDateTime lastClaimedDate = null;
+        int latestClaimedDay = 0; // 受取履歴がない時は0を返す
         try {
-            PreparedStatement ps = this.con.prepareStatement(
-                    "SELECT claimed_datetime FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND claimed_item_pool_type = 'continuous' " +
-                            "ORDER BY claimed_datetime DESC LIMIT 1"
-            );
+            PreparedStatement ps = this.con.prepareStatement("SELECT day FROM loginbonus_reward_log WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? ORDER BY claimed_datetime DESC LIMIT 1");
             ps.setString(1, playerUUID.toString());
+            ps.setString(2, bonusName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                lastClaimedDate = rs.getTimestamp("claimed_datetime").toLocalDateTime();
+                latestClaimedDay = rs.getInt("day");
             }
             ps.close();
         } catch (SQLException e) {
@@ -247,7 +256,76 @@ public class LoginBonusData {
         } finally {
             this.mysqlManager.close();
         }
-        return lastClaimedDate;
+        return latestClaimedDay;
+    }
+
+    public boolean hasPlayerClaimedBonusForDayAndPoolType(UUID playerUUID, int day, String poolType, String bonusName) {
+        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
+        this.con = this.MySQL.open();
+        if (this.con == null) {
+            Bukkit.getLogger().info("failed to open MYSQL");
+            return false;
+        }
+
+        boolean exists = false;
+        try {
+            PreparedStatement ps = this.con.prepareStatement(
+                    "SELECT 1 FROM loginbonus_reward_log " +
+                            "WHERE uuid = ? AND day = ?  AND login_bonus_name = ? AND login_bonus_name = ? " +
+                            "LIMIT 1"
+            );
+            ps.setString(1, playerUUID.toString());
+            ps.setInt(2, day);
+            ps.setString(3, bonusName);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                exists = true;
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            this.mysqlManager.close();
+        }
+
+        return exists;
+    }
+
+    // ほぼbonus枠用
+    public boolean hasPlayerClaimedBonusForPoolType(UUID playerUUID, String poolType, String bonusName) {
+        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
+        this.con = this.MySQL.open();
+        if (this.con == null) {
+            Bukkit.getLogger().info("failed to open MYSQL");
+            return false;
+        }
+
+        boolean exists = false;
+        try {
+            PreparedStatement ps = this.con.prepareStatement(
+                    "SELECT 1 FROM loginbonus_reward_log " +
+                            "WHERE uuid = ? AND claimed_item_pool_type = ? AND login_bonus_name = ? " +
+                            "LIMIT 1"
+            );
+            ps.setString(1, playerUUID.toString());
+            ps.setString(2, poolType);
+            ps.setString(3, bonusName);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                exists = true;
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            this.mysqlManager.close();
+        }
+
+        return exists;
     }
 
     private void createTableIfNotExists() {
@@ -255,7 +333,7 @@ public class LoginBonusData {
         mysqlManager.execute(query, 0);
         query = "CREATE TABLE IF NOT EXISTS connection_log (uuid VARCHAR(36), connected_time DATETIME, server VARCHAR(16))";
         mysqlManager.execute(query, 1);
-        query = "CREATE TABLE IF NOT EXISTS loginbonus_reward_log (uuid VARCHAR(36), claimed_item_pool_type VARCHAR(16), claimed_item_stack TEXT, claimed_datetime DATETIME)";
+        query = "CREATE TABLE IF NOT EXISTS loginbonus_reward_log (uuid VARCHAR(36), login_bonus_name VARCHAR(48), day INT, claimed_item_pool_type VARCHAR(16), claimed_item_stack TEXT, claimed_datetime DATETIME)";
         mysqlManager.execute(query, 0);
 
         //デバッグ：DBに適当なログイン日時を入力

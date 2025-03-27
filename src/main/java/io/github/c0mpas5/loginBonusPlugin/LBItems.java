@@ -157,7 +157,7 @@ public class LBItems {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "バナー設定");
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "【未実装】バナー設定");
             meta.setLore(List.of(
                     ChatColor.GRAY + "当該ログインボーナスのバナーを設定します"
             ));
@@ -206,7 +206,7 @@ public class LBItems {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "設定を読み込む");
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "【未実装】設定を読み込む");
             meta.setLore(List.of(
                     ChatColor.GRAY + "既存のログインボーナスやテンプレートから",
                     ChatColor.GRAY + "報酬設定や開催期間設定などのすべての設定を読み込みます",
@@ -312,21 +312,7 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack subAccountSettingPaperIS(){
-        ItemStack item = new ItemStack(Material.PAPER, 1);
-        ItemMeta meta = item.getItemMeta();
 
-        if (meta != null) {
-            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "サブアカウント設定");
-            meta.setLore(List.of(
-                    ChatColor.GRAY + "個人が何アカウントまで特別枠/ボーナス枠/連続ログインボーナスの報酬を受け取れるか設定します"
-            ));
-            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
-            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-            item.setItemMeta(meta);
-        }
-        return item;
-    }
 
     public static ItemStack rewardSettingTutorialBookIS(){
         ItemStack item = new ItemStack(Material.BOOK, 1);
@@ -664,7 +650,9 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.of("#C2C2C2") + "【現在登録済みの日付】"
             ));
+
             ArrayList<LocalDate> existingDates = RewardManager.getRecoverLoginMissedDate();
+            List<String> lore = meta.getLore();
             StringBuilder currentRow = new StringBuilder();
 
             for(int i = 0; i < existingDates.size(); i++) {
@@ -672,12 +660,49 @@ public class LBItems {
 
                 // 3つごと、または最後の要素で改行
                 if ((i + 1) % 3 == 0 || i == existingDates.size() - 1) {
-                    meta.getLore().add(ChatColor.of("#C2C2C2") + currentRow.toString());
+                    lore.add(ChatColor.of("#C2C2C2") + currentRow.toString());
                     currentRow = new StringBuilder();
                 } else {
                     currentRow.append(", ");
                 }
             }
+            meta.setLore(lore);
+
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack subAccountSettingPlayerHeadIS(){
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "サブアカウント設定");
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "個人が何アカウントまで特別枠/ボーナス枠/連続ログインボーナスの報酬を受け取れるか設定します"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack subAccountSettingTutorialBookIS(){
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "サブアカウント設定について");
+            meta.setLore(List.of(
+                    ChatColor.of("#C2C2C2") + "個人が何アカウントまで特別枠/ボーナス枠/連続ログインボーナスの報酬を受け取れるか設定します。",
+                    ChatColor.of("#C2C2C2") + "例えば、1アカウントまでサブ垢を許容する場合、本垢分も含めて入力する数値は「2」です。",
+                    ChatColor.of("#C2C2C2") + "上の例の場合、個人が特別枠（10日目、20日目、...）／ボーナス枠（最終日）／連続ログボ報酬を",
+                    ChatColor.of("#C2C2C2") + "それぞれ「2」回まで受け取れます。",
+                    ChatColor.GOLD + "" + ChatColor.BOLD + "【形式】0以上の整数"
+            ));
 
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);

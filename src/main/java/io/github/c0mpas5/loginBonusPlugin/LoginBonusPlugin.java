@@ -24,8 +24,7 @@ public final class LoginBonusPlugin extends JavaPlugin {
         // コマンドの登録
         LoginBonusCommand loginBonusCommand = new LoginBonusCommand(this, loginBonusData);
         getCommand("loginbonus").setExecutor(loginBonusCommand);
-        getCommand("test").setExecutor(loginBonusCommand);
-        getCommand("admingui").setExecutor(loginBonusCommand);
+        getCommand("loginbonus").setTabCompleter(new LoginBonusTabCompleter());
     }
 
     @Override
@@ -36,8 +35,9 @@ public final class LoginBonusPlugin extends JavaPlugin {
 }
 
 //TODO: finally使ってないとこ確認
-//TODO: 音付ける
-//TODO: コマンド予測変換
-//TODO: ログボ変更時、booleanをfalseにしてそれ以降の処理が走らないようにする必要あり
 //TODO: thread処理
+//TODO: 10日目の時にバグる？受け取れない+名前がプレイヤーの頭→発生条件が分からん。普通に使ってたら起こらないかも
+//TODO: コマンド発行？
+
+//NOTICE: サブ垢 ：実装済み要確認→確認しづらいのでhelperの誰かに確認してもらう
 //NOTICE:よくわからんnbtタグがつくのを治す→https://discord.com/channels/277712676371562496/757026124651036672/1352695936899612692→付与には付かなくなってたけどListにいれると付いちゃう

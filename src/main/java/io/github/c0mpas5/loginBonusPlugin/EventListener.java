@@ -52,8 +52,8 @@ public class EventListener implements Listener {
 //        // 最終報酬取得日を取得
 //        LocalDateTime lastClaimedDateTime = loginBonusData.getLastAccumulatedRewardClaimedDate(playerUUID);
 //        if(lastClaimedDateTime == null){
-//            loginBonusData.setClaimedCount(playerUUID, 0); //TODO:←いる？
-//            lastClaimedDateTime = LocalDateTime.now().minusDays(1); //temp:仮置き 昨日受け取ったことにする
+//            loginBonusData.setClaimedCount(playerUUID, 0);
+//            lastClaimedDateTime = LocalDateTime.now().minusDays(1);
 //        }
 //        LocalDate lastClaimedDate = null;
 //        if(lastClaimedDateTime.getHour() >= dailyResetHour){
@@ -62,7 +62,7 @@ public class EventListener implements Listener {
 //            lastClaimedDate = lastClaimedDateTime.toLocalDate().minusDays(1);
 //        }
 
-        if (!hasClaimedToday(playerUUID, "accumulative", currentBonusName)) {
+        if (!hasClaimedToday(playerUUID, "accumulated", currentBonusName)) {
             sendOpenAccumulatedRewardGuiMessage(player);
             int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
             player.sendMessage("ログイン" + loginCount + "日目！");
@@ -93,10 +93,10 @@ public class EventListener implements Listener {
 
     public boolean hasClaimedToday(UUID playerUUID, String poolType, String currentBonusName) {
         LocalDateTime lastClaimedDate = null;
-        if (poolType.equals("accumulative")) {
-            lastClaimedDate = loginBonusData.getLastAccumulatedRewardClaimedDate(playerUUID);
+        if (poolType.equals("accumulated")) {
+            lastClaimedDate = loginBonusData.getLastRewardClaimedDate(playerUUID, "accumulated", currentBonusName);
         }else if(poolType.equals("continuous")){
-            lastClaimedDate = loginBonusData.getLastContinuousRewardClaimedDate(playerUUID);
+            lastClaimedDate = loginBonusData.getLastRewardClaimedDate(playerUUID, "continuous", currentBonusName);
         }
 
         if (lastClaimedDate == null) {

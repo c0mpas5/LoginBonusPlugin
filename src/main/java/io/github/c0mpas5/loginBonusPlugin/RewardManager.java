@@ -27,6 +27,7 @@ public class RewardManager {
 
     private static final File rewardFile = new File("plugins/LoginBonusPlugin/reward.yml");
     private static final YamlConfiguration rewardConfig = YamlConfiguration.loadConfiguration(rewardFile);
+    private static String messagePrefix = "§6§l[LoginBonusPlugin] §r";
 
     static {
         createFileIfNotExists();
@@ -37,6 +38,15 @@ public class RewardManager {
             try {
                 Files.createDirectories(Paths.get("plugins/LoginBonusPlugin"));
                 rewardFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // デフォルトの設定を保存
+            rewardConfig.set("accountRewardLimit", 2);
+
+            try {
+                rewardConfig.save(rewardFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -156,7 +166,7 @@ public class RewardManager {
     /////////////////////////// ログボ名設定 ///////////////////////////
     // 新しいログインボーナスの名前を追加
     public static boolean setNewLoginBonusName(String bonusName, Player player) {
-        if (!rewardConfig.contains("loginBonuses." + bonusName)) {
+        if (!rewardConfig.contains("loginBonuses." + bonusName) && bonusName.getBytes().length <= 48) {
             rewardConfig.createSection("loginBonuses." + bonusName);
 
             //以下デフォルト値
@@ -171,15 +181,14 @@ public class RewardManager {
             }
             return true;
         }else{
-            player.sendMessage("§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
-            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            player.sendMessage(messagePrefix + "§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
             return false;
         }
     }
 
     // 作成中のログボ名を再度変更
     public static boolean updateLoginBonusName(String oldName, String newName, Player player) {
-        if (rewardConfig.contains("loginBonuses." + oldName) && !rewardConfig.contains("loginBonuses." + newName)) {
+        if (rewardConfig.contains("loginBonuses." + oldName) && !rewardConfig.contains("loginBonuses." + newName) && newName.getBytes().length <= 48) {
             Object data = rewardConfig.get("loginBonuses." + oldName);
             rewardConfig.set("loginBonuses." + oldName, null);
             rewardConfig.set("loginBonuses." + newName, data);
@@ -190,8 +199,7 @@ public class RewardManager {
             }
             return true;
         }else{
-            player.sendMessage("§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
-            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            player.sendMessage(messagePrefix + "§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
             return false;
         }
     }
@@ -250,7 +258,7 @@ public class RewardManager {
             // periodをハイフンで分割して開始日時と終了日時を取得
             String[] dates = period.split("-");
             if (dates.length != 2) {
-                player.sendMessage("§c入力された期間の形式が正しくありません。開始日時と終了日時でハイフンを挟む必要があります。（例: 2025/03/01-2025/03/31）");
+                player.sendMessage(messagePrefix + "§c入力された期間の形式が正しくありません。開始日時と終了日時でハイフンを挟む必要があります。（例: 2025/03/01-2025/03/31）");
                 return false;
             }
 
@@ -267,7 +275,7 @@ public class RewardManager {
                 startDate = LocalDate.parse(startDateStr, formatter);
                 endDate = LocalDate.parse(endDateStr, formatter);
             } catch (DateTimeParseException e) {
-                player.sendMessage("§c日付の形式が正しくないか、存在しない日付です。（例: 2025/03/01）");
+                player.sendMessage(messagePrefix + "§c日付の形式が正しくないか、存在しない日付です。（例: 2025/03/01）");
                 return false;
             }
 
@@ -276,7 +284,7 @@ public class RewardManager {
 
             // 期間の重複チェック
             if (!isPeriodAvailable(bonusName, startDate, endDate, resetHour)) {
-                player.sendMessage("§c指定された期間は他のログインボーナスと重複しています。別の期間を設定してください。");
+                player.sendMessage(messagePrefix + "§c指定された期間は他のログインボーナスと重複しています。別の期間を設定してください。");
                 return false;
             }
 
@@ -285,11 +293,11 @@ public class RewardManager {
             rewardConfig.set("loginBonuses." + bonusName + ".endDate", endDateStr);
             rewardConfig.save(rewardFile);
 
-            player.sendMessage("§a期間が正常に設定されました。");
+            player.sendMessage(messagePrefix + "§a期間が正常に設定されました。");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
-            player.sendMessage("§c期間の設定中にエラーが発生しました。");
+            player.sendMessage(messagePrefix + "§c期間の設定中にエラーが発生しました。");
             return false;
         }
     }
@@ -322,7 +330,7 @@ public class RewardManager {
 
     public static boolean setDailyResetTime(String bonusName, int hour, Player player) {
         if (hour < 0 || hour > 23) {
-            player.sendMessage("§c時間は0~23の範囲で指定してください。");
+            player.sendMessage(messagePrefix + "§c時間は0~23の範囲で指定してください。");
             return false;
         }
 
@@ -332,7 +340,7 @@ public class RewardManager {
         // 期間が設定されている場合、重複チェックを行う
         if(!(startDate == null || endDate == null)){
             if (!isPeriodAvailable(bonusName, startDate, endDate, hour)) {
-                player.sendMessage("§c指定された時間は、他のログインボーナスとの期間の重複を生むため設定できません。別の時間を設定してください。");
+                player.sendMessage(messagePrefix + "§c指定された時間は、他のログインボーナスとの期間の重複を生むため設定できません。別の時間を設定してください。");
                 return false;
             }
         }
@@ -341,11 +349,11 @@ public class RewardManager {
         rewardConfig.set("loginBonuses." + bonusName + ".dailyResetTime", hour);
         try {
             rewardConfig.save(rewardFile);
-            player.sendMessage("§aリセット時間が正常に設定されました。");
+            player.sendMessage(messagePrefix + "§aリセット時間が正常に設定されました。");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
-            player.sendMessage("§cリセット時間の設定中にエラーが発生しました。");
+            player.sendMessage(messagePrefix + "§cリセット時間の設定中にエラーが発生しました。");
             return false;
         }
     }
@@ -456,7 +464,7 @@ public class RewardManager {
                 missingSettings.add("連続ログボ報酬設定");
             }
         } else {
-            missingSettings.add("存在しないログインボーナス名です。");
+            missingSettings.add(messagePrefix + "§c存在しないログインボーナス名です。");
         }
         return missingSettings;
     }
@@ -527,7 +535,7 @@ public class RewardManager {
             try {
                 date = LocalDate.parse(dateStr, formatter);
             } catch (DateTimeParseException e) {
-                player.sendMessage("§c日付の形式が正しくないか、存在しない日付です。（例: 2025/03/01）");
+                player.sendMessage(messagePrefix + "§c日付の形式が正しくないか、存在しない日付です。（例: 2025/03/01）");
                 return false;
             }
 
@@ -536,22 +544,23 @@ public class RewardManager {
 
             // 既に同じ日付が存在するかチェック
             if (dateStrings.contains(dateStr)) {
-                player.sendMessage("§cこの日付は既に回復対象リストに追加されています。");
-                return false;
+                dateStrings.remove(dateStr); // 既存の日付を削除
+                player.sendMessage(messagePrefix + "§eこの日付（" + dateStr + "は既にログイン情報修正日リストに追加されていたため、リストから削除します");
+            } else{
+                // 新しい日付をリストに追加
+                dateStrings.add(dateStr);
+                player.sendMessage(messagePrefix + "§e" + dateStr + "をログイン情報修正日リストに追加します");
             }
-
-            // 新しい日付をリストに追加
-            dateStrings.add(dateStr);
 
             // 更新したリストを保存
             rewardConfig.set("recoverLoginMissedDates", dateStrings);
             rewardConfig.save(rewardFile);
 
-            player.sendMessage("§a日付が正常に追加されました。");
+            player.sendMessage(messagePrefix + "§a処理が正常に終了しました。");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
-            player.sendMessage("§c日付の設定中にエラーが発生しました。");
+            player.sendMessage(messagePrefix + "§c日付の設定中にエラーが発生しました。");
             return false;
         }
     }
@@ -572,6 +581,32 @@ public class RewardManager {
             }
         }
         return recoverDates;
+    }
+
+    public static boolean setAccountRewardLimit(int accountRewardLimit, Player player) {
+        if (accountRewardLimit < 0) {
+            player.sendMessage(messagePrefix + "§cアカウント数は0以上の整数で指定してください。");
+            return false;
+        }
+
+        rewardConfig.set("accountRewardLimit", accountRewardLimit);
+        try {
+            rewardConfig.save(rewardFile);
+            player.sendMessage(messagePrefix + "§aアカウント数が正常に設定されました。");
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            player.sendMessage(messagePrefix + "§cアカウント数の設定中にエラーが発生しました。");
+            return false;
+        }
+    }
+
+    public static int getAccountRewardLimit() {
+        if (rewardConfig.contains("accountRewardLimit")) {
+            return rewardConfig.getInt("accountRewardLimit");
+        } else {
+            return 1; // デフォルト値を返す
+        }
     }
 
 }
