@@ -26,7 +26,6 @@ dependencies {
 
 shadowJar {
     relocate 'com.github.stefvanschie.inventoryframework', 'io.github.c0mpas5.shaded.inventoryframework'
-    //relocate 'com.github.stefvanschie.inventoryframework', 'io.github.c0mpas5.loginBonusPlugin.inventoryframework'
 }
 
 def targetJavaVersion = 17
