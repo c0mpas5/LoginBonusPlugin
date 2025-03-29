@@ -47,36 +47,37 @@ public class LoginBonusData {
         LocalDate endDate = RewardManager.getPeriodEndDate(currentBonusName);
         ArrayList<LocalDate> recoverDates = RewardManager.getRecoverLoginMissedDate();
 
-        this.MySQL = new MySQLFunc(mysqlManager.HOST1, mysqlManager.DB1, mysqlManager.USER1, mysqlManager.PASS1, mysqlManager.PORT1);
-        this.con = this.MySQL.open();
-        if (this.con == null) {
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return new HashSet<>();
-        }
+        Set<LocalDate> loginDates = new HashSet<>();
 
-        String sql = """
-        SELECT DISTINCT DATE_FORMAT(DATE_SUB(connected_time, INTERVAL ? HOUR), '%Y-%m-%d') AS login_date
-        FROM connection_log
-        WHERE uuid = ? AND server = ?
-            AND DATE_FORMAT(DATE_SUB(connected_time, INTERVAL ? HOUR), '%Y-%m-%d') BETWEEN ? AND ?
-        ORDER BY login_date DESC
-    """;
+        try (Connection con = new MySQLFunc(mysqlManager.HOST1, mysqlManager.DB1, mysqlManager.USER1,
+                mysqlManager.PASS1, mysqlManager.PORT1).open()) {
 
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, dailyResetHour);
-            ps.setString(2, uuid.toString());
-            ps.setString(3, serverName);
-            ps.setInt(4, dailyResetHour);
-            ps.setString(5, startDate.toString());
-            ps.setString(6, endDate.toString());
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return loginDates;
+            }
 
-            rs = ps.executeQuery();
-            Set<LocalDate> loginDates = new HashSet<>();
-            while (rs.next()) {
-                loginDates.add(LocalDate.parse(rs.getString("login_date")));
+            String sql = """
+            SELECT DISTINCT DATE_FORMAT(DATE_SUB(connected_time, INTERVAL ? HOUR), '%Y-%m-%d') AS login_date
+            FROM connection_log
+            WHERE uuid = ? AND server = ?
+                AND DATE_FORMAT(DATE_SUB(connected_time, INTERVAL ? HOUR), '%Y-%m-%d') BETWEEN ? AND ?
+            ORDER BY login_date DESC
+        """;
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setInt(1, dailyResetHour);
+                ps.setString(2, uuid.toString());
+                ps.setString(3, serverName);
+                ps.setInt(4, dailyResetHour);
+                ps.setString(5, startDate.toString());
+                ps.setString(6, endDate.toString());
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        loginDates.add(LocalDate.parse(rs.getString("login_date")));
+                    }
+                }
             }
 
             // 今日の日付を dailyResetHour を考慮して計算
@@ -94,19 +95,11 @@ public class LoginBonusData {
             // startDate から endDate の範囲内にある日付のみ抽出
             loginDates.removeIf(date -> date.isBefore(startDate) || date.isAfter(endDate));
 
-            return loginDates;
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (ps != null) ps.close();
-                if (con != null) con.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
+
+        return loginDates;
     }
 
     private static int calculateStreak(List<LocalDate> loginDates) {
@@ -128,204 +121,180 @@ public class LoginBonusData {
     }
 
     public void setClaimedCount(UUID playerUUID, int claimedCount) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return;
-        }
-        try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_info (uuid, claimed_count) VALUES (?, ?) ON DUPLICATE KEY UPDATE claimed_count = ?");
-            ps.setString(1, playerUUID.toString());
-            ps.setInt(2, claimedCount);
-            ps.setInt(3, claimedCount);
-            ps.executeUpdate();
-            ps.close();
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return;
+            }
+
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO loginbonus_info (uuid, claimed_count) VALUES (?, ?) ON DUPLICATE KEY UPDATE claimed_count = ?")) {
+                ps.setString(1, playerUUID.toString());
+                ps.setInt(2, claimedCount);
+                ps.setInt(3, claimedCount);
+                ps.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        this.mysqlManager.close();
     }
 
     public int getClaimedCount(UUID playerUUID) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return 0;
-        }
-        try {
-            PreparedStatement ps = this.con.prepareStatement("SELECT claimed_count FROM loginbonus_info WHERE uuid = ?");
-            ps.setString(1, playerUUID.toString());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("claimed_count");
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return 0;
             }
-            ps.close();
+
+            try (PreparedStatement ps = con.prepareStatement("SELECT claimed_count FROM loginbonus_info WHERE uuid = ?")) {
+                ps.setString(1, playerUUID.toString());
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("claimed_count");
+                    }
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        this.mysqlManager.close();
 
         return 0;
     }
 
     public void setClaimedItemStack(UUID playerUUID, String bonusName, int day, String claimedItemPoolType, String claimedItemStack, LocalDateTime claimedDateTime) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return;
-        }
-        try {
-            PreparedStatement ps = this.con.prepareStatement("INSERT INTO loginbonus_reward_log (uuid, login_bonus_name, day, claimed_item_pool_type, claimed_item_stack, claimed_datetime) VALUES (?, ?, ?, ?, ?, ?)");
-            ps.setString(1, playerUUID.toString());
-            ps.setString(2, bonusName);
-            ps.setInt(3, day);
-            ps.setString(4, claimedItemPoolType);
-            ps.setString(5, claimedItemStack);
-            ps.setTimestamp(6, java.sql.Timestamp.valueOf(claimedDateTime));
-            ps.executeUpdate();
-            ps.close();
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return;
+            }
+
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO loginbonus_reward_log (uuid, login_bonus_name, day, claimed_item_pool_type, claimed_item_stack, claimed_datetime) VALUES (?, ?, ?, ?, ?, ?)")) {
+                ps.setString(1, playerUUID.toString());
+                ps.setString(2, bonusName);
+                ps.setInt(3, day);
+                ps.setString(4, claimedItemPoolType);
+                ps.setString(5, claimedItemStack);
+                ps.setTimestamp(6, java.sql.Timestamp.valueOf(claimedDateTime));
+                ps.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        this.mysqlManager.close();
     }
 
     public LocalDateTime getLastRewardClaimedDate(UUID playerUUID, String bonusType, String bonusName) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if (this.con == null) {
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return null;
-        }
-        LocalDateTime lastClaimedDate = null;
-        try {
-            PreparedStatement ps;
-            if(bonusType.equals("accumulated")){
-                ps = this.con.prepareStatement(
-                    "SELECT claimed_datetime FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND claimed_item_pool_type IN ('normal', 'special', 'bonus') AND login_bonus_name = ? " +
-                            "ORDER BY claimed_datetime DESC LIMIT 1"
-                );
-            } else {
-                ps = this.con.prepareStatement(
-                    "SELECT claimed_datetime FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? " +
-                            "ORDER BY claimed_datetime DESC LIMIT 1"
-                );
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return null;
             }
 
-            ps.setString(1, playerUUID.toString());
-            ps.setString(2, bonusName);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                lastClaimedDate = rs.getTimestamp("claimed_datetime").toLocalDateTime();
+            String sql;
+            if (bonusType.equals("accumulated")) {
+                sql = "SELECT claimed_datetime FROM loginbonus_reward_log " +
+                        "WHERE uuid = ? AND claimed_item_pool_type IN ('normal', 'special', 'bonus') AND login_bonus_name = ? " +
+                        "ORDER BY claimed_datetime DESC LIMIT 1";
+            } else {
+                sql = "SELECT claimed_datetime FROM loginbonus_reward_log " +
+                        "WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? " +
+                        "ORDER BY claimed_datetime DESC LIMIT 1";
             }
-            ps.close();
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, playerUUID.toString());
+                ps.setString(2, bonusName);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getTimestamp("claimed_datetime").toLocalDateTime();
+                    }
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            this.mysqlManager.close();
         }
-        return lastClaimedDate;
+
+        return null;
     }
 
     public int getNumOfClaimedContinuousReward(UUID playerUUID, String bonusName) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return 0;
-        }
-        int latestClaimedDay = 0; // 受取履歴がない時は0を返す
-        try {
-            PreparedStatement ps = this.con.prepareStatement("SELECT day FROM loginbonus_reward_log WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? ORDER BY claimed_datetime DESC LIMIT 1");
-            ps.setString(1, playerUUID.toString());
-            ps.setString(2, bonusName);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                latestClaimedDay = rs.getInt("day");
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return 0;
             }
-            ps.close();
+
+            int latestClaimedDay = 0; // 受取履歴がない時は0を返す
+            try (PreparedStatement ps = con.prepareStatement("SELECT day FROM loginbonus_reward_log WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? ORDER BY claimed_datetime DESC LIMIT 1")) {
+                ps.setString(1, playerUUID.toString());
+                ps.setString(2, bonusName);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        latestClaimedDay = rs.getInt("day");
+                    }
+                }
+            }
+
+            return latestClaimedDay;
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            this.mysqlManager.close();
+            return 0;
         }
-        return latestClaimedDay;
     }
 
     public boolean hasPlayerClaimedBonusForDayAndPoolType(UUID playerUUID, int day, String poolType, String bonusName) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if (this.con == null) {
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return false;
-        }
-
-        boolean exists = false;
-        try {
-            PreparedStatement ps = this.con.prepareStatement(
-                    "SELECT 1 FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND day = ?  AND login_bonus_name = ? AND login_bonus_name = ? " +
-                            "LIMIT 1"
-            );
-            ps.setString(1, playerUUID.toString());
-            ps.setInt(2, day);
-            ps.setString(3, bonusName);
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                exists = true;
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return false;
             }
-            rs.close();
-            ps.close();
+
+            String sql = "SELECT 1 FROM loginbonus_reward_log " +
+                    "WHERE uuid = ? AND day = ? AND login_bonus_name = ? AND claimed_item_pool_type = ? " +
+                    "LIMIT 1";
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, playerUUID.toString());
+                ps.setInt(2, day);
+                ps.setString(3, bonusName);
+                ps.setString(4, poolType);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next();
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            this.mysqlManager.close();
+            return false;
         }
-
-        return exists;
     }
 
     // ほぼbonus枠用
     public boolean hasPlayerClaimedBonusForPoolType(UUID playerUUID, String poolType, String bonusName) {
-        this.MySQL = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0);
-        this.con = this.MySQL.open();
-        if (this.con == null) {
-            Bukkit.getLogger().info("failed to open MYSQL");
-            return false;
-        }
-
-        boolean exists = false;
-        try {
-            PreparedStatement ps = this.con.prepareStatement(
-                    "SELECT 1 FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND claimed_item_pool_type = ? AND login_bonus_name = ? " +
-                            "LIMIT 1"
-            );
-            ps.setString(1, playerUUID.toString());
-            ps.setString(2, poolType);
-            ps.setString(3, bonusName);
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                exists = true;
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                Bukkit.getLogger().info("failed to open MYSQL");
+                return false;
             }
-            rs.close();
-            ps.close();
+
+            String sql = "SELECT 1 FROM loginbonus_reward_log " +
+                    "WHERE uuid = ? AND claimed_item_pool_type = ? AND login_bonus_name = ? " +
+                    "LIMIT 1";
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, playerUUID.toString());
+                ps.setString(2, poolType);
+                ps.setString(3, bonusName);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next();
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            this.mysqlManager.close();
+            return false;
         }
-
-        return exists;
     }
 
     private void createTableIfNotExists() {

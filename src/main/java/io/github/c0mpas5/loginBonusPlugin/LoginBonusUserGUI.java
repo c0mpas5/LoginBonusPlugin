@@ -497,45 +497,45 @@ public class LoginBonusUserGUI implements Listener {
                                 player.closeInventory();
                             }else{
                                 // specialの時のサブ垢処理
-                                if (poolType.equals("special")) {
-                                    List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
-                                    int accountLimit = RewardManager.getAccountRewardLimit();
-                                    int accountCount = 0;
-                                    for(UUID account : accounts){
-                                        //temp: アカウント名を表示するために一時的にUUIDから名前を取得
-                                        String playerName = Bukkit.getPlayer(account).getName();
-                                        player.sendMessage(playerName);
-                                        if(loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, index + 1, "special", currentBonusName)){
-                                            accountCount++;
-                                        }
-                                    }
-                                    if(accountCount >= accountLimit){
-                                        player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
-                                        player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
-                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                        player.closeInventory();
-                                        return;
-                                    }
-                                }
-
-                                // bonusの時のサブ垢処理
-                                if (poolType.equals("bonus")) {
-                                    List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
-                                    int accountLimit = RewardManager.getAccountRewardLimit();
-                                    int accountCount = 0;
-                                    for(UUID account : accounts){
-                                        if(loginBonusData.hasPlayerClaimedBonusForPoolType(account, "bonus", currentBonusName)){
-                                            accountCount++;
-                                        }
-                                    }
-                                    if(accountCount >= accountLimit){
-                                        player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
-                                        player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
-                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                        player.closeInventory();
-                                        return;
-                                    }
-                                }
+//                                if (poolType.equals("special")) {
+//                                    List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
+//                                    int accountLimit = RewardManager.getAccountRewardLimit();
+//                                    int accountCount = 0;
+//                                    for(UUID account : accounts){
+//                                        //temp: アカウント名を表示するために一時的にUUIDから名前を取得
+//                                        String playerName = Bukkit.getPlayer(account).getName();
+//                                        player.sendMessage(playerName);
+//                                        if(loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, index + 1, "special", currentBonusName)){
+//                                            accountCount++;
+//                                        }
+//                                    }
+//                                    if(accountCount >= accountLimit){
+//                                        player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
+//                                        player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
+//                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+//                                        player.closeInventory();
+//                                        return;
+//                                    }
+//                                }
+//
+//                                // bonusの時のサブ垢処理
+//                                if (poolType.equals("bonus")) {
+//                                    List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
+//                                    int accountLimit = RewardManager.getAccountRewardLimit();
+//                                    int accountCount = 0;
+//                                    for(UUID account : accounts){
+//                                        if(loginBonusData.hasPlayerClaimedBonusForPoolType(account, "bonus", currentBonusName)){
+//                                            accountCount++;
+//                                        }
+//                                    }
+//                                    if(accountCount >= accountLimit){
+//                                        player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
+//                                        player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
+//                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+//                                        player.closeInventory();
+//                                        return;
+//                                    }
+//                                }
 
                                 ItemStack clickedSlotItem = event.getCurrentItem();
                                 ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
@@ -729,21 +729,21 @@ public class LoginBonusUserGUI implements Listener {
                             int claimedContinuousRewardNum = loginBonusData.getNumOfClaimedContinuousReward(playerUUID, currentBonusName) + 1; // x番目の連続ログボ報酬
 
                             // specialの時のサブ垢処理
-                            List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
-                            int accountLimit = RewardManager.getAccountRewardLimit();
-                            int accountCount = 0;
-                            for (UUID account : accounts) {
-                                if (loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, claimedContinuousRewardNum, "continuous", currentBonusName)) {
-                                    accountCount++;
-                                }
-                            }
-                            if (accountCount >= accountLimit) {
-                                player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
-                                player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
-                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                player.closeInventory();
-                                return;
-                            }
+//                            List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
+//                            int accountLimit = RewardManager.getAccountRewardLimit();
+//                            int accountCount = 0;
+//                            for (UUID account : accounts) {
+//                                if (loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, claimedContinuousRewardNum, "continuous", currentBonusName)) {
+//                                    accountCount++;
+//                                }
+//                            }
+//                            if (accountCount >= accountLimit) {
+//                                player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
+//                                player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
+//                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+//                                player.closeInventory();
+//                                return;
+//                            }
 
                             ItemStack clickedSlotItem = event.getCurrentItem();
                             ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
@@ -828,21 +828,21 @@ public class LoginBonusUserGUI implements Listener {
                             int claimedContinuousRewardNum = loginBonusData.getNumOfClaimedContinuousReward(playerUUID, currentBonusName) + 1; // x番目の連続ログボ報酬
 
                             // specialの時のサブ垢処理
-                            List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
-                            int accountLimit = RewardManager.getAccountRewardLimit();
-                            int accountCount = 0;
-                            for (UUID account : accounts) {
-                                if (loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, claimedContinuousRewardNum, "continuous", currentBonusName)) {
-                                    accountCount++;
-                                }
-                            }
-                            if (accountCount >= accountLimit) {
-                                player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
-                                player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
-                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                player.closeInventory();
-                                return;
-                            }
+//                            List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
+//                            int accountLimit = RewardManager.getAccountRewardLimit();
+//                            int accountCount = 0;
+//                            for (UUID account : accounts) {
+//                                if (loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, claimedContinuousRewardNum, "continuous", currentBonusName)) {
+//                                    accountCount++;
+//                                }
+//                            }
+//                            if (accountCount >= accountLimit) {
+//                                player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
+//                                player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
+//                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+//                                player.closeInventory();
+//                                return;
+//                            }
 
                             ItemStack clickedSlotItem = event.getCurrentItem();
                             ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();

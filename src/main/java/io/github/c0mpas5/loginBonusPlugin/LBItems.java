@@ -888,8 +888,8 @@ public class LBItems {
                         ChatColor.of("#797979") + "" + ChatColor.BOLD + "[左クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "報酬受取のための条件を満たしている時、報酬を受け取れます",
                         ChatColor.of("#797979") + "" + ChatColor.BOLD + "[右クリック] " + ChatColor.RESET + ChatColor.of("#797979") + "抽選の対象となるアイテムの一覧を表示します"
                 ));
-                item.setItemMeta(meta);
             }
+            item.setItemMeta(meta);
         }
         return item;
     }
