@@ -253,7 +253,7 @@ public class LoginBonusAdminGUI implements Listener {
         if(isEditMode && (currentHoldBonusName == null || currentHoldBonusName.equals(editingBonusName))){
             timePane.addItem(new GuiItem(LBItems.invalidTimeSettingClockIS(), event -> {
                 Player player = (Player) event.getWhoClicked();
-                player.sendMessage(messagePrefix + "§c現在、ログインボーナスが開催中のため、時間系設定は無効化されています");
+                player.sendMessage(messagePrefix + "§c現在、当該ログインボーナスが開催中のため、時間系設定は無効化されています");
                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
             }), 0, 0);
         }else{

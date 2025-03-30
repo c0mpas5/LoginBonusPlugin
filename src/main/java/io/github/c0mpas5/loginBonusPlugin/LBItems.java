@@ -27,8 +27,7 @@ public class LBItems {
         if (meta != null) {
             meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ログボ作成");
             meta.setLore(List.of(
-                    ChatColor.GRAY + "新規ログインボーナスを作成します",
-                    ChatColor.GRAY + "テンプレートや既存のログインボーナスを基に作成することもできます"
+                    ChatColor.GRAY + "新規ログインボーナスを作成します"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -780,6 +779,80 @@ public class LBItems {
         return item;
     }
     //////////// User用 /////////////
+    public static ItemStack ruleTutorialBookForUserIS(String bonusName){
+        ItemStack item = new ItemStack(Material.KNOWLEDGE_BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        int accountRewardLimit = RewardManager.getAccountRewardLimit();
+        String bonusRewardCondition = String.valueOf(RewardManager.getBonusRewardCondition(bonusName));
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ログインボーナス概要");
+            meta.setLore(List.of(
+                    ChatColor.WHITE + "【累積ログボと連続ログボについて】────────────────",
+                    ChatColor.of("#C2C2C2") + "累積ログボは開催期間中の合計ログイン日数、連続ログボは開催期間中の連続ログイン日数に応じて受け取れる報酬のことです。",
+                    ChatColor.of("#C2C2C2") + "「ログイン」とは、このプラグインが導入されているサーバーに入場することを指します。（報酬を受け取ったかどうかに関わらない）",
+                    ChatColor.of("#C2C2C2") + "※各報酬枠の詳細についてはインベントリ1つ下のアイテムを参照してください。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【報酬を見逃した場合について】────────────────",
+                    ChatColor.of("#C2C2C2") + "ログイン後、その日の報酬を受け取らなかった場合、その報酬を後日受け取ることはできません。",
+                    ChatColor.of("#C2C2C2") + "連続ログボで、報酬を受取可能な日に受け取らなかった場合も同様です。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【補償について】──────────────",
+                    ChatColor.of("#C2C2C2") + "メンテナンス等の要因でプレイヤーのログインが妨げられた場合、",
+                    ChatColor.of("#C2C2C2") + "累計・連続ログインボーナスの" + ChatColor.GOLD + "進捗" + ChatColor.of("#C2C2C2") + "に対して補償がされる場合があります。",
+                    ChatColor.of("#C2C2C2") + "（例えば1月1日にメンテナンスが行われ、それに対して補償が為される場合、",
+                    ChatColor.of("#C2C2C2") + "　1月1日を「全プレイヤーがログインした」と当プラグインが見なすように設定されます。）",
+                    ChatColor.of("#C2C2C2") + "ただし、メンテナンス日に本来受け取れた報酬自体は補償されません。"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack rewardTutorialBookForUserIS(String bonusName){
+        ItemStack item = new ItemStack(Material.BOOK, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        int accountRewardLimit = RewardManager.getAccountRewardLimit();
+        String bonusRewardCondition = String.valueOf(RewardManager.getBonusRewardCondition(bonusName));
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "各報酬枠について");
+            meta.setLore(List.of(
+                    ChatColor.WHITE + "【通常枠】────────────────",
+                    ChatColor.of("#C2C2C2") + "特別枠/ボーナス枠の受け取り条件を満たさない場合に受け取れる報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合でも、この枠の報酬は上限無く受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【特別枠】────────────────",
+                    ChatColor.of("#C2C2C2") + "開催期間中に10の倍数日ログインした場合に受け取れる報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
+                    ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + accountRewardLimit + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "回を上限に受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【ボーナス枠】──────────────",
+                    ChatColor.GOLD + bonusRewardCondition + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "%以上のログイン率を満たしたプレイヤーが",
+                    ChatColor.of("#C2C2C2") + "開催期間最終日に受け取れる報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
+                    ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + accountRewardLimit + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "回を上限に受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【連続ログインボーナス】──────────────",
+                    ChatColor.of("#C2C2C2") + "開催期間中に10日間連続してログインした場合に受け取れる累積ログボとは別枠の報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、連続で11日以上ログインしようとすると、連続ログインのカウントはリセットされます。",
+                    ChatColor.of("#C2C2C2") + "期間中、10日間連続ログインを達成する度に報酬を受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
+                    ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + accountRewardLimit + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "回を上限に受け取ることができます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.of("#C2C2C2") + "※特に、" + ChatColor.GOLD  + "オレンジ文字" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "の部分は開催期間ごとに変更される場合があります。"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     public static ItemStack nextPageAquaPlayerHeadIS() {
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjgyYWQxYjljYjRkZDIxMjU5YzBkNzVhYTMxNWZmMzg5YzNjZWY3NTJiZTM5NDkzMzgxNjRiYWM4NGE5NmUifX19");
         ItemMeta meta = item.getItemMeta();

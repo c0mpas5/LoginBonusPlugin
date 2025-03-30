@@ -38,33 +38,24 @@ public class EventListener implements Listener {
             return;
         }
         int dailyResetHour = RewardManager.getDailyResetTime(currentBonusName);
+        boolean hasClaimedTodayAccumulatedReward = !hasClaimedToday(playerUUID, "accumulated", currentBonusName);
+        boolean hasClaimedTodayContinuousReward = !hasClaimedToday(playerUUID, "continuous", currentBonusName);
+        int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
+        int loginStreak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
 
-        // dbからデータ取ってきてチャットに色々表示させる処理（スレッド）
-        Thread th = new Thread(() -> {
-            boolean hasClaimedTodayAccumulatedReward = !hasClaimedToday(playerUUID, "accumulated", currentBonusName);
-            boolean hasClaimedTodayContinuousReward = !hasClaimedToday(playerUUID, "continuous", currentBonusName);
-            int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
-            int loginStreak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
-            Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    if(hasClaimedTodayAccumulatedReward){
-                        sendOpenAccumulatedRewardGuiMessage(player);
-                        player.sendMessage("ログイン" + loginCount + "日目！");
-                    } else {
-                        player.sendMessage("受取可能なログインボーナスはありません。");
-                    }
+        if (hasClaimedTodayAccumulatedReward) {
+            sendOpenAccumulatedRewardGuiMessage(player);
+            player.sendMessage("ログイン" + loginCount + "日目！");
+        } else {
+            player.sendMessage("受取可能なログインボーナスはありません。");
+        }
 
-                    if(hasClaimedTodayContinuousReward && loginStreak == 10) {
-                        sendOpenContinuousRewardGuiMessage(player);
-                        player.sendMessage("連続ログイン" + loginStreak + "日目！以下をクリックで連続ログインボーナス報酬を受け取れます");
-                    } else {
-                        player.sendMessage("連続ログイン" + loginStreak + "日目！");
-                    }
-                }
-            });
-        });
-        th.start();
+        if (hasClaimedTodayContinuousReward && loginStreak == 10) {
+            sendOpenContinuousRewardGuiMessage(player);
+            player.sendMessage("連続ログイン" + loginStreak + "日目！以下をクリックで連続ログインボーナス報酬を受け取れます");
+        } else {
+            player.sendMessage("連続ログイン" + loginStreak + "日目！");
+        }
     }
 
     public void sendOpenAccumulatedRewardGuiMessage(Player player){
