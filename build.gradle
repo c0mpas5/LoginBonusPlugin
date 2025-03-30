@@ -20,12 +20,14 @@ repositories {
 
 dependencies {
     implementation 'com.github.stefvanschie.inventoryframework:IF:0.10.19'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.0'
     implementation files('libs/Man10Score-1.0.jar')
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
 }
 
 shadowJar {
     relocate 'com.github.stefvanschie.inventoryframework', 'io.github.c0mpas5.shaded.inventoryframework'
+    relocate 'kotlin', 'io.github.c0mpas5.shaded.kotlin'
 }
 
 def targetJavaVersion = 17
