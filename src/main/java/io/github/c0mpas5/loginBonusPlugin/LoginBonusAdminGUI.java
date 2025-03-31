@@ -36,6 +36,7 @@ public class LoginBonusAdminGUI implements Listener {
     private AnvilGui adminDailyResetTimeSettingGui;
     private AnvilGui adminNameSettingGui;
     private ChestGui adminOtherSettingGui;
+    private ChestGui adminLoadGui;
 
     private ChestGui adminEditGui;
     private ChestGui adminDeleteConfirmGui;
@@ -66,6 +67,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminDailyResetTimeSettingGui();
         adminNameSettingGui();
         adminOtherSettingGui();
+        adminLoadGui();
 
 
         adminEditGui();
@@ -237,8 +239,10 @@ public class LoginBonusAdminGUI implements Listener {
         StaticPane loadPane = new StaticPane(7, 4, 1, 1);
         loadPane.addItem(new GuiItem(LBItems.loadBookShelfIS(), event -> {
             Player player = (Player) event.getWhoClicked();
-            player.sendMessage(messagePrefix + "§c当該機能は未実装です");
-            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            updateAdminLoadGui();
+            getAdminLoadGui().show(player);
+            //player.sendMessage(messagePrefix + "§c当該機能は未実装です");
+            //player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
         }), 0, 0);
         adminCreateGui.addPane(loadPane);
     }
@@ -1018,6 +1022,255 @@ public class LoginBonusAdminGUI implements Listener {
         adminOtherSettingGui.show(targetPlayer);
     }
 
+    // 報酬プールロード画面
+    public void adminLoadGui(){
+        ArrayList<String> bonusNames = RewardManager.getAllBonusNames();
+        int bonusNameCount = bonusNames.size();
+        adminLoadGui = new ChestGui(6, "報酬プール設定を読み込む");
+        adminLoadGui.setOnGlobalClick(event -> event.setCancelled(true));
+
+        // ログボが存在してない時
+        if(bonusNames.isEmpty()){
+            StaticPane errorPane = new StaticPane(3, 2, 1, 1);
+            errorPane.addItem(new GuiItem(LBItems.noLoginBonusNamePaperIS(), event -> {
+            }), 0, 0);
+            adminLoadGui.addPane(errorPane);
+
+            StaticPane returnPane = new StaticPane(5, 2, 1, 1);
+            returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                getAdminCreateGui().show(player);
+            }), 0, 0);
+            adminLoadGui.addPane(returnPane);
+
+            return;
+        }
+
+        //全ページ
+        PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
+
+        ItemStack[] chests = new ItemStack[bonusNameCount];
+
+        // 表示するchestの配列作る
+        for(int i = 0; i < bonusNameCount; i++){
+            String bonusName = bonusNames.get(i);
+            chests[i] = LBItems.loginBonusNameChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName)); //TODO: クリック時の説明などを変更したItemStackが必要
+        }
+
+        int pageCount = (bonusNameCount / 28) + 1; //28=1ページに表示するアイテム数
+
+        // 外周背景
+        OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);
+        Mask mask = new Mask(
+                "111111111",
+                "100000001",
+                "100000001",
+                "100000001",
+                "100000001",
+                "010101110"
+        );
+        background.applyMask(mask);
+        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
+        background.setRepeat(true);
+
+        // 次のページ
+        StaticPane nextPagePane = new StaticPane(8, 5, 1, 1);
+        nextPagePane.addItem(new GuiItem(LBItems.nextPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() < pageCount - 1) {
+                paginatedPane.setPage(paginatedPane.getPage() + 1);
+                adminLoadGui.update();
+            } else {
+                player.sendMessage(messagePrefix + "§cこのページが末尾のページであるため、次ページを開けません。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+
+        // 前のページ
+        StaticPane prevPagePane = new StaticPane(0, 5, 1, 1);
+        prevPagePane.addItem(new GuiItem(LBItems.prevPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() > 0) {
+                paginatedPane.setPage(paginatedPane.getPage() - 1);
+                adminLoadGui.update();
+            } else {
+                player.sendMessage(messagePrefix + "§cこのページが先頭のページであるため、前ページを開けません。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+
+        StaticPane returnPane = new StaticPane(2, 5, 1, 1);
+        returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            getAdminCreateGui().show(player);
+        }), 0, 0);
+
+        // 表示するplayerHead、現在のページ数の表示を各ページに追加
+        OutlinePane[] chestsPanes = new OutlinePane[pageCount];
+        StaticPane[] currentPageCountPane = new StaticPane[pageCount];
+        for(int i = 0; i < pageCount; i++){
+            // 各ページで表示が変わらんところは同じように表示
+            paginatedPane.addPane(i, background);
+            paginatedPane.addPane(i, nextPagePane);
+            paginatedPane.addPane(i, prevPagePane);
+            paginatedPane.addPane(i, returnPane);
+
+            // 現在のページ数の表示
+            currentPageCountPane[i] = new StaticPane(4, 5, 1, 1);
+            currentPageCountPane[i].addItem(new GuiItem(LBItems.displayPageCountGlassIS(i + 1, pageCount), event -> {
+            }), 0, 0);
+            paginatedPane.addPane(i, currentPageCountPane[i]);
+
+            chestsPanes[i] = new OutlinePane(1, 1, 7, 4);
+            for (int j = 0; j < 28; j++) {
+                int index = i * 28 + j;
+
+                // playerHeadを表示し終えたらbreak
+                if (index >= bonusNameCount) {
+                    break;
+                }
+
+                chestsPanes[i].addItem(new GuiItem(chests[index], event -> {
+                    Player player = (Player) event.getWhoClicked();
+                    String refBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+                    if (RewardManager.loadAllPool(refBonusName, currentLoginBonusName)){
+                        player.sendMessage(messagePrefix + "§a" + refBonusName + "から" + currentLoginBonusName + "への報酬プールの読み込みが完了しました");
+                        player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
+                        getAdminCreateGui().show(player);
+                    } else {
+                        player.sendMessage(messagePrefix + "§c" + refBonusName + "から" + currentLoginBonusName + "への報酬プールの読み込みに失敗しました");
+                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                    }
+                }));
+            }
+            paginatedPane.addPane(i, chestsPanes[i]);
+        }
+        adminLoadGui.addPane(paginatedPane);
+    }
+
+    public void updateAdminLoadGui(){
+        ArrayList<String> bonusNames = RewardManager.getAllBonusNames();
+        int bonusNameCount = bonusNames.size();
+
+        // ログボが存在してない時
+        if(bonusNames.isEmpty()){
+            StaticPane errorPane = new StaticPane(3, 2, 1, 1);
+            errorPane.addItem(new GuiItem(LBItems.noLoginBonusNamePaperIS(), event -> {
+            }), 0, 0);
+            adminLoadGui.addPane(errorPane);
+
+            StaticPane returnPane = new StaticPane(5, 2, 1, 1);
+            returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+                Player player = (Player) event.getWhoClicked();
+                getAdminCreateGui().show(player);
+            }), 0, 0);
+            adminLoadGui.addPane(returnPane);
+
+            return;
+        }
+
+        //全ページ
+        PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
+
+        ItemStack[] chests = new ItemStack[bonusNameCount];
+
+        // 表示するchestの配列作る
+        for(int i = 0; i < bonusNameCount; i++){
+            String bonusName = bonusNames.get(i);
+            chests[i] = LBItems.loginBonusNameChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName));
+        }
+
+        int pageCount = (bonusNameCount / 28) + 1; //28=1ページに表示するアイテム数
+
+        // 外周背景
+        OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);
+        Mask mask = new Mask(
+                "111111111",
+                "100000001",
+                "100000001",
+                "100000001",
+                "100000001",
+                "010101110"
+        );
+        background.applyMask(mask);
+        background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
+        background.setRepeat(true);
+
+        // 次のページ
+        StaticPane nextPagePane = new StaticPane(8, 5, 1, 1);
+        nextPagePane.addItem(new GuiItem(LBItems.nextPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() < pageCount - 1) {
+                paginatedPane.setPage(paginatedPane.getPage() + 1);
+                adminLoadGui.update();
+            } else {
+                player.sendMessage(messagePrefix + "§cこのページが末尾のページであるため、次ページを開けません。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+
+        // 前のページ
+        StaticPane prevPagePane = new StaticPane(0, 5, 1, 1);
+        prevPagePane.addItem(new GuiItem(LBItems.prevPageAquaPlayerHeadIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (paginatedPane.getPage() > 0) {
+                paginatedPane.setPage(paginatedPane.getPage() - 1);
+                adminLoadGui.update();
+            } else {
+                player.sendMessage(messagePrefix + "§cこのページが先頭のページであるため、前ページを開けません。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            }
+        }), 0, 0);
+
+        StaticPane returnPane = new StaticPane(2, 5, 1, 1);
+        returnPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
+            Player player = (Player) event.getWhoClicked();
+            getAdminCreateGui().show(player);
+        }), 0, 0);
+
+        // 表示するplayerHead、現在のページ数の表示を各ページに追加
+        OutlinePane[] chestsPanes = new OutlinePane[pageCount];
+        StaticPane[] currentPageCountPane = new StaticPane[pageCount];
+        for(int i = 0; i < pageCount; i++){
+            // 各ページで表示が変わらんところは同じように表示
+            paginatedPane.addPane(i, background);
+            paginatedPane.addPane(i, nextPagePane);
+            paginatedPane.addPane(i, prevPagePane);
+            paginatedPane.addPane(i, returnPane);
+
+            // 現在のページ数の表示
+            currentPageCountPane[i] = new StaticPane(4, 5, 1, 1);
+            currentPageCountPane[i].addItem(new GuiItem(LBItems.displayPageCountGlassIS(i + 1, pageCount), event -> {
+            }), 0, 0);
+            paginatedPane.addPane(i, currentPageCountPane[i]);
+
+            chestsPanes[i] = new OutlinePane(1, 1, 7, 4);
+            for (int j = 0; j < 28; j++) {
+                int index = i * 28 + j;
+
+                // playerHeadを表示し終えたらbreak
+                if (index >= bonusNameCount) {
+                    break;
+                }
+
+                chestsPanes[i].addItem(new GuiItem(chests[index], event -> {
+                    Player player = (Player) event.getWhoClicked();
+                    String refBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+                    if (RewardManager.loadAllPool(refBonusName, currentLoginBonusName)){
+                        player.sendMessage(messagePrefix + "§a" + refBonusName + "から" + currentLoginBonusName + "への報酬プールの読み込みが完了しました");
+                        player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
+                        getAdminCreateGui().show(player);
+                    } else {
+                        player.sendMessage(messagePrefix + "§c" + refBonusName + "から" + currentLoginBonusName + "への報酬プールの読み込みに失敗しました");
+                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                    }
+                }));
+            }
+            paginatedPane.addPane(i, chestsPanes[i]);
+        }
+        adminLoadGui.addPane(paginatedPane);
+    }
+
     ///////////////// ログボ編集系 /////////////////
     public void adminEditGui(){
         ArrayList<String> bonusNames = RewardManager.getAllBonusNames();
@@ -1129,7 +1382,7 @@ public class LoginBonusAdminGUI implements Listener {
                 chestsPanes[i].addItem(new GuiItem(chests[index], event -> {
                     Player player = (Player) event.getWhoClicked();
                     if (event.isLeftClick()) {
-                        String editingBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());;
+                        String editingBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
                         currentLoginBonusName = editingBonusName;
                         updateAdminCreateGui(true, editingBonusName);
                         getAdminCreateGui().show(player);
@@ -1526,6 +1779,10 @@ public class LoginBonusAdminGUI implements Listener {
 
     public AnvilGui getAdminNameSettingGui(){
         return adminNameSettingGui;
+    }
+
+    public ChestGui getAdminLoadGui(){
+        return adminLoadGui;
     }
 
     public ChestGui getAdminEditGui(){

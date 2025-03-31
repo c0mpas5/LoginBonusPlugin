@@ -8,16 +8,19 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.component.Slider;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import red.man10.man10score.ScoreDatabase;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class LoginBonusUserGUI implements Listener {
@@ -290,7 +293,7 @@ public class LoginBonusUserGUI implements Listener {
                                 // 2回目以降は報酬を取れないように
                                 if (!(clickedSlotItemMeta.getDisplayName().contains("無効"))) {
                                     player.closeInventory();
-                                    //TODO: 連打して受け取れたりしないかの確認
+                                    //TODO: ボーナス枠報酬を条件を満たしていないと受け取れないように変更
                                     ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
                                     player.getInventory().addItem(item);
                                     loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, index + 1, poolType, item.toString(), LocalDateTime.now());

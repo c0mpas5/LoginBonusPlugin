@@ -102,6 +102,28 @@ public class RewardManager {
         return items;
     }
 
+    public static boolean loadAllPool(String refBonusName, String targetBonusName) {
+        // 参照元のプールが存在するか確認
+        if (!rewardConfig.contains("loginBonuses." + refBonusName + ".pool")) {
+            return false;
+        }
+
+        try {
+            // 参照元のプール設定全体を取得
+            Object poolData = rewardConfig.get("loginBonuses." + refBonusName + ".pool");
+
+            // 対象のログインボーナスにプール設定をコピー
+            rewardConfig.set("loginBonuses." + targetBonusName + ".pool", poolData);
+
+            // 変更を保存
+            rewardConfig.save(rewardFile);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // ItemStackをBase64に変換
     private static String itemToBase64(ItemStack item) throws IllegalStateException {
         if (item == null || item.getType() == Material.AIR) return null;

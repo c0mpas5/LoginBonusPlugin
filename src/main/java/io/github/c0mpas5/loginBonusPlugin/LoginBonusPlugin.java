@@ -34,9 +34,8 @@ public final class LoginBonusPlugin extends JavaPlugin {
     }
 }
 
-//TODO: finally使ってないとこ確認
-//TODO: thread処理
-//TODO: 10日目の時にバグる？受け取れない+名前がプレイヤーの頭→発生条件が分からん。普通に使ってたら起こらないかも
+
+
 //TODO: コマンド発行？
 
 //NOTICE: サブ垢 ：実装済み要確認→確認しづらいのでhelperの誰かに確認してもらう

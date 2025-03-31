@@ -205,11 +205,11 @@ public class LBItems {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "【未実装】設定を読み込む");
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "報酬プール設定を読み込む");
             meta.setLore(List.of(
                     ChatColor.GRAY + "既存のログインボーナスやテンプレートから",
-                    ChatColor.GRAY + "報酬設定や開催期間設定などのすべての設定を読み込みます",
-                    ChatColor.of("#DF2E8F") + "現在設定中の内容は上書きされます"
+                    ChatColor.GRAY + "全ての報酬プール設定を読み込みます",
+                    ChatColor.of("#DF2E8F") + "※現在設定中の報酬プール設定は上書きされます"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -822,16 +822,16 @@ public class LBItems {
         if (meta != null) {
             meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "各報酬枠について");
             meta.setLore(List.of(
-                    ChatColor.WHITE + "【通常枠】────────────────",
+                    ChatColor.WHITE + "【通常枠" + ChatColor.GRAY + "（コモン報酬）" + ChatColor.WHITE + "】────────────────",
                     ChatColor.of("#C2C2C2") + "特別枠/ボーナス枠の受け取り条件を満たさない場合に受け取れる報酬枠です。",
                     ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合でも、この枠の報酬は上限無く受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
-                    ChatColor.WHITE + "【特別枠】────────────────",
+                    ChatColor.WHITE + "【特別枠" + ChatColor.AQUA + "（レア報酬）" + ChatColor.WHITE + "】────────────────",
                     ChatColor.of("#C2C2C2") + "開催期間中に10の倍数日ログインした場合に受け取れる報酬枠です。",
                     ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + accountRewardLimit + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "回を上限に受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
-                    ChatColor.WHITE + "【ボーナス枠】──────────────",
+                    ChatColor.WHITE + "【ボーナス枠" + ChatColor.DARK_PURPLE + "（エピック報酬）" + ChatColor.WHITE + "】────────────────",
                     ChatColor.GOLD + bonusRewardCondition + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "%以上のログイン率を満たしたプレイヤーが",
                     ChatColor.of("#C2C2C2") + "開催期間最終日に受け取れる報酬枠です。",
                     ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
