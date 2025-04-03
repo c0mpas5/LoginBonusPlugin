@@ -2,6 +2,10 @@
 
 サーバーに導入することで、インベントリGUIを用いたログインボーナス機能を追加できます
 
+<img width="45%" alt="screenshot1" src="https://github.com/user-attachments/assets/f2a442fa-83b8-4120-885f-a7068fa98199">
+<img width="45%" alt="screenshot1" src="https://github.com/user-attachments/assets/5df02ed1-c661-49ef-806a-07a350a931d8">
+
+
 ## 特徴
 
 ### 管理者側
@@ -14,19 +18,45 @@
 
 ### プレイヤー側
 
+- GUIクリックで簡単に報酬を受取可能
 - 報酬受取条件等のルールを参照可能
 - 報酬プールのプレビューが可能
-
-## インストール
-
-1. プラグインのJARファイルをダウンロードします。
-2. ダウンロードしたJARファイルをサーバーの`plugins`フォルダにコピーします。
-3. plugins/LoginBonusPlugin フォルダ内にconfig.ymlを作成し、以下の内容を記述します。各キーに続く値をそれぞれ入力してください。
-4. サーバーを起動します。
 
 ## 使い方
 
 ### コマンド
+- `/loginbonus[lb]` - 累計ログインボーナスGUIを表示
+- `/loginbonus[lb] total` - 累計ログインボーナスGUIを表示
+- `/loginbonus[lb] streak` - 連続ログインボーナスGUIを表示
+- `/loginbonus[lb] admin` - 管理者用GUIを表示。ログボを作成・編集できます【op所持者のみ実行可】
+- `/loginbonus[lb] help` - ヘルプを表示\
+（[]：括弧内の書き方に代替可能）
 
-- `/loginbonus give` - プレイヤーにボーナスを手動で付与します。
-- `/loginbonus check` - プレイヤーのログインボーナス状態を確認します。
+## インストール（ひとまずman10用）
+
+1. プラグインのJARファイルをダウンロードします。
+2. ダウンロードしたJARファイルをサーバーの`plugins`フォルダにコピーします。
+3. 報酬の受取履歴を格納するためのデータベースを1つ作成します。（データベース名の例：`loginbonus_info`）
+4. `plugins/LoginBonusPlugin`フォルダ内に`config.yml`を作成し、以下の内容を記述します。（`plugins/LoginBonusPlugin`フォルダが存在しない場合はそれも作成）
+   
+```yaml
+mysql_loginbonus_info:
+  host: ""
+  port: ""
+  user: ""
+  pass: ""
+  db: ""
+
+mysql_connection_data:
+  host: ""
+  port: ""
+  user: ""
+  pass: ""
+  db: ""
+```
+
+   ""内に値をそれぞれ入力してください。`mysql_connection_data`には、プレイヤーのログイン履歴を格納しているテーブルを持つデータベースの情報を入力してください。（既に存在しているとのことです）\
+5. サーバーを再起動します。
+
+## 依存プラグイン
+- [Man10Score](https://github.com/forest611/Man10Score)
