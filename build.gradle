@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'io.github.c0mpas5'
-version = '1.0-SNAPSHOT'
+version = '1.0'
 
 repositories {
     mavenCentral()
@@ -25,9 +25,15 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
 }
 
+jar {
+    archiveClassifier.set('original')
+}
+
 shadowJar {
     relocate 'com.github.stefvanschie.inventoryframework', 'io.github.c0mpas5.shaded.inventoryframework'
     relocate 'kotlin', 'io.github.c0mpas5.shaded.kotlin'
+
+    archiveClassifier.set('')
 }
 
 def targetJavaVersion = 17

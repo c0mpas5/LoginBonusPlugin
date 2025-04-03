@@ -19,7 +19,7 @@ public class MySQLFunc {
     String PORT = null;
     private Connection con = null;
 
-    public MySQLFunc(String host, String db, String user, String pass,String port) {
+    public MySQLFunc(String host, String db, String user, String pass, String port) {
         this.HOST = host;
         this.DB = db;
         this.USER = user;
