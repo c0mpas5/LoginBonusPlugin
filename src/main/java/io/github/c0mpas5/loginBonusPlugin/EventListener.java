@@ -19,8 +19,11 @@ public class EventListener implements Listener {
 
     private final LoginBonusPlugin plugin;
     private final LoginBonusData loginBonusData;
+    String messagePrefix;
 
     public EventListener(LoginBonusPlugin plugin, LoginBonusData loginBonusData) {
+        messagePrefix = "§6§l[LoginBonusPlugin] §r";
+
         this.plugin = plugin;
         this.loginBonusData = loginBonusData;
     }
@@ -34,7 +37,7 @@ public class EventListener implements Listener {
 
         String currentBonusName = RewardManager.getCurrentBonusName();
         if(currentBonusName == null){
-            player.sendMessage("現在開催中のログインボーナスはありません");
+            player.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
             return;
         }
         int dailyResetHour = RewardManager.getDailyResetTime(currentBonusName);
@@ -44,30 +47,37 @@ public class EventListener implements Listener {
         int loginStreak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
 
         if (hasClaimedTodayAccumulatedReward) {
+            player.sendMessage(messagePrefix + "ログイン" + loginCount + "日目！");
             sendOpenAccumulatedRewardGuiMessage(player);
-            player.sendMessage("ログイン" + loginCount + "日目！");
         } else {
-            player.sendMessage("受取可能なログインボーナスはありません。");
+            player.sendMessage(messagePrefix + "受取可能なログインボーナスはありません。");
         }
 
+        // 空白
+        player.sendMessage(" ");
+
         if (hasClaimedTodayContinuousReward && loginStreak == 10) {
+            player.sendMessage(messagePrefix + "連続ログイン" + loginStreak + "日目！以下をクリックで連続ログインボーナス報酬を受け取れます");
             sendOpenContinuousRewardGuiMessage(player);
-            player.sendMessage("連続ログイン" + loginStreak + "日目！以下をクリックで連続ログインボーナス報酬を受け取れます");
         } else {
-            player.sendMessage("連続ログイン" + loginStreak + "日目！");
+            player.sendMessage(messagePrefix + "連続ログイン" + loginStreak + "日目！");
         }
     }
 
     public void sendOpenAccumulatedRewardGuiMessage(Player player){
-        TextComponent message = new TextComponent("ログボ受取");
+        TextComponent message = new TextComponent("[累積ログインボーナスを受け取る]");
         message.setColor(ChatColor.YELLOW);
+        message.setBold(true);
+        message.setUnderlined(true);
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/loginbonus total"));
         player.spigot().sendMessage(message);
     }
 
     public void sendOpenContinuousRewardGuiMessage(Player player){
-        TextComponent message = new TextComponent("連続ログボ受取");
+        TextComponent message = new TextComponent("[連続ログインボーナスを受け取る]");
         message.setColor(ChatColor.YELLOW);
+        message.setBold(true);
+        message.setUnderlined(true);
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/loginbonus streak"));
         player.spigot().sendMessage(message);
     }

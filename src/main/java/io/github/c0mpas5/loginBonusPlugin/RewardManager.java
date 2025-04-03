@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -288,7 +289,7 @@ public class RewardManager {
             String endDateStr = dates[1];
 
             // 日付フォーマットを定義
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd").withResolverStyle(ResolverStyle.STRICT);
 
             // 日付文字列が規定の形式に従っているかを判別し、存在する日付であることを確認
             LocalDate startDate;
@@ -297,7 +298,7 @@ public class RewardManager {
                 startDate = LocalDate.parse(startDateStr, formatter);
                 endDate = LocalDate.parse(endDateStr, formatter);
             } catch (DateTimeParseException e) {
-                player.sendMessage(messagePrefix + "§c日付の形式が正しくないか、存在しない日付です。（例: 2025/03/01）");
+                player.sendMessage(messagePrefix + "§c日付の形式が正しくないか、存在しない日付です。（例: 2025/03/01-2025/03/31）");
                 return false;
             }
 
@@ -329,7 +330,7 @@ public class RewardManager {
         if(startDateStr == null){
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd");
         return LocalDate.parse(startDateStr, formatter);
     }
 
@@ -338,7 +339,7 @@ public class RewardManager {
         if(endDateStr == null){
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd");
         return LocalDate.parse(endDateStr, formatter);
     }
 
@@ -346,7 +347,7 @@ public class RewardManager {
         if (rewardConfig.contains("loginBonuses." + bonusName + ".startDate") && rewardConfig.contains("loginBonuses." + bonusName + ".endDate")) {
             return rewardConfig.getString("loginBonuses." + bonusName + ".startDate") + "-" + rewardConfig.getString("loginBonuses." + bonusName + ".endDate");
         } else {
-            return "期間を下の本を参考に入力";
+            return "未設定";
         }
     }
 
@@ -550,7 +551,7 @@ public class RewardManager {
     public static boolean setRecoverLoginMissedDate(String bonusName, String dateStr, Player player) {
         try {
             // 日付フォーマットを定義
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd").withResolverStyle(ResolverStyle.STRICT);
 
             // 日付文字列が規定の形式に従っているかを判別し、存在する日付であることを確認
             LocalDate date;
@@ -591,7 +592,7 @@ public class RewardManager {
         ArrayList<LocalDate> recoverDates = new ArrayList<>();
         if (rewardConfig.contains("recoverLoginMissedDates")) {
             List<String> dateStrings = rewardConfig.getStringList("recoverLoginMissedDates");
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd");
             for (String dateString : dateStrings) {
                 try {
                     LocalDate date = LocalDate.parse(dateString, formatter);

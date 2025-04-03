@@ -218,6 +218,24 @@ public class LBItems {
         return item;
     }
 
+    public static ItemStack loginBonusNameForLoadChestIS(String bonusName, String period){
+        ItemStack item = new ItemStack(Material.CHEST, 1);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + bonusName);
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "開催期間: " + period,
+                    ChatColor.RED + "" + ChatColor.BOLD + "[クリック] " + ChatColor.RESET + ChatColor.RED + "当該ログボの報酬プール設定を現在操作中のログボに読み込みます",
+                    ChatColor.of("#DF2E8F") + "※現在の報酬プール設定は上書きされます"
+            ));
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
 
     // adminRewardSettingGui
     public static ItemStack normalRewardPoolPlayerHeadIS(){
@@ -337,7 +355,7 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【連続ログインボーナス】──────────────",
                     ChatColor.of("#C2C2C2") + "開催期間中に10日間連続してログインした場合に与えられる報酬枠です。",
-                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、一度この報酬枠を受け取ると、連続ログインのカウントはリセットされます。",
+                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、連続で11日以上ログインしようとすると、連続ログインのカウントはリセットされます。",
                     ChatColor.of("#C2C2C2") + "期間中、10日間連続ログインを達成する度に報酬を受け取ることができます。",
                     ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD + "サブアカウント設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定した回数を上限に受け取ることができます。"
@@ -361,8 +379,12 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + "・同一人物が複数のアカウントでログインした場合でも、この枠の報酬は上限無く受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【通常枠報酬プールについて】──────────────",
-                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
-                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます"
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます。",
+                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
+                    ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
+                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -384,8 +406,13 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + "サブアカウント設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定した回数を上限に受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【特別枠報酬プールについて】──────────────",
-                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
-                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます"
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます。",
+                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
+                    ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
+                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
+
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -408,8 +435,12 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" +  ChatColor.GOLD + "サブアカウント設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定した回数を上限に受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【ボーナス枠報酬プールについて】──────────────",
-                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
-                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます"
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます。",
+                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
+                    ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
+                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -427,30 +458,18 @@ public class LBItems {
             meta.setLore(List.of(
                     ChatColor.WHITE + "【連続ログインボーナスについて】────────────────",
                     ChatColor.of("#C2C2C2") + "開催期間中に10日間連続してログインした場合に与えられる報酬枠です。",
-                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、一度この報酬枠を受け取ると、連続ログインのカウントはリセットされます。",
+                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、連続で11日以上ログインしようとすると、連続ログインのカウントはリセットされます。",
                     ChatColor.of("#C2C2C2") + "期間中、10日間連続ログインを達成する度に報酬を受け取ることができます。",
                     ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD + "サブアカウント設定" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "で指定した回数を上限に受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【連続ログインボーナス報酬プールについて】──────────────",
-                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
-                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます"
-            ));
-            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
-            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-            item.setItemMeta(meta);
-        }
-        return item;
-    }
-
-    public static ItemStack tempPaperIS() {
-        ItemStack item = new ItemStack(Material.PAPER, 1);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "仮置きの紙");
-            meta.setLore(List.of(
-                    ChatColor.of("#C2C2C2") + "このプールの設定を保存するには、",
-                    ChatColor.of("#C2C2C2") + "ログインが1日でも途切れるか、一度この報酬枠を受け取ると、連続ログインのカウントはリセットされます。"
+                    ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます。",
+                    ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
+                    ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
+                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -464,9 +483,8 @@ public class LBItems {
         ItemStack item = new ItemStack(Material.BOOK, 1);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ボーナス枠について");
+            meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ボーナス枠条件設定について");
             meta.setLore(List.of(
-                    ChatColor.WHITE + "【ボーナス枠条件設定について】────────────────",
                     ChatColor.of("#C2C2C2") + "ボーナス枠の報酬を受け取るために必要なログイン日数の割合を",
                     ChatColor.of("#C2C2C2") + "このGUIの名前欄に入力し、右の「保存する」をクリックすることで設定できます。",
                     ChatColor.of("#C2C2C2") + "" + ChatColor.BOLD + "・【ログインした日数（日）/ログインボーナスの開催期間（日）* 100】" + "" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") +  "で割合（百分率）を算出します。",

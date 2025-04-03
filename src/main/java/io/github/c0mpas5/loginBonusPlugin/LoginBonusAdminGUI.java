@@ -863,7 +863,7 @@ public class LoginBonusAdminGUI implements Listener {
             Player player = (Player) event.getWhoClicked();
             String inputText = adminDailyResetTimeSettingGui.getRenameText();
             if ((inputText.matches("\\D+")) || inputText.isEmpty()) {
-                player.sendMessage("§c入力が空白か無効です。数字のみを入力してください。");
+                player.sendMessage(messagePrefix + "§c入力が空白か無効です。数字のみを入力してください。");
                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
             } else if (RewardManager.setDailyResetTime(currentLoginBonusName, Integer.parseInt(inputText), player)) {
                 player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
@@ -1054,7 +1054,7 @@ public class LoginBonusAdminGUI implements Listener {
         // 表示するchestの配列作る
         for(int i = 0; i < bonusNameCount; i++){
             String bonusName = bonusNames.get(i);
-            chests[i] = LBItems.loginBonusNameChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName)); //TODO: クリック時の説明などを変更したItemStackが必要
+            chests[i] = LBItems.loginBonusNameForLoadChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName));
         }
 
         int pageCount = (bonusNameCount / 28) + 1; //28=1ページに表示するアイテム数
@@ -1149,6 +1149,8 @@ public class LoginBonusAdminGUI implements Listener {
     }
 
     public void updateAdminLoadGui(){
+        adminLoadGui.getPanes().clear();
+
         ArrayList<String> bonusNames = RewardManager.getAllBonusNames();
         int bonusNameCount = bonusNames.size();
 
@@ -1640,7 +1642,7 @@ public class LoginBonusAdminGUI implements Listener {
             Player player = (Player) event.getWhoClicked();
             String inputText = adminRecoverDateSettingGui.getRenameText();
             if (inputText.isEmpty()) {
-                player.sendMessage("§c入力が空白です。1文字以上入力してください。");
+                player.sendMessage(messagePrefix + "§c入力が空白です。1文字以上入力してください。");
                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
             } else if (RewardManager.setRecoverLoginMissedDate(currentLoginBonusName, inputText, player)){
                 player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
@@ -1691,7 +1693,7 @@ public class LoginBonusAdminGUI implements Listener {
             Player player = (Player) event.getWhoClicked();
             String inputText = adminSubAccountSettingGui.getRenameText();
             if ((inputText.matches("\\D+")) || inputText.isEmpty()) {
-                player.sendMessage("§c入力が空白か無効です。数字のみを入力してください。");
+                player.sendMessage(messagePrefix + "§c入力が空白か無効です。数字のみを入力してください。");
                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
             } else if (RewardManager.setAccountRewardLimit(Integer.parseInt(inputText), player)) {
                 player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);

@@ -6,7 +6,6 @@ prefix: '§6§l[LoginBonusPlugin] §r'
 commands:
   loginbonus:
     description: 'ログインボーナス受取画面を開きます'
-    usage: '/loginbonus help で使用法を確認'
     aliases: [lb]
     permission: loginbonusplugin.player
     permission-message: '§cこのコマンドを使用する権限がありません。'

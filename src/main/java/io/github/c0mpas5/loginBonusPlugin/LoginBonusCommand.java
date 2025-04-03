@@ -14,8 +14,11 @@ public class LoginBonusCommand implements CommandExecutor {
 
     private final LoginBonusPlugin plugin;
     private final LoginBonusData loginBonusData;
+    String messagePrefix;
 
     public LoginBonusCommand(LoginBonusPlugin plugin, LoginBonusData loginBonusData) {
+        messagePrefix = "§6§l[LoginBonusPlugin] §r";
+
         this.plugin = plugin;
         this.loginBonusData = loginBonusData;
     }
@@ -26,15 +29,8 @@ public class LoginBonusCommand implements CommandExecutor {
             Player player = (Player) sender;
 
             if (command.getName().equalsIgnoreCase("loginbonus")) {
-                // 現在のボーナス名がnullの場合はエラーメッセージを表示
-                if (RewardManager.getCurrentBonusName() == null) {
-                    sender.sendMessage("現在開催中のログインボーナスはありません");
-                    return false;
-                }
-
                 // loginBonusDataがnullの場合はエラーメッセージを表示
                 if (loginBonusData == null) {
-                    sender.sendMessage("loginBonusDataがnull");
                     return false;
                 }
 
@@ -43,12 +39,20 @@ public class LoginBonusCommand implements CommandExecutor {
                     LoginBonusUserGUI userGui;
                     switch (args[0].toLowerCase()) {
                         case "total":
+                            if (RewardManager.getCurrentBonusName() == null) {
+                                sender.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
+                                return false;
+                            }
                             // 累計ログイン日数を表示
                             userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
                             userGui.updateUserAccumulatedLoginBonusClaimGui();
                             userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                             return true;
                         case "streak":
+                            if (RewardManager.getCurrentBonusName() == null) {
+                                sender.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
+                                return false;
+                            }
                             // 連続ログイン日数を表示
                             userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
                             userGui.updateUserContinuousLoginBonusClaimGui();
@@ -75,9 +79,13 @@ public class LoginBonusCommand implements CommandExecutor {
 
                         default:
                             // 引数がわからない場合はGUIを表示
-                            player.sendMessage("§cコマンドが誤っています");
+                            player.sendMessage(messagePrefix + "§cコマンドが誤っています");
                     }
                 } else {
+                    if (RewardManager.getCurrentBonusName() == null) {
+                        sender.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
+                        return false;
+                    }
                     // 引数がない場合はデフォルトでGUIを表示
                     LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
                     userGui.updateUserAccumulatedLoginBonusClaimGui();
