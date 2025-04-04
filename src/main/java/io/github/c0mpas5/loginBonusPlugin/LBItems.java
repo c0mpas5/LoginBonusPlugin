@@ -318,7 +318,7 @@ public class LBItems {
             meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ボーナス枠条件設定");
             meta.setLore(List.of(
                     ChatColor.GRAY + "ボーナス枠の報酬を受け取るために必要なログイン日数の割合を設定します",
-                    ChatColor.of("#797979") + "・【ログインした日数（日）/ログインボーナスの開催期間（日）* 100】で割合（百分率）を算出します",
+                    ChatColor.of("#797979") + "・【ログインした日数（日）/（ログインボーナスの開催期間-1）（日）* 100】で割合（百分率）を算出します",
                     ChatColor.of("#797979") + "・算出された値が当項目で設定した割合以上のプレイヤーに対し、",
                     ChatColor.of("#797979") + "　開催期間最終日にボーナス枠の報酬を与えます"
             ));
@@ -487,7 +487,7 @@ public class LBItems {
             meta.setLore(List.of(
                     ChatColor.of("#C2C2C2") + "ボーナス枠の報酬を受け取るために必要なログイン日数の割合を",
                     ChatColor.of("#C2C2C2") + "このGUIの名前欄に入力し、右の「保存する」をクリックすることで設定できます。",
-                    ChatColor.of("#C2C2C2") + "" + ChatColor.BOLD + "・【ログインした日数（日）/ログインボーナスの開催期間（日）* 100】" + "" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") +  "で割合（百分率）を算出します。",
+                    ChatColor.of("#C2C2C2") + "" + ChatColor.BOLD + "・【ログインした日数（日）/（ログインボーナスの開催期間-1）（日）* 100】" + "" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") +  "で割合（百分率）を算出します。",
                     ChatColor.of("#C2C2C2") + "・算出された値が当項目で設定した割合以上のプレイヤーに対し、",
                     ChatColor.of("#C2C2C2") + "　開催期間最終日にボーナス枠の報酬を与えます。",
                     ChatColor.of("#C2C2C2") + " ",
@@ -850,8 +850,9 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + accountRewardLimit + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "回を上限に受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【ボーナス枠" + ChatColor.DARK_PURPLE + "（エピック報酬）" + ChatColor.WHITE + "】────────────────",
-                    ChatColor.GOLD + bonusRewardCondition + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "%以上のログイン率を満たしたプレイヤーが",
+                    ChatColor.GOLD + bonusRewardCondition + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "%以上の期間中のログイン率を満たしたプレイヤーが",
                     ChatColor.of("#C2C2C2") + "開催期間最終日に受け取れる報酬枠です。",
+                    ChatColor.of("#C2C2C2") + "ログイン率の算出方法：【ログインした日数（日）/（ログインボーナスの開催期間-1）（日）* 100】",
                     ChatColor.of("#C2C2C2") + "同一人物が複数のアカウントでログインした場合、",
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + accountRewardLimit + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "回を上限に受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
@@ -989,7 +990,10 @@ public class LBItems {
         ItemStack item = getCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTdiYzI1MWE2Y2IwZDZkOWYwNWM1NzExOTExYTZlYzI0YjIwOWRiZTY0MjY3OTAxYTRiMDM3NjFkZWJjZjczOCJ9fX0=");
         ItemMeta meta = item.getItemMeta();
 
-        float loginRate = (float) loginCount * 100 / (float) daysBetween;
+        float loginRate = 100;
+        if (daysBetween > 1) {
+            loginRate = (float) loginCount * 100 / (float) (daysBetween - 1);
+        }
         loginRate = (float) Math.floor(loginRate * 100) / 100;
 
         if (meta != null) {
