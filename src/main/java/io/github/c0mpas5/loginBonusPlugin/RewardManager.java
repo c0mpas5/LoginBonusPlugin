@@ -189,7 +189,13 @@ public class RewardManager {
     /////////////////////////// ログボ名設定 ///////////////////////////
     // 新しいログインボーナスの名前を追加
     public static boolean setNewLoginBonusName(String bonusName, Player player) {
-        if (!rewardConfig.contains("loginBonuses." + bonusName) && bonusName.getBytes().length <= 48) {
+        if (rewardConfig.contains("loginBonuses." + bonusName)) {
+            player.sendMessage(messagePrefix + "§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
+            return false;
+        }else if (!(bonusName.getBytes().length <= 48)){
+            player.sendMessage(messagePrefix + "§c入力した文字列が長すぎます。48バイト以内で設定してください。現在のバイト数：" + bonusName.getBytes().length);
+            return false;
+        } else {
             rewardConfig.createSection("loginBonuses." + bonusName);
 
             //以下デフォルト値
@@ -203,15 +209,22 @@ public class RewardManager {
                 e.printStackTrace();
             }
             return true;
-        }else{
-            player.sendMessage(messagePrefix + "§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
-            return false;
         }
     }
 
     // 作成中のログボ名を再度変更
     public static boolean updateLoginBonusName(String oldName, String newName, Player player) {
-        if (rewardConfig.contains("loginBonuses." + oldName) && !rewardConfig.contains("loginBonuses." + newName) && newName.getBytes().length <= 48) {
+
+        if (!rewardConfig.contains("loginBonuses." + oldName)) {
+            player.sendMessage(messagePrefix + "§c編集元のログボ内部名が存在しません。");
+            return false;
+        } else if (rewardConfig.contains("loginBonuses." + newName)) {
+            player.sendMessage(messagePrefix + "§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
+            return false;
+        } else if (!(newName.getBytes().length <= 48)) {
+            player.sendMessage(messagePrefix + "§c入力した文字列が長すぎます。48バイト以内で設定してください。現在のバイト数：" + newName.getBytes().length);
+            return false;
+        } else {
             Object data = rewardConfig.get("loginBonuses." + oldName);
             rewardConfig.set("loginBonuses." + oldName, null);
             rewardConfig.set("loginBonuses." + newName, data);
@@ -219,11 +232,10 @@ public class RewardManager {
                 rewardConfig.save(rewardFile);
             } catch (IOException e) {
                 e.printStackTrace();
+                player.sendMessage(messagePrefix + "§cログボ名の変更中にエラーが発生しました。");
+                return false;
             }
             return true;
-        }else{
-            player.sendMessage(messagePrefix + "§c既に存在するログボ内部名です。ログボを編集したい場合は、前の画面の「ログボ編集」から行ってください。");
-            return false;
         }
     }
 

@@ -486,12 +486,12 @@ public class LBItems {
             meta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "ボーナス枠条件設定について");
             meta.setLore(List.of(
                     ChatColor.of("#C2C2C2") + "ボーナス枠の報酬を受け取るために必要なログイン日数の割合を",
-                    ChatColor.of("#C2C2C2") + "このGUIの名前欄に入力し、右の「保存する」をクリックすることで設定できます。",
-                    ChatColor.of("#C2C2C2") + "" + ChatColor.BOLD + "・【ログインした日数（日）/（ログインボーナスの開催期間-1）（日）* 100】" + "" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") +  "で割合（百分率）を算出します。",
+                    ChatColor.of("#C2C2C2") + "名前欄に以下の形式に従って入力してください。",
+                    ChatColor.GOLD + "" + ChatColor.BOLD + "【形式】0~100（整数）",
+                    ChatColor.of("#C2C2C2") + "【注意事項】",
+                    ChatColor.of("#C2C2C2") + "" + ChatColor.BOLD + "・【ログインした日数（日）/（ログインボーナスの開催期間-1）（日）× 100】" + "" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") +  "で割合（百分率）を算出します。",
                     ChatColor.of("#C2C2C2") + "・算出された値が当項目で設定した割合以上のプレイヤーに対し、",
-                    ChatColor.of("#C2C2C2") + "　開催期間最終日にボーナス枠の報酬を与えます。",
-                    ChatColor.of("#C2C2C2") + " ",
-                    ChatColor.of("#DF2E8F") + "" + ChatColor.BOLD + "【注意】受付可能な入力範囲：0~100（整数）"
+                    ChatColor.of("#C2C2C2") + "　開催期間最終日にボーナス枠の報酬を与えます。"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);

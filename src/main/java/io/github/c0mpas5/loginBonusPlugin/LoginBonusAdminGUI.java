@@ -154,7 +154,10 @@ public class LoginBonusAdminGUI implements Listener {
             Player player = (Player) event.getWhoClicked();
             String inputText = adminFirstNameSettingGui.getRenameText();
             // 空白でないかつ、入力されたログボ名が既存のものと重複していない場合
-            if (!inputText.isEmpty() && RewardManager.setNewLoginBonusName(inputText, player)) {
+            if (inputText.isEmpty()) {
+                player.sendMessage(messagePrefix + "§c入力が空白です。1文字以上入力してください。");
+                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            } else if (RewardManager.setNewLoginBonusName(inputText, player)) {
                 player.sendMessage(messagePrefix + "§a新しいログボが作成されました");
                 currentLoginBonusName = inputText;
                 player.playSound(player.getLocation(), "minecraft:block.note_block.harp", 1.0f, 1.0f);
