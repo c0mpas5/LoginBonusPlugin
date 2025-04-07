@@ -32,8 +32,6 @@ public class EventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
-        String serverName = Bukkit.getServer().getName();
-        LocalDate baseDate = null; // 基準とする日時。ここから24時間先まで1日とみなす。
 
         String currentBonusName = RewardManager.getCurrentBonusName();
         if(currentBonusName == null){

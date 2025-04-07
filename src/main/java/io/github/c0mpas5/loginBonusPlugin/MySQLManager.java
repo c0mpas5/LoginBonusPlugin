@@ -36,6 +36,8 @@ public class MySQLManager {
     private String conName;
     private MySQLFunc MySQL;
 
+    private String serverName;
+
     ////////////////////////////////
     //      コンストラクタ
     ////////////////////////////////
@@ -98,12 +100,12 @@ public class MySQLManager {
         }else if(dbNum == 1){
             this.MySQL = new MySQLFunc(HOST1, DB1, USER1, PASS1, PORT1);
         }else{
-            Bukkit.getLogger().info("データベース番号が不正です");
+            plugin.getLogger().info("データベース番号が不正です");
         }
 
         this.con = this.MySQL.open();
         if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
+            plugin.getLogger().info("failed to open MYSQL");
             return false;
         }
 
@@ -163,12 +165,12 @@ public class MySQLManager {
         }else if(dbNum == 1){
             this.MySQL = new MySQLFunc(HOST1, DB1, USER1, PASS1, PORT1);
         }else{
-            Bukkit.getLogger().info("データベース番号が不正です");
+            plugin.getLogger().info("データベース番号が不正です");
         }
 
         this.con = this.MySQL.open();
         if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
+            plugin.getLogger().info("failed to open MYSQL");
             return false;
         }
         boolean ret = true;
@@ -199,13 +201,13 @@ public class MySQLManager {
         }else if(dbNum == 1){
             this.MySQL = new MySQLFunc(HOST1, DB1, USER1, PASS1, PORT1);
         }else{
-            Bukkit.getLogger().info("データベース番号が不正です");
+            plugin.getLogger().info("データベース番号が不正です");
         }
 
         this.con = this.MySQL.open();
         ResultSet rs = null;
         if(this.con == null){
-            Bukkit.getLogger().info("failed to open MYSQL");
+            plugin.getLogger().info("failed to open MYSQL");
             return rs;
         }
 

@@ -8,6 +8,7 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.component.Slider;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -19,9 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class LoginBonusUserGUI implements Listener {
     private ChestGui userAccumulatedLoginBonusClaimGui;
@@ -59,12 +58,15 @@ public class LoginBonusUserGUI implements Listener {
     }
 
     public void updateUserAccumulatedLoginBonusClaimGui() {
+        Thread th = new Thread(() -> {
+
         // 一旦全部再生成。絶対重いので改善すべきではある
         userAccumulatedLoginBonusClaimGui.getPanes().clear();
 
         //全ページ
         PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
         int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName); // 当日も含めたログイン日数
+        int loginStreak = loginBonusData.getLoginStreak(playerUUID, currentBonusName); // 連続ログイン日数
         LocalDate startDate = RewardManager.getPeriodStartDate(currentBonusName);
         LocalDate endDate = RewardManager.getPeriodEndDate(currentBonusName);
         int daysBetween;
@@ -86,20 +88,6 @@ public class LoginBonusUserGUI implements Listener {
         long daysUntil = ChronoUnit.DAYS.between(now, endDateTime);
         long hoursUntil = ChronoUnit.HOURS.between(now.plusDays(daysUntil), endDateTime);
         String daysUntilEnd = daysUntil + "日" + hoursUntil + "時間"; // 開催終了までの残り日数と時間
-
-//        // 日付更新までの時間（〇時間〇分）
-//        int resetHour = RewardManager.getDailyResetTime(currentBonusName);
-//        LocalDateTime nextResetDateTime = LocalDate.now().atTime(resetHour, 0);
-//
-//        // 現在時刻がリセット時間を過ぎている場合、翌日のリセット時間を設定
-//        if (now.isAfter(nextResetDateTime)) {
-//            nextResetDateTime = nextResetDateTime.plusDays(1);
-//        }
-//
-//        // 残り時間を計算
-//        long hoursUntilNextDay = ChronoUnit.HOURS.between(now, nextResetDateTime);
-//        long minutesUntilNextDay = ChronoUnit.MINUTES.between(now.plusHours(hoursUntilNextDay), nextResetDateTime);
-//        String timeUntilNextDay = hoursUntilNextDay + "h " + minutesUntilNextDay + "m";
 
         // 表示するplayerHeadの配列作る
         for (int i = 0; i < daysBetween; i++) {
@@ -164,7 +152,7 @@ public class LoginBonusUserGUI implements Listener {
 
         // 連続ログイン日数
         StaticPane loginStreakPane = new StaticPane(6, 5, 1, 1);
-        loginStreakPane.addItem(new GuiItem(LBItems.loginStreakShowingPaperIS(loginBonusData.getLoginStreak(playerUUID, currentBonusName)), event -> {
+        loginStreakPane.addItem(new GuiItem(LBItems.loginStreakShowingPaperIS(loginStreak), event -> {
             Player player = (Player) event.getWhoClicked();
 
             // クリック時、日付が変わってたらインベントリ閉じて処理中断
@@ -244,24 +232,15 @@ public class LoginBonusUserGUI implements Listener {
                                 player.sendMessage(messagePrefix + "§cインベントリに空きがないため、報酬を受け取れません");
                                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                 player.closeInventory();
-                            } else if (!(canClaimRewardDay == loginBonusData.getLoginCount(playerUUID, currentBonusName) - 1)) {
+                            } else if (!(canClaimRewardDay == loginCount - 1)) {
                                 player.sendMessage(messagePrefix + "§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
                                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                 player.closeInventory();
                             } else {
                                 // specialの時のサブ垢処理
                                 if (poolType.equals("special")) {
-                                    List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
+                                    int accountCount = checkSubAccountClaimedCount(player.getUniqueId(), index, poolType);
                                     int accountLimit = RewardManager.getAccountRewardLimit();
-                                    int accountCount = 0;
-                                    for(UUID account : accounts){
-                                        //temp: アカウント名を表示するために一時的にUUIDから名前を取得
-                                        String playerName = Bukkit.getPlayer(account).getName();
-                                        player.sendMessage(playerName);
-                                        if(loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, index + 1, "special", currentBonusName)){
-                                            accountCount++;
-                                        }
-                                    }
                                     if(accountCount >= accountLimit){
                                         player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
                                         player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
@@ -303,7 +282,7 @@ public class LoginBonusUserGUI implements Listener {
                                     ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
                                     player.getInventory().addItem(item);
                                     loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, index + 1, poolType, item.toString(), LocalDateTime.now());
-                                    player.sendMessage(messagePrefix + getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
+                                    player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
                                     player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
                                 }
                             }
@@ -372,6 +351,10 @@ public class LoginBonusUserGUI implements Listener {
         userAccumulatedLoginBonusClaimGui.addPane(paginatedPane);
 
         userAccumulatedLoginBonusClaimGui.setTitle("累積ログボ §l⏰残り" + daysUntilEnd);
+
+        });
+
+        th.start();
     }
 
     public void userRewardListGui() {
@@ -533,7 +516,7 @@ public class LoginBonusUserGUI implements Listener {
                             ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
                             player.getInventory().addItem(item);
                             loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum, poolType, item.toString(), LocalDateTime.now());
-                            player.sendMessage(messagePrefix + getItemDisplayName(item) + " §f×" + item.getAmount() + " §aを受け取りました！");
+                            player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
                             player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
                         }
                         processing = false;
@@ -591,11 +574,19 @@ public class LoginBonusUserGUI implements Listener {
         return true;
     }
 
-    private String getItemDisplayName(ItemStack item) {
+//    private String getItemDisplayName(ItemStack item) {
+//        if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
+//            return item.getItemMeta().getDisplayName();
+//        } else {
+//            return item.getType().name();
+//        }
+//    }
+
+    private Component getItemDisplayName(ItemStack item) {
         if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
-            return item.getItemMeta().getDisplayName();
+            return item.getItemMeta().displayName();
         } else {
-            return item.getType().name();
+            return Component.translatable(item.getType().getItemTranslationKey());
         }
     }
 
@@ -644,5 +635,19 @@ public class LoginBonusUserGUI implements Listener {
         } else {
             return false;
         }
+    }
+
+    public int checkSubAccountClaimedCount(UUID uuid, int index, String poolType) {
+//        Thread th = new Thread(() -> {
+//            List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(uuid);
+//            int accountCount = 1; // 現在のアカウントをカウントに含める
+//            for(UUID account : accounts){
+//                if(loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, index + 1, "special", currentBonusName)){
+//                    accountCount++;
+//                }
+//            }
+//            return accountCount;
+//        });
+        return 1; //NOTICE: プッシュ用仮置き
     }
 }

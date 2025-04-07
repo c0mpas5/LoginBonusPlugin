@@ -11,7 +11,7 @@ public final class LoginBonusPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        getLogger().info("プラグインが有効化されました");
+        this.getLogger().info("プラグインが有効化されました");
 
         // MySQLManagerの初期化
         mysqlManager = new MySQLManager(this, "LoginBonus");
@@ -30,7 +30,7 @@ public final class LoginBonusPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        getLogger().info("プラグインが無効化されました");
+        this.getLogger().info("プラグインが無効化されました");
     }
 }
 
@@ -38,6 +38,8 @@ public final class LoginBonusPlugin extends JavaPlugin {
 
 //TODO: コマンド発行？
 
+
 //NOTICE: サブ垢 ：実装済み要確認→確認しづらいのでhelperの誰かに確認してもらう
 //NOTICE:よくわからんnbtタグがつくのを治す→https://discord.com/channels/277712676371562496/757026124651036672/1352695936899612692→付与には付かなくなってたけどListにいれると付いちゃう
-//NOTICE: アイテムを与えたとき、displayNameが設定されていないアイテムの場合に、日本語のアイテム名を表示することができない（仕様的に不可能？）
+//NOTICE: 【済】アイテムを与えたとき、displayNameが設定されていないアイテムの場合に、日本語のアイテム名を表示することができない（仕様的に不可能？）→ https://discord.com/channels/277712676371562496/1307382874491584564/1358455199500468255
+//NOTICE: serverNameをconfigからとる

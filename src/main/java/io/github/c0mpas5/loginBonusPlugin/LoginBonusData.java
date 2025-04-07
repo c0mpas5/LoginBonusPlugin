@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,38 +26,59 @@ public class LoginBonusData {
     public LoginBonusData(LoginBonusPlugin plugin, MySQLManager mysqlManager) {
         this.plugin = plugin;
         this.mysqlManager = mysqlManager;
+
+        if (plugin.getConfig().contains("target_server_name")) {
+            serverName = plugin.getConfig().getString("target_server_name");
+        }
+
         createTableIfNotExists();
     }
 
-        public int getLoginStreak(UUID uuid, String currentBonusName) {
-            // スレッドから値を受け取るためにAtomicIntegerを使用
-            final AtomicInteger result = new AtomicInteger(0);
+    public int getLoginStreak(UUID uuid, String currentBonusName) {
+        // スレッドから値を受け取るためにAtomicIntegerを使用
+        final AtomicInteger result = new AtomicInteger(0);
 
-            try {
-                // スレッドを作成して実行
-                Thread th = new Thread(() -> {
-                    Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
-                    List<LocalDate> sortedLoginDates = new ArrayList<>(loginDates);
-                    sortedLoginDates.sort(Collections.reverseOrder());
-                    int streak = calculateStreak(sortedLoginDates);
+        try {
+            // スレッドを作成して実行
+            Thread th = new Thread(() -> {
+                Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
+                List<LocalDate> sortedLoginDates = new ArrayList<>(loginDates);
+                sortedLoginDates.sort(Collections.reverseOrder());
+                int streak = calculateStreak(sortedLoginDates);
 
-                    // 結果をAtomicIntegerに保存
-                    if(streak != 0 && streak % 10 == 0) {
-                        result.set(10);
-                    } else {
-                        result.set(streak % 10);
-                    }
-                });
+                // 結果をAtomicIntegerに保存
+                if (streak != 0 && streak % 10 == 0) {
+                    result.set(10);
+                } else {
+                    result.set(streak % 10);
+                }
+            });
 
-                th.start();
-                th.join(); // スレッドの終了を待機
+            th.start();
+            th.join(); // スレッドの終了を待機
 
-                return result.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return 0;
-            }
+            return result.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return 0;
         }
+    }
+
+//    public CompletableFuture<Integer> getLoginStreak(UUID uuid, String currentBonusName) {
+//        return CompletableFuture.supplyAsync(() -> {
+//            Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
+//            List<LocalDate> sortedLoginDates = new ArrayList<>(loginDates);
+//            sortedLoginDates.sort(Collections.reverseOrder());
+//            int streak = calculateStreak(sortedLoginDates);
+//
+//            // 結果をAtomicIntegerに保存
+//            if(streak != 0 && streak % 10 == 0) {
+//                return 10;
+//            } else {
+//                return streak % 10;
+//            }
+//        });
+//    }
 
     public int getLoginCount(UUID uuid, String currentBonusName) {
         // スレッドから値を受け取るためにAtomicIntegerを使用
@@ -92,7 +114,7 @@ public class LoginBonusData {
                 mysqlManager.PASS1, mysqlManager.PORT1).open()) {
 
             if (con == null) {
-                Bukkit.getLogger().info("failed to open MYSQL");
+                plugin.getLogger().info("failed to open MYSQL");
                 return loginDates;
             }
 
@@ -159,10 +181,11 @@ public class LoginBonusData {
         return streak;
     }
 
+    // 使ってない
     public void setClaimedCount(UUID playerUUID, int claimedCount) {
         try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
             if (con == null) {
-                Bukkit.getLogger().info("failed to open MYSQL");
+                plugin.getLogger().info("failed to open MYSQL");
                 return;
             }
 
@@ -177,10 +200,11 @@ public class LoginBonusData {
         }
     }
 
+    // 使ってない
     public int getClaimedCount(UUID playerUUID) {
         try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
             if (con == null) {
-                Bukkit.getLogger().info("failed to open MYSQL");
+                plugin.getLogger().info("failed to open MYSQL");
                 return 0;
             }
 
@@ -204,7 +228,7 @@ public class LoginBonusData {
         Thread th = new Thread(() -> {
             try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
                 if (con == null) {
-                    Bukkit.getLogger().info("failed to open MYSQL");
+                    plugin.getLogger().info("failed to open MYSQL");
                     return;
                 }
 
@@ -233,7 +257,7 @@ public class LoginBonusData {
             Thread th = new Thread(() -> {
                 try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
                     if (con == null) {
-                        Bukkit.getLogger().info("failed to open MYSQL");
+                        plugin.getLogger().info("failed to open MYSQL");
                         return;
                     }
 
@@ -282,7 +306,7 @@ public class LoginBonusData {
             Thread th = new Thread(() -> {
                 try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
                     if (con == null) {
-                        Bukkit.getLogger().info("failed to open MYSQL");
+                        plugin.getLogger().info("failed to open MYSQL");
                         return;
                     }
 
@@ -323,7 +347,7 @@ public class LoginBonusData {
             Thread th = new Thread(() -> {
                 try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
                     if (con == null) {
-                        Bukkit.getLogger().info("failed to open MYSQL");
+                        plugin.getLogger().info("failed to open MYSQL");
                         return;
                     }
 
@@ -366,7 +390,7 @@ public class LoginBonusData {
             Thread th = new Thread(() -> {
                 try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
                     if (con == null) {
-                        Bukkit.getLogger().info("failed to open MYSQL");
+                        plugin.getLogger().info("failed to open MYSQL");
                         return;
                     }
 
