@@ -35,70 +35,21 @@ public class LoginBonusData {
     }
 
     public int getLoginStreak(UUID uuid, String currentBonusName) {
-        // スレッドから値を受け取るためにAtomicIntegerを使用
-        final AtomicInteger result = new AtomicInteger(0);
+        Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
+        List<LocalDate> sortedLoginDates = new ArrayList<>(loginDates);
+        sortedLoginDates.sort(Collections.reverseOrder());
+        int streak = calculateStreak(sortedLoginDates);
 
-        try {
-            // スレッドを作成して実行
-            Thread th = new Thread(() -> {
-                Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
-                List<LocalDate> sortedLoginDates = new ArrayList<>(loginDates);
-                sortedLoginDates.sort(Collections.reverseOrder());
-                int streak = calculateStreak(sortedLoginDates);
-
-                // 結果をAtomicIntegerに保存
-                if (streak != 0 && streak % 10 == 0) {
-                    result.set(10);
-                } else {
-                    result.set(streak % 10);
-                }
-            });
-
-            th.start();
-            th.join(); // スレッドの終了を待機
-
-            return result.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return 0;
+        if (streak != 0 && streak % 10 == 0) {
+            return 10;
+        } else {
+            return streak % 10;
         }
     }
 
-//    public CompletableFuture<Integer> getLoginStreak(UUID uuid, String currentBonusName) {
-//        return CompletableFuture.supplyAsync(() -> {
-//            Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
-//            List<LocalDate> sortedLoginDates = new ArrayList<>(loginDates);
-//            sortedLoginDates.sort(Collections.reverseOrder());
-//            int streak = calculateStreak(sortedLoginDates);
-//
-//            // 結果をAtomicIntegerに保存
-//            if(streak != 0 && streak % 10 == 0) {
-//                return 10;
-//            } else {
-//                return streak % 10;
-//            }
-//        });
-//    }
-
     public int getLoginCount(UUID uuid, String currentBonusName) {
-        // スレッドから値を受け取るためにAtomicIntegerを使用
-        final AtomicInteger result = new AtomicInteger(0);
-
-        try {
-            // スレッドを作成して実行
-            Thread th = new Thread(() -> {
-                Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
-                result.set(loginDates.size());
-            });
-
-            th.start();
-            th.join(); // スレッドの終了を待機
-
-            return result.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return 0;
-        }
+        Set<LocalDate> loginDates = fetchLoginDates(uuid, currentBonusName);
+        return loginDates.size();
     }
 
     // 呼び出し先でサブスレッドで処理する
@@ -224,6 +175,7 @@ public class LoginBonusData {
         return 0;
     }
 
+    // ごく短い時間ならjoinとかで止めなくてOKなメソッド
     public void setClaimedItemStack(UUID playerUUID, String bonusName, int day, String claimedItemPoolType, String claimedItemStack, LocalDateTime claimedDateTime) {
         Thread th = new Thread(() -> {
             try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
@@ -249,176 +201,117 @@ public class LoginBonusData {
     }
 
     public LocalDateTime getLastRewardClaimedDate(UUID playerUUID, String bonusType, String bonusName) {
-        // スレッドから値を受け取るためにAtomicReferenceを使用
-        final AtomicReference<LocalDateTime> result = new AtomicReference<>(null);
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                plugin.getLogger().info("failed to open MYSQL");
+                return null;
+            }
 
-        try {
-            // スレッドを作成して実行
-            Thread th = new Thread(() -> {
-                try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
-                    if (con == null) {
-                        plugin.getLogger().info("failed to open MYSQL");
-                        return;
+            String sql;
+            if (bonusType.equals("accumulated")) {
+                sql = "SELECT claimed_datetime FROM loginbonus_reward_log " +
+                        "WHERE uuid = ? AND claimed_item_pool_type IN ('normal', 'special', 'bonus') AND login_bonus_name = ? " +
+                        "ORDER BY claimed_datetime DESC LIMIT 1";
+            } else {
+                sql = "SELECT claimed_datetime FROM loginbonus_reward_log " +
+                        "WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? " +
+                        "ORDER BY claimed_datetime DESC LIMIT 1";
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, playerUUID.toString());
+                ps.setString(2, bonusName);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getTimestamp("claimed_datetime").toLocalDateTime();
                     }
-
-                    String sql;
-                    if (bonusType.equals("accumulated")) {
-                        sql = "SELECT claimed_datetime FROM loginbonus_reward_log " +
-                                "WHERE uuid = ? AND claimed_item_pool_type IN ('normal', 'special', 'bonus') AND login_bonus_name = ? " +
-                                "ORDER BY claimed_datetime DESC LIMIT 1";
-                    } else {
-                        sql = "SELECT claimed_datetime FROM loginbonus_reward_log " +
-                                "WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? " +
-                                "ORDER BY claimed_datetime DESC LIMIT 1";
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement(sql)) {
-                        ps.setString(1, playerUUID.toString());
-                        ps.setString(2, bonusName);
-
-                        try (ResultSet rs = ps.executeQuery()) {
-                            if (rs.next()) {
-                                result.set(rs.getTimestamp("claimed_datetime").toLocalDateTime());
-                            }
-                        }
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
                 }
-            });
-
-            th.start();
-            th.join(); // スレッドの終了を待機
-
-            return result.get();
-        } catch (InterruptedException e) {
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
+        return null;
     }
 
     public int getNumOfClaimedContinuousReward(UUID playerUUID, String bonusName) {
-        // スレッドから値を受け取るためにAtomicIntegerを使用
-        final AtomicInteger result = new AtomicInteger(0);
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                plugin.getLogger().info("failed to open MYSQL");
+                return 0;
+            }
 
-        try {
-            // スレッドを作成して実行
-            Thread th = new Thread(() -> {
-                try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
-                    if (con == null) {
-                        plugin.getLogger().info("failed to open MYSQL");
-                        return;
+            int latestClaimedDay = 0; // 受取履歴がない時は0を返す
+            try (PreparedStatement ps = con.prepareStatement("SELECT day FROM loginbonus_reward_log WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? ORDER BY claimed_datetime DESC LIMIT 1")) {
+                ps.setString(1, playerUUID.toString());
+                ps.setString(2, bonusName);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        latestClaimedDay = rs.getInt("day");
                     }
-
-                    int latestClaimedDay = 0; // 受取履歴がない時は0を返す
-                    try (PreparedStatement ps = con.prepareStatement("SELECT day FROM loginbonus_reward_log WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? ORDER BY claimed_datetime DESC LIMIT 1")) {
-                        ps.setString(1, playerUUID.toString());
-                        ps.setString(2, bonusName);
-
-                        try (ResultSet rs = ps.executeQuery()) {
-                            if (rs.next()) {
-                                latestClaimedDay = rs.getInt("day");
-                            }
-                        }
-                    }
-
-                    result.set(latestClaimedDay);
-                } catch (SQLException e) {
-                    e.printStackTrace();
                 }
-            });
+            }
 
-            th.start();
-            th.join(); // スレッドの終了を待機
-
-            return result.get();
-        } catch (InterruptedException e) {
+            return latestClaimedDay;
+        } catch (SQLException e) {
             e.printStackTrace();
             return 0;
         }
     }
 
     public boolean hasPlayerClaimedBonusForDayAndPoolType(UUID playerUUID, int day, String poolType, String bonusName) {
-        // スレッドから値を受け取るためにAtomicBooleanを使用
-        final AtomicBoolean result = new AtomicBoolean(false);
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                plugin.getLogger().info("failed to open MYSQL");
+                return true;
+            }
 
-        try {
-            // スレッドを作成して実行
-            Thread th = new Thread(() -> {
-                try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
-                    if (con == null) {
-                        plugin.getLogger().info("failed to open MYSQL");
-                        return;
-                    }
+            String sql = "SELECT 1 FROM loginbonus_reward_log " +
+                    "WHERE uuid = ? AND day = ? AND login_bonus_name = ? AND claimed_item_pool_type = ? " +
+                    "LIMIT 1";
 
-                    String sql = "SELECT 1 FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND day = ? AND login_bonus_name = ? AND claimed_item_pool_type = ? " +
-                            "LIMIT 1";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, playerUUID.toString());
+                ps.setInt(2, day);
+                ps.setString(3, bonusName);
+                ps.setString(4, poolType);
 
-                    try (PreparedStatement ps = con.prepareStatement(sql)) {
-                        ps.setString(1, playerUUID.toString());
-                        ps.setInt(2, day);
-                        ps.setString(3, bonusName);
-                        ps.setString(4, poolType);
-
-                        try (ResultSet rs = ps.executeQuery()) {
-                            result.set(rs.next());
-                        }
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next();
                 }
-            });
-
-            th.start();
-            th.join(); // スレッドの終了を待機
-
-            return result.get();
-        } catch (InterruptedException e) {
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return true;
         }
     }
 
     // ほぼbonus枠用
     public boolean hasPlayerClaimedBonusForPoolType(UUID playerUUID, String poolType, String bonusName) {
-        // スレッドから値を受け取るためにAtomicBooleanを使用
-        final AtomicBoolean result = new AtomicBoolean(false);
+        try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
+            if (con == null) {
+                plugin.getLogger().info("failed to open MYSQL");
+                return true;
+            }
 
-        try {
-            // スレッドを作成して実行
-            Thread th = new Thread(() -> {
-                try (Connection con = new MySQLFunc(mysqlManager.HOST0, mysqlManager.DB0, mysqlManager.USER0, mysqlManager.PASS0, mysqlManager.PORT0).open()) {
-                    if (con == null) {
-                        plugin.getLogger().info("failed to open MYSQL");
-                        return;
-                    }
+            String sql = "SELECT 1 FROM loginbonus_reward_log " +
+                    "WHERE uuid = ? AND claimed_item_pool_type = ? AND login_bonus_name = ? " +
+                    "LIMIT 1";
 
-                    String sql = "SELECT 1 FROM loginbonus_reward_log " +
-                            "WHERE uuid = ? AND claimed_item_pool_type = ? AND login_bonus_name = ? " +
-                            "LIMIT 1";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, playerUUID.toString());
+                ps.setString(2, poolType);
+                ps.setString(3, bonusName);
 
-                    try (PreparedStatement ps = con.prepareStatement(sql)) {
-                        ps.setString(1, playerUUID.toString());
-                        ps.setString(2, poolType);
-                        ps.setString(3, bonusName);
-
-                        try (ResultSet rs = ps.executeQuery()) {
-                            result.set(rs.next());
-                        }
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next();
                 }
-            });
-
-            th.start();
-            th.join(); // スレッドの終了を待機
-
-            return result.get();
-        } catch (InterruptedException e) {
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return true;
         }
     }
 

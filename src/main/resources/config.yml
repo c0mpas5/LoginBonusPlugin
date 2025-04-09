@@ -12,7 +12,4 @@ mysql_connection_data:
     pass: "rootpass"
     db: "connection_data"
 
-firstRemainingTime: 30
-maxRate: 10000
-minRate: 10
-canPlay: true
+target_server_name: "man10"

@@ -13,6 +13,8 @@ public final class LoginBonusPlugin extends JavaPlugin {
         // Plugin startup logic
         this.getLogger().info("プラグインが有効化されました");
 
+        createConfig();
+
         // MySQLManagerの初期化
         mysqlManager = new MySQLManager(this, "LoginBonus");
 
@@ -32,6 +34,14 @@ public final class LoginBonusPlugin extends JavaPlugin {
         // Plugin shutdown logic
         this.getLogger().info("プラグインが無効化されました");
     }
+
+    public void createConfig() {
+        // config.ymlの作成
+        this.saveDefaultConfig();
+        this.getLogger().info("現在は" + this.getConfig().getString("target_server_name") + "が対象のサーバーとして設定されています");
+    }
+
+
 }
 
 

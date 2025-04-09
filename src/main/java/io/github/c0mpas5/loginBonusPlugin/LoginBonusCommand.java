@@ -44,7 +44,7 @@ public class LoginBonusCommand implements CommandExecutor {
                                 return false;
                             }
                             // 累計ログイン日数を表示
-                            userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
+                            userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId(), plugin);
                             userGui.updateUserAccumulatedLoginBonusClaimGui();
                             userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                             return true;
@@ -54,7 +54,7 @@ public class LoginBonusCommand implements CommandExecutor {
                                 return false;
                             }
                             // 連続ログイン日数を表示
-                            userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
+                            userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId(), plugin);
                             userGui.updateUserContinuousLoginBonusClaimGui();
                             userGui.getUserContinuousLoginBonusClaimGui().show(player);
                             return true;
@@ -87,7 +87,7 @@ public class LoginBonusCommand implements CommandExecutor {
                         return false;
                     }
                     // 引数がない場合はデフォルトでGUIを表示
-                    LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId());
+                    LoginBonusUserGUI userGui = new LoginBonusUserGUI(loginBonusData, player.getUniqueId(), plugin);
                     userGui.updateUserAccumulatedLoginBonusClaimGui();
                     userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                     return true;

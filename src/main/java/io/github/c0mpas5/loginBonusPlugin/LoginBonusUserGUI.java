@@ -29,25 +29,25 @@ public class LoginBonusUserGUI implements Listener {
 
     private ChestGui adminTestGui;
     private LoginBonusData loginBonusData;
+    private LoginBonusPlugin plugin;
     private UUID playerUUID;
     private String currentBonusName;
     private LocalDateTime initDateTime;
     private String messagePrefix;
     boolean processing = false;
 
-    public LoginBonusUserGUI(LoginBonusData loginBonusData, UUID playerUUID){
+    public LoginBonusUserGUI(LoginBonusData loginBonusData, UUID playerUUID, LoginBonusPlugin plugin) {
         messagePrefix = "§6§l[LoginBonusPlugin] §r";
         currentBonusName = RewardManager.getCurrentBonusName();
         initDateTime = LocalDateTime.now();
 
         this.loginBonusData = loginBonusData;
+        this.plugin = plugin;
 
         this.playerUUID = playerUUID;
         userAccumulatedLoginBonusClaimGui();
         userRewardListGui();
         userContinuousLoginBonusClaimGui();
-
-        adminTestGui();
     }
 
 
@@ -58,10 +58,10 @@ public class LoginBonusUserGUI implements Listener {
     }
 
     public void updateUserAccumulatedLoginBonusClaimGui() {
-        Thread th = new Thread(() -> {
-
-        // 一旦全部再生成。絶対重いので改善すべきではある
+        // 全部再生成
         userAccumulatedLoginBonusClaimGui.getPanes().clear();
+
+        Thread th = new Thread(() -> {
 
         //全ページ
         PaginatedPane paginatedPane = new PaginatedPane(0, 0, 9, 6);
@@ -123,7 +123,6 @@ public class LoginBonusUserGUI implements Listener {
         background.applyMask(mask);
         background.addItem(new GuiItem(LBItems.backgroundBlackGlassIS()));
         background.setRepeat(true);
-        userAccumulatedLoginBonusClaimGui.addPane(background);
 
         // 次のページ
         StaticPane nextPagePane = new StaticPane(8, 5, 1, 1);
@@ -131,9 +130,23 @@ public class LoginBonusUserGUI implements Listener {
             Player player = (Player) event.getWhoClicked();
             if (paginatedPane.getPage() < pageCount - 1) {
                 paginatedPane.setPage(paginatedPane.getPage() + 1);
-                userAccumulatedLoginBonusClaimGui.update();
+                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        userAccumulatedLoginBonusClaimGui.update();
+                    }
+                });
             } else {
-                player.sendMessage(messagePrefix + "§cこのページが末尾のページであるため、次ページを開けません。");
+                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        player.sendMessage(messagePrefix + "§cこのページが末尾のページであるため、次ページを開けません。");
+                    }
+                });
             }
         }), 0, 0);
 
@@ -143,9 +156,23 @@ public class LoginBonusUserGUI implements Listener {
             Player player = (Player) event.getWhoClicked();
             if (paginatedPane.getPage() > 0) {
                 paginatedPane.setPage(paginatedPane.getPage() - 1);
-                userAccumulatedLoginBonusClaimGui.update();
+                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        userAccumulatedLoginBonusClaimGui.update();
+                    }
+                });
             } else {
-                player.sendMessage(messagePrefix + "§cこのページが先頭のページであるため、前ページを開けません。");
+                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        player.sendMessage(messagePrefix + "§cこのページが先頭のページであるため、前ページを開けません。");
+                    }
+                });
             }
         }), 0, 0);
 
@@ -160,22 +187,29 @@ public class LoginBonusUserGUI implements Listener {
                 return;
             }
 
-            updateUserContinuousLoginBonusClaimGui();
-            getUserContinuousLoginBonusClaimGui().show(player);
+            Bukkit.getScheduler().runTask(plugin, new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    updateUserContinuousLoginBonusClaimGui();
+                    getUserContinuousLoginBonusClaimGui().show(player);
+                }
+            });
         }), 0, 0);
-        userAccumulatedLoginBonusClaimGui.addPane(loginStreakPane);
+//        userAccumulatedLoginBonusClaimGui.addPane(loginStreakPane);
 
         //チュートリアル1
         StaticPane ruleTutorialPane = new StaticPane(0, 2, 1, 1);
         ruleTutorialPane.addItem(new GuiItem(LBItems.ruleTutorialBookForUserIS(currentBonusName), event -> {
         }), 0, 0);
-        userAccumulatedLoginBonusClaimGui.addPane(ruleTutorialPane);
+//        userAccumulatedLoginBonusClaimGui.addPane(ruleTutorialPane);
 
         //チュートリアル2
         StaticPane rewardTutorialPane = new StaticPane(0, 3, 1, 1);
         rewardTutorialPane.addItem(new GuiItem(LBItems.rewardTutorialBookForUserIS(currentBonusName), event -> {
         }), 0, 0);
-        userAccumulatedLoginBonusClaimGui.addPane(rewardTutorialPane);
+//        userAccumulatedLoginBonusClaimGui.addPane(rewardTutorialPane);
 
         // 表示するplayerHead、現在のページ数の表示を各ページに追加
         OutlinePane[] rewardPanes = new OutlinePane[pageCount];
@@ -185,6 +219,9 @@ public class LoginBonusUserGUI implements Listener {
             paginatedPane.addPane(i, background);
             paginatedPane.addPane(i, nextPagePane);
             paginatedPane.addPane(i, prevPagePane);
+            paginatedPane.addPane(i, loginStreakPane);
+            paginatedPane.addPane(i, ruleTutorialPane);
+            paginatedPane.addPane(i, rewardTutorialPane);
 
             // 現在のページ数の表示
             currentPageCountPane[i] = new StaticPane(4, 5, 1, 1);
@@ -224,47 +261,56 @@ public class LoginBonusUserGUI implements Listener {
                         // 左クリック時、問題がなければ報酬渡す
                         if (event.isLeftClick()) {
                             if(processing){
-                                player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
+                                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
+                                    }
+                                });
                                 return;
                             }
                             processing = true;
                             if (isInventoryFull(player)) {
-                                player.sendMessage(messagePrefix + "§cインベントリに空きがないため、報酬を受け取れません");
-                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                player.closeInventory();
-                            } else if (!(canClaimRewardDay == loginCount - 1)) {
-                                player.sendMessage(messagePrefix + "§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
-                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                player.closeInventory();
+                                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        player.sendMessage(messagePrefix + "§cインベントリに空きがないため、報酬を受け取れません");
+                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                        player.closeInventory();
+                                    }
+                                });
+                            } else if (!(canClaimRewardDay == loginCount - 1)) { // これいる？
+                                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        player.sendMessage(messagePrefix + "§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
+                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                        player.closeInventory();
+                                    }
+                                });
                             } else {
                                 // specialの時のサブ垢処理
-                                if (poolType.equals("special")) {
+                                if (poolType.equals("special") || poolType.equals("bonus")) {
                                     int accountCount = checkSubAccountClaimedCount(player.getUniqueId(), index, poolType);
                                     int accountLimit = RewardManager.getAccountRewardLimit();
                                     if(accountCount >= accountLimit){
-                                        player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
-                                        player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
-                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                        player.closeInventory();
-                                        return;
-                                    }
-                                }
-
-                                // bonusの時のサブ垢処理
-                                if (poolType.equals("bonus")) {
-                                    List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
-                                    int accountLimit = RewardManager.getAccountRewardLimit();
-                                    int accountCount = 0;
-                                    for(UUID account : accounts){
-                                        if(loginBonusData.hasPlayerClaimedBonusForPoolType(account, "bonus", currentBonusName)){
-                                            accountCount++;
-                                        }
-                                    }
-                                    if(accountCount >= accountLimit){
-                                        player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
-                                        player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
-                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                        player.closeInventory();
+                                        Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
+                                                player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
+                                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                                player.closeInventory();
+                                            }
+                                        });
                                         return;
                                     }
                                 }
@@ -272,18 +318,39 @@ public class LoginBonusUserGUI implements Listener {
                                 ItemStack clickedSlotItem = event.getCurrentItem();
                                 ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
                                 if(clickedSlotItemMeta.getDisplayName().contains("エピック") && clickedSlotItemMeta.getLore().get(0).contains("受取不可")){
-                                    player.sendMessage(messagePrefix + "§cボーナス枠報酬の受け取り条件を満たしていないため、この報酬は受け取れません");
-                                    player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                    Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            player.sendMessage(messagePrefix + "§cボーナス枠報酬の受け取り条件を満たしていないため、この報酬は受け取れません");
+                                            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                        }
+                                    });
                                 } else if (clickedSlotItemMeta.getDisplayName().contains("無効")) { // 2回目以降は報酬を取れないように
-                                    player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、受け取れません");
-                                    player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                    Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、受け取れません");
+                                            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                        }
+                                    });
                                 } else {
-                                    player.closeInventory();
                                     ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
-                                    player.getInventory().addItem(item);
+                                    Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            player.closeInventory();
+                                            player.getInventory().addItem(item);
+                                            player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
+                                            player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
+                                        }
+                                    });
                                     loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, index + 1, poolType, item.toString(), LocalDateTime.now());
-                                    player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
-                                    player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
                                 }
                             }
                             processing = false;
@@ -291,22 +358,29 @@ public class LoginBonusUserGUI implements Listener {
                         } else if (event.isRightClick()) {
                             ItemStack clickedSlotItem = event.getCurrentItem();
                             ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
-                            String clickedRewardPoolType = "";
-                            if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
-                                clickedRewardPoolType = "normal";
-                                updateUserRewardListGui(clickedRewardPoolType);
-                                getUserRewardListGui().show(player);
-                            } else if (clickedSlotItemMeta.getDisplayName().contains("レア")) {
-                                clickedRewardPoolType = "special";
-                                updateUserRewardListGui(clickedRewardPoolType);
-                                getUserRewardListGui().show(player);
-                            } else if (clickedSlotItemMeta.getDisplayName().contains("エピック")) {
-                                clickedRewardPoolType = "bonus";
-                                updateUserRewardListGui(clickedRewardPoolType);
-                                getUserRewardListGui().show(player);
-                            } else if (clickedSlotItemMeta.getDisplayName().contains("無効")) {
-                                player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、報酬を閲覧できません");
-                            }
+                            Bukkit.getScheduler().runTask(plugin, new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    String clickedRewardPoolType = "";
+                                    if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
+                                        clickedRewardPoolType = "normal";
+                                        updateUserRewardListGui(clickedRewardPoolType);
+                                        getUserRewardListGui().show(player);
+                                    } else if (clickedSlotItemMeta.getDisplayName().contains("レア")) {
+                                        clickedRewardPoolType = "special";
+                                        updateUserRewardListGui(clickedRewardPoolType);
+                                        getUserRewardListGui().show(player);
+                                    } else if (clickedSlotItemMeta.getDisplayName().contains("エピック")) {
+                                        clickedRewardPoolType = "bonus";
+                                        updateUserRewardListGui(clickedRewardPoolType);
+                                        getUserRewardListGui().show(player);
+                                    } else if (clickedSlotItemMeta.getDisplayName().contains("無効")) {
+                                        player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、報酬を閲覧できません");
+                                    }
+                                }
+                            });
                         }
                     }));
                 } else {
@@ -318,45 +392,58 @@ public class LoginBonusUserGUI implements Listener {
                             return;
                         }
 
-                        if (event.isLeftClick()) {
-                            player.sendMessage(messagePrefix + "§cこの報酬は受取済か、本日が受取可能な日ではないため受け取れません");
-                            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                            // poolTypeごとに表示する報酬プールを変更（ここは報酬が得られる日じゃなかろうが変わらん）
-                        } else if (event.isRightClick()) {
-                            ItemStack clickedSlotItem = event.getCurrentItem();
-                            ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
-                            String clickedRewardPoolType = "";
-                            if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
-                                clickedRewardPoolType = "normal";
-                                updateUserRewardListGui(clickedRewardPoolType);
-                                getUserRewardListGui().show(player);
-                            } else if ((clickedSlotItemMeta.getDisplayName().contains("レア"))) {
-                                clickedRewardPoolType = "special";
-                                updateUserRewardListGui(clickedRewardPoolType);
-                                getUserRewardListGui().show(player);
-                            } else if (clickedSlotItemMeta.getDisplayName().contains("エピック")) {
-                                clickedRewardPoolType = "bonus";
-                                updateUserRewardListGui(clickedRewardPoolType);
-                                getUserRewardListGui().show(player);
-                            } else if (clickedSlotItemMeta.getDisplayName().contains("無効")) {
-                                player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、報酬を閲覧できません");
-                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                        Bukkit.getScheduler().runTask(plugin, new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if (event.isLeftClick()) {
+                                    player.sendMessage(messagePrefix + "§cこの報酬は受取済か、本日が受取可能な日ではないため受け取れません");
+                                    player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                    // poolTypeごとに表示する報酬プールを変更（ここは報酬が得られる日じゃなかろうが変わらん）
+                                } else if (event.isRightClick()) {
+                                    ItemStack clickedSlotItem = event.getCurrentItem();
+                                    ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
+                                    String clickedRewardPoolType = "";
+                                    if (clickedSlotItemMeta.getDisplayName().contains("コモン")) {
+                                        clickedRewardPoolType = "normal";
+                                        updateUserRewardListGui(clickedRewardPoolType);
+                                        getUserRewardListGui().show(player);
+                                    } else if ((clickedSlotItemMeta.getDisplayName().contains("レア"))) {
+                                        clickedRewardPoolType = "special";
+                                        updateUserRewardListGui(clickedRewardPoolType);
+                                        getUserRewardListGui().show(player);
+                                    } else if (clickedSlotItemMeta.getDisplayName().contains("エピック")) {
+                                        clickedRewardPoolType = "bonus";
+                                        updateUserRewardListGui(clickedRewardPoolType);
+                                        getUserRewardListGui().show(player);
+                                    } else if (clickedSlotItemMeta.getDisplayName().contains("無効")) {
+                                        player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、報酬を閲覧できません");
+                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                    }
+                                }
                             }
-                        }
+                        });
                     }));
                 }
             }
             paginatedPane.addPane(i, rewardPanes[i]);
         }
-        userAccumulatedLoginBonusClaimGui.addPane(paginatedPane);
-
-        userAccumulatedLoginBonusClaimGui.setTitle("累積ログボ §l⏰残り" + daysUntilEnd);
-
+            Bukkit.getScheduler().runTask(plugin, new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    userAccumulatedLoginBonusClaimGui.addPane(paginatedPane);
+                    userAccumulatedLoginBonusClaimGui.update();
+                    userAccumulatedLoginBonusClaimGui.setTitle("累積ログボ §l⏰残り" + daysUntilEnd);
+                }
+            });
         });
-
         th.start();
     }
 
+    //TODO: こっから
     public void userRewardListGui() {
         userRewardListGui = new ChestGui(6, "報酬プール");
         userRewardListGui.setOnGlobalClick(event -> event.setCancelled(true));
@@ -417,10 +504,6 @@ public class LoginBonusUserGUI implements Listener {
         userContinuousLoginBonusClaimGui = new ChestGui(3, "連続ログボ受取");
         userContinuousLoginBonusClaimGui.setOnGlobalClick(event -> event.setCancelled(true));
 
-        int needDayToClaim = 10;
-        int streak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
-        String poolType = "continuous";
-
         // 外周背景
         OutlinePane background = new OutlinePane(0, 0, 9, 3, Pane.Priority.LOWEST);
         Mask mask = new Mask(
@@ -451,100 +534,143 @@ public class LoginBonusUserGUI implements Listener {
     public void updateUserContinuousLoginBonusClaimGui() {
         userContinuousLoginBonusClaimGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
 
-        int needDayToClaim = 10;
-        int streak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
-        String poolType = "continuous";
+        Thread th = new Thread(() -> {
+            int needDayToClaim = 10;
+            int streak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
+            String poolType = "continuous";
 
-        StaticPane continuousRewardPane = new StaticPane(4, 1, 1, 1, Pane.Priority.HIGH);
-        if (hasClaimedToday(playerUUID, "continuous")) {
-            continuousRewardPane.addItem(new GuiItem(LBItems.alreadyClaimedContinuousRewardForUserGlassIS(), event -> {
-                Player player = (Player) event.getWhoClicked();
+            StaticPane continuousRewardPane = new StaticPane(4, 1, 1, 1, Pane.Priority.HIGH);
+            if (hasClaimedToday(playerUUID, "continuous")) {
+                continuousRewardPane.addItem(new GuiItem(LBItems.alreadyClaimedContinuousRewardForUserGlassIS(), event -> {
+                    Player player = (Player) event.getWhoClicked();
 
-                // クリック時、日付が変わってたらインベントリ閉じて処理中断
-                if(closeInvWhenDayChanged(player)){
-                    return;
-                }
-
-                player.sendMessage(messagePrefix + "§c報酬は受け取り済みです");
-                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-            }), 0, 0);
-        } else {
-            continuousRewardPane.addItem(new GuiItem(LBItems.continuousRewardForUserPlayerHeadIS(streak, needDayToClaim), event -> {
-                Player player = (Player) event.getWhoClicked();
-
-                // クリック時、日付が変わってたらインベントリ閉じて処理中断
-                if(closeInvWhenDayChanged(player)){
-                    return;
-                }
-
-                if(streak >= needDayToClaim){
-
-                    // 左クリック時、問題がなければ報酬渡す
-                    if (event.isLeftClick()) {
-                        if(processing){
-                            player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
-                            return;
-                        }
-                        processing = true;
-                        if (isInventoryFull(player)) {
-                            player.sendMessage(messagePrefix + "§cインベントリに空きがないため、報酬を受け取れません");
+                    // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                    if (closeInvWhenDayChanged(player)) {
+                        return;
+                    }
+                    Bukkit.getScheduler().runTask(plugin, new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            player.sendMessage(messagePrefix + "§c報酬は受け取り済みです");
                             player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                            player.closeInventory();
-                        } else {
-                            int claimedContinuousRewardNum = loginBonusData.getNumOfClaimedContinuousReward(playerUUID, currentBonusName) + 1; // x番目の連続ログボ報酬
+                        }
+                    });
+                }), 0, 0);
+            } else {
+                continuousRewardPane.addItem(new GuiItem(LBItems.continuousRewardForUserPlayerHeadIS(streak, needDayToClaim), event -> {
+                    Player player = (Player) event.getWhoClicked();
 
-                            // specialの時のサブ垢処理
-                            List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(event.getWhoClicked().getUniqueId());
-                            int accountLimit = RewardManager.getAccountRewardLimit();
-                            int accountCount = 0;
-                            for (UUID account : accounts) {
-                                if (loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, claimedContinuousRewardNum, "continuous", currentBonusName)) {
-                                    accountCount++;
-                                }
-                            }
-                            if (accountCount >= accountLimit) {
-                                player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
-                                player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
-                                player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                                player.closeInventory();
+                    // クリック時、日付が変わってたらインベントリ閉じて処理中断
+                    if (closeInvWhenDayChanged(player)) {
+                        return;
+                    }
+
+                    if (streak >= needDayToClaim) {
+
+                        // 左クリック時、問題がなければ報酬渡す
+                        if (event.isLeftClick()) {
+                            if (processing) {
+                                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
+                                    }
+                                });
                                 return;
                             }
+                            processing = true;
+                            if (isInventoryFull(player)) {
+                                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        player.sendMessage(messagePrefix + "§cインベントリに空きがないため、報酬を受け取れません");
+                                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                        player.closeInventory();
+                                    }
+                                });
+                            } else {
+                                int claimedContinuousRewardNum = loginBonusData.getNumOfClaimedContinuousReward(playerUUID, currentBonusName); // 最後に受け取った連続ログボ報酬の番号
+                                int accountLimit = RewardManager.getAccountRewardLimit();
+                                // 連続ログボのサブ垢処理
+                                int accountCount = checkSubAccountClaimedCount(player.getUniqueId(), claimedContinuousRewardNum, poolType);
+                                if(accountCount >= accountLimit){
+                                    Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            player.sendMessage(messagePrefix + "§c同一報酬を受取可能なアカウント数の上限に達したため、報酬を受け取れません");
+                                            player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
+                                            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                            player.closeInventory();
+                                        }
+                                    });
+                                    return;
+                                }
 
-                            ItemStack clickedSlotItem = event.getCurrentItem();
-                            ItemMeta clickedSlotItemMeta = clickedSlotItem.getItemMeta();
-                            player.closeInventory();
-                            ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
-                            player.getInventory().addItem(item);
-                            loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum, poolType, item.toString(), LocalDateTime.now());
-                            player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
-                            player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
+                                ItemStack item = RewardManager.getRandomRewards(currentBonusName, poolType);
+                                Bukkit.getScheduler().runTask(plugin, new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        player.closeInventory();
+                                        player.getInventory().addItem(item);
+                                        player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
+                                        player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
+                                    }
+                                });
+
+                                loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum, poolType, item.toString(), LocalDateTime.now());
+                            }
+                            processing = false;
+                        } else if (event.isRightClick()) {
+                            updateUserRewardListGui(poolType);
+                            Bukkit.getScheduler().runTask(plugin, new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    getUserRewardListGui().show(player);
+                                }
+                            });
                         }
-                        processing = false;
-                    } else if (event.isRightClick()) {
-                        updateUserRewardListGui(poolType);
-                        getUserRewardListGui().show(player);
+                    } else {
+                        Bukkit.getScheduler().runTask(plugin, new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if (event.isLeftClick()) {
+                                    player.sendMessage(messagePrefix + "§c連続ログイン日数が足りません。" + needDayToClaim + "日必要です。現在: " + streak + "日");
+                                    player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                } else if (event.isRightClick()) {
+                                    updateUserRewardListGui(poolType);
+                                    getUserRewardListGui().show(player);
+                                }
+                            }
+                        });
                     }
-                } else {
-                    if (event.isLeftClick()) {
-                        player.sendMessage(messagePrefix + "§c連続ログイン日数が足りません。" + needDayToClaim + "日必要です。現在: " + streak + "日");
-                        player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
-                    }else if(event.isRightClick()){
-                        updateUserRewardListGui(poolType);
-                        getUserRewardListGui().show(player);
-                    }
+                }), 0, 0);
+            }
+            Bukkit.getScheduler().runTask(plugin, new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    userContinuousLoginBonusClaimGui.addPane(continuousRewardPane);
+                    userContinuousLoginBonusClaimGui.update();
+                    Bukkit.getPlayer(playerUUID).sendMessage(messagePrefix + "GUIを更新しました");
                 }
-            }), 0, 0);
-        }
-        userContinuousLoginBonusClaimGui.addPane(continuousRewardPane);
-    }
-
-    public void adminTestGui(){
-        adminTestGui = new ChestGui(6, "テスト");
-        adminTestGui.setOnGlobalClick(event -> event.setCancelled(true));
-
-        Slider slider = new Slider(0, 0, 9, 6);
-        slider.setValue(0.5f);
-        adminTestGui.addPane(slider);
+            });
+        });
+        th.start();
     }
 
     public ChestGui getUserAccumulatedLoginBonusClaimGui(){
@@ -553,10 +679,6 @@ public class LoginBonusUserGUI implements Listener {
 
     public ChestGui getUserRewardListGui(){
         return userRewardListGui;
-    }
-
-    public ChestGui getAdminTestGui(){
-        return adminTestGui;
     }
 
     public ChestGui getUserContinuousLoginBonusClaimGui(){
@@ -628,26 +750,49 @@ public class LoginBonusUserGUI implements Listener {
         if(initDate.isBefore(nowDate)){
             // 日付が変わった場合、開催中のログインボーナスを再取得
             currentBonusName = RewardManager.getCurrentBonusName();
-            player.closeInventory();
-            player.sendMessage(messagePrefix + "§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
-            player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+            Bukkit.getScheduler().runTask(plugin, new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    player.closeInventory();
+                    player.sendMessage(messagePrefix + "§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
+                    player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                }
+            });
             return true;
         } else {
             return false;
         }
     }
 
+    // サブスレッドでしか呼ばれない。現在のアカウントも含む、特定の報酬を受取済みのアカウントの所持数を返す
     public int checkSubAccountClaimedCount(UUID uuid, int index, String poolType) {
-//        Thread th = new Thread(() -> {
-//            List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(uuid);
-//            int accountCount = 1; // 現在のアカウントをカウントに含める
-//            for(UUID account : accounts){
-//                if(loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, index + 1, "special", currentBonusName)){
-//                    accountCount++;
-//                }
-//            }
-//            return accountCount;
-//        });
-        return 1; //NOTICE: プッシュ用仮置き
+        List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(uuid);
+        int accountCount = 1; // 現在のアカウントをカウントに含める
+
+        if(poolType.equals("special")){
+            for (UUID account : accounts) {
+                // インデックス番号ではなく、〇日目の方で扱うので+1する
+                if (loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, index + 1, "special", currentBonusName)) {
+                    accountCount++;
+                }
+            }
+        } else if(poolType.equals("bonus")) {
+            for (UUID account : accounts) {
+                if (loginBonusData.hasPlayerClaimedBonusForPoolType(account, "bonus", currentBonusName)) {
+                    accountCount++;
+                }
+            }
+        } else if(poolType.equals("continuous")){
+            for (UUID account : accounts) {
+                // インデックス番号ではなく、〇回目の方で扱うので+1する
+                if (loginBonusData.hasPlayerClaimedBonusForDayAndPoolType(account, index + 1, "continuous", currentBonusName)) {
+                    accountCount++;
+                }
+            }
+        }
+
+        return accountCount;
     }
 }
