@@ -37,25 +37,7 @@
 1. プラグインのJARファイルをダウンロードします。
 2. ダウンロードしたJARファイルをサーバーの`plugins`フォルダにコピーします。
 3. 報酬の受取履歴を格納するためのデータベースを1つ作成します。（データベース名の例：`loginbonus_info`）
-4. `plugins/LoginBonusPlugin`ディレクトリ内に`config.yml`を作成し、以下の内容を記述します。（`plugins/LoginBonusPlugin`ディレクトリが存在しない場合はそれも作成）
-   
-```yaml
-mysql_loginbonus_info:
-  host: ""
-  port: ""
-  user: ""
-  pass: ""
-  db: ""
-
-mysql_connection_data:
-  host: ""
-  port: ""
-  user: ""
-  pass: ""
-  db: ""
-```
-
-   ""内に値をそれぞれ入力してください。`mysql_loginbonus_info`には、手順3で設定したデータベースの情報を入力してください。`mysql_connection_data`には、プレイヤーのログイン履歴を格納しているテーブルを持つデータベースの情報を入力してください。（既に存在しているとのことです）\
+4. サーバーを（再）起動し、接続先のデータベースの情報を変更する必要がある場合は、`LoginBonusPlugin/Config.yml`を書き換えます。`mysql_loginbonus_info`には、手順3で設定したデータベースの情報を入力してください。`mysql_connection_data`には、プレイヤーのログイン履歴を格納しているテーブルを持つデータベースの情報を入力してください。（既に存在しているとのことです）\
 5. サーバーを再起動します。
 
 ## 依存プラグイン
