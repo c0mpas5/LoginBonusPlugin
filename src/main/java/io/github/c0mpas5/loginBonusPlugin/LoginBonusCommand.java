@@ -76,7 +76,12 @@ public class LoginBonusCommand implements CommandExecutor {
                             player.sendMessage("§b/loginbonus[lb] help §r§7- ヘルプを表示");
                             player.sendMessage("§f（[]：括弧内の書き方に代替可能）");
                             return true;
-
+//                        case "test":
+//                            if(sender.hasPermission("loginbonusplugin.op")){
+//                                LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
+//                                adminGui.getAdminTestGui().show(player);
+//                                return true;
+//                            }
                         default:
                             // 引数がわからない場合はGUIを表示
                             player.sendMessage(messagePrefix + "§cコマンドが誤っています");

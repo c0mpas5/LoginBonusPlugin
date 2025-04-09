@@ -13,6 +13,7 @@ import com.github.stefvanschie.inventoryframework.pane.component.Slider;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -77,7 +78,7 @@ public class LoginBonusAdminGUI implements Listener {
         adminRecoverDateSettingGui();
         adminSubAccountSettingGui();
 
-        adminTestGui();
+        //adminTestGui();
     }
 
     public void adminHomeGui(){
@@ -422,7 +423,7 @@ public class LoginBonusAdminGUI implements Listener {
     public void updateAdminNormalRewardSettingGui() {
         adminNormalRewardSettingGui.getPanes().removeIf(pane -> pane instanceof OutlinePane && pane.getPriority() == Pane.Priority.NORMAL);
 
-        // 新しいrewardItemPaneを追加
+        //新しいrewardItemPaneを追加
         OutlinePane rewardItemPane = new OutlinePane(0, 0, 9, 5, Pane.Priority.NORMAL);
         ArrayList<ItemStack> rewardItems = RewardManager.getAllRewards(currentLoginBonusName, "normal");
         for (int i = 0; i < rewardItems.size(); i++) {
@@ -1725,14 +1726,13 @@ public class LoginBonusAdminGUI implements Listener {
         adminSubAccountSettingGui.getFirstItemComponent().addPane(cancelPane);
     }
 
-    public void adminTestGui(){
-        adminTestGui = new ChestGui(6, "テスト");
-        adminTestGui.setOnGlobalClick(event -> event.setCancelled(true));
-
-        Slider slider = new Slider(0, 0, 9, 6);
-        slider.setValue(0.5f);
-        adminTestGui.addPane(slider);
-    }
+//    public void adminTestGui(){
+//        adminTestGui = new ChestGui(3, "test");
+//
+//        StaticPane diamondPane = new StaticPane(4, 1, 1, 1);
+//        diamondPane.addItem(new GuiItem(new ItemStack(Material.DIAMOND)), 0, 0);
+//        adminTestGui.addPane(diamondPane);
+//    }
 
     public ChestGui getAdminHomeGui(){
         return adminHomeGui;
