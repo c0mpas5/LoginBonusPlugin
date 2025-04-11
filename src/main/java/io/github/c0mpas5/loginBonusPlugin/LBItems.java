@@ -383,8 +383,11 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + "・報酬を与える際、各スロットの排出確率が等分されて抽選されます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
-                    ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
-                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
+                    ChatColor.of("#C2C2C2") + "・左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
+                    ChatColor.of("#C2C2C2") + "　（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）",
+                    ChatColor.of("#C2C2C2") + "・報酬プールに何かしらのアイテムが設定されている状態で、このGUIを開くと",
+                    ChatColor.of("#C2C2C2") + "　それらのアイテムに対して予期しないNBTタグが1つ付与されますが、",
+                    ChatColor.of("#C2C2C2") + "　このタグは保存時に削除されるため、最終的に与えられるアイテムには影響しません。"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -411,7 +414,10 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
                     ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
-                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
+                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）",
+                    ChatColor.of("#C2C2C2") + "・報酬プールに何かしらのアイテムが設定されている状態で、このGUIを開くと",
+                    ChatColor.of("#C2C2C2") + "　それらのアイテムに対して予期しないNBTタグが1つ付与されますが、",
+                    ChatColor.of("#C2C2C2") + "　このタグは保存時に削除されるため、最終的に与えられるアイテムには影響しません。"
 
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
@@ -440,7 +446,10 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
                     ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
-                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
+                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）",
+                    ChatColor.of("#C2C2C2") + "・報酬プールに何かしらのアイテムが設定されている状態で、このGUIを開くと",
+                    ChatColor.of("#C2C2C2") + "　それらのアイテムに対して予期しないNBTタグが1つ付与されますが、",
+                    ChatColor.of("#C2C2C2") + "　このタグは保存時に削除されるため、最終的に与えられるアイテムには影響しません。"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -469,7 +478,10 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.WHITE + "【報酬プール設定における注意点】──────────────",
                     ChatColor.of("#C2C2C2") + "左上からアイテムを詰めて配置し、「保存する」をクリックするようにしてください。",
-                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）"
+                    ChatColor.of("#C2C2C2") + "（横1列目を左から右へ埋めていき、右端まで埋めたら横2列目の左端から同じように埋めていく）",
+                    ChatColor.of("#C2C2C2") + "・報酬プールに何かしらのアイテムが設定されている状態で、このGUIを開くと",
+                    ChatColor.of("#C2C2C2") + "　それらのアイテムに対して予期しないNBTタグが1つ付与されますが、",
+                    ChatColor.of("#C2C2C2") + "　このタグは保存時に削除されるため、最終的に与えられるアイテムには影響しません。"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
@@ -1109,7 +1121,11 @@ public class LBItems {
             meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "報酬プールについて");
             meta.setLore(List.of(
                     ChatColor.of("#C2C2C2") + "・各スロットのうち、いずれか1スロットが報酬として与えられます",
-                    ChatColor.of("#C2C2C2") + "・報酬を受け取る際、各スロットの" + ChatColor.GOLD + ChatColor.BOLD + "排出確率が等分" + ChatColor.RESET + ChatColor.of("#C2C2C2") + "されて抽選されます"
+                    ChatColor.of("#C2C2C2") + "・報酬を受け取る際、各スロットの" + ChatColor.GOLD + ChatColor.BOLD + "排出確率が等分" + ChatColor.RESET + ChatColor.of("#C2C2C2") + "されて抽選されます",
+                    ChatColor.of("#C2C2C2") + "・この報酬プールプレビュー画面では、プラグインの仕様上ほぼ全ての報酬アイテムに",
+                    ChatColor.of("#C2C2C2") + "　本来付与されないNBTタグが1つ付与されています。",
+                    ChatColor.of("#C2C2C2") + "　実際に付与されるアイテムはこのNBTタグが削除されたものとなります。",
+                    ChatColor.of("#C2C2C2") + "　（つまり、多くの場合NBTタグの数値が表示上のものから1減少します）"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);

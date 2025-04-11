@@ -445,7 +445,7 @@ public class LoginBonusUserGUI implements Listener {
 
     //TODO: こっから
     public void userRewardListGui() {
-        userRewardListGui = new ChestGui(6, "報酬プール");
+        userRewardListGui = new ChestGui(6, "報酬プールプレビュー");
         userRewardListGui.setOnGlobalClick(event -> event.setCancelled(true));
 
         OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);
