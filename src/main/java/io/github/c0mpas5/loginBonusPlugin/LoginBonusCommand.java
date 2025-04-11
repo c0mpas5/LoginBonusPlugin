@@ -2,15 +2,11 @@
 package io.github.c0mpas5.loginBonusPlugin;
 
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 
@@ -81,9 +77,11 @@ public class LoginBonusCommand implements CommandExecutor {
                             player.sendMessage("§f（[]：括弧内の書き方に代替可能）");
                             return true;
 //                        case "test":
-//                            ItemStack item = player.getInventory().getItemInMainHand();
-//                            ItemStack cleanedItem = removeCustomNBT(item, "loginbonusplugin", "if-uuid");
-//                            player.getInventory().addItem(cleanedItem);
+//                            if(sender.hasPermission("loginbonusplugin.op")){
+//                                LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
+//                                adminGui.getAdminTestGui().show(player);
+//                                return true;
+//                            }
                         default:
                             // 引数がわからない場合はGUIを表示
                             player.sendMessage(messagePrefix + "§cコマンドが誤っています");
@@ -103,27 +101,4 @@ public class LoginBonusCommand implements CommandExecutor {
         }
         return false;
     }
-
-    private ItemStack removeCustomNBT(ItemStack item, String keyNamespace, String keyName) {
-        if (item == null || !item.hasItemMeta()) {
-            return item; // アイテムがnullまたはメタデータがない場合はそのまま返す
-        }
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return item; // メタデータがnullの場合はそのまま返す
-        }
-
-        PersistentDataContainer container = meta.getPersistentDataContainer();
-        NamespacedKey key = new NamespacedKey(keyNamespace, keyName);
-
-        // 該当するキーを削除
-        if (container.has(key, PersistentDataType.BYTE_ARRAY)) {
-            container.remove(key);
-        }
-
-        item.setItemMeta(meta); // 更新したメタデータをアイテムに設定
-        return item;
-    }
-
 }
