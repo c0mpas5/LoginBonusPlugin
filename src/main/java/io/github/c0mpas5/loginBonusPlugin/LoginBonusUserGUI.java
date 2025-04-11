@@ -6,7 +6,6 @@ import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
-import com.github.stefvanschie.inventoryframework.pane.component.Slider;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -695,14 +694,6 @@ public class LoginBonusUserGUI implements Listener {
         }
         return true;
     }
-
-//    private String getItemDisplayName(ItemStack item) {
-//        if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
-//            return item.getItemMeta().getDisplayName();
-//        } else {
-//            return item.getType().name();
-//        }
-//    }
 
     private Component getItemDisplayName(ItemStack item) {
         if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {

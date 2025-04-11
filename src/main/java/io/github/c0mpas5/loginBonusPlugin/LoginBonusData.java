@@ -1,18 +1,12 @@
 // LoginBonusData.java
 package io.github.c0mpas5.loginBonusPlugin;
 
-import org.bukkit.Bukkit;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class LoginBonusData {
 

@@ -9,12 +9,9 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 
 
-import com.github.stefvanschie.inventoryframework.pane.component.Slider;
+
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
-import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -249,8 +246,6 @@ public class LoginBonusAdminGUI implements Listener {
             Player player = (Player) event.getWhoClicked();
             updateAdminLoadGui();
             getAdminLoadGui().show(player);
-            //player.sendMessage(messagePrefix + "§c当該機能は未実装です");
-            //player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
         }), 0, 0);
         adminCreateGui.addPane(loadPane);
     }
