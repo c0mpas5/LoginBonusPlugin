@@ -102,7 +102,7 @@ public class LoginBonusAdminGUI implements Listener {
         StaticPane createItemPane = new StaticPane(2, 1, 1, 1);
         createItemPane.addItem(new GuiItem(LBItems.createPickaxeIS(), event -> {
             Player player = (Player) event.getWhoClicked();
-            updateAdminCreateGui(false, null);
+            updateAdminCreateGui(null);
             getAdminFirstNameSettingGui().show(player);
         }), 0, 0);
         adminHomeGui.addPane(createItemPane);
@@ -250,14 +250,14 @@ public class LoginBonusAdminGUI implements Listener {
         adminCreateGui.addPane(loadPane);
     }
 
-    public void updateAdminCreateGui(boolean isEditMode, String editingBonusName) {
+    public void updateAdminCreateGui(String editingBonusName) {
         // 編集時、ログインボーナス開催中の時に無効化
         adminCreateGui.getPanes().removeIf(pane -> pane.getPriority() == Pane.Priority.HIGH);
         String currentHoldBonusName = RewardManager.getCurrentBonusName();
 
         StaticPane timePane = new StaticPane(4, 2, 1, 1, Pane.Priority.HIGH);
-        // 編集中であり、編集対象のログインボーナスが開催期間中の時、時間系設定を無効化
-        if(isEditMode && (currentHoldBonusName == null || currentHoldBonusName.equals(editingBonusName))){
+        // 編集対象のログインボーナスが開催期間中の時、時間系設定を無効化
+        if(!(currentHoldBonusName == null) && currentHoldBonusName.equals(editingBonusName)){
             timePane.addItem(new GuiItem(LBItems.invalidTimeSettingClockIS(), event -> {
                 Player player = (Player) event.getWhoClicked();
                 player.sendMessage(messagePrefix + "§c現在、当該ログインボーナスが開催中のため、時間系設定は無効化されています");
@@ -293,7 +293,6 @@ public class LoginBonusAdminGUI implements Listener {
         // 通常枠設定
         StaticPane normalRewardPane = new StaticPane(0, 1, 1, 1);
         normalRewardPane.addItem(new GuiItem(LBItems.normalRewardPoolPlayerHeadIS(), event -> {
-            adminNormalRewardSettingGui.update();
             Player player = (Player) event.getWhoClicked();
             updateAdminRewardSettingGui("normal");
             getAdminNormalRewardSettingGui().show(player);
@@ -497,6 +496,18 @@ public class LoginBonusAdminGUI implements Listener {
     }
 
     public void saveItemPaneForRewardSettingGui(String poolType){
+        ChestGui targetGui;
+        if(poolType.equals("normal")){
+            targetGui = adminNormalRewardSettingGui;
+        } else if(poolType.equals("special")){
+            targetGui = adminSpecialRewardSettingGui;
+        } else if (poolType.equals("bonus")){
+            targetGui = adminBonusRewardSettingGui;
+        } else if (poolType.equals("continuous")){
+            targetGui = adminContinuousRewardSettingGui;
+        } else {
+            targetGui = null;
+        }
         // 保存ボタン
         StaticPane saveItemPane = new StaticPane(4, 5, 1, 1);
         saveItemPane.addItem(new GuiItem(LBItems.saveLimeGlassIS(), event -> {
@@ -504,11 +515,11 @@ public class LoginBonusAdminGUI implements Listener {
             RewardManager.deleteRewardsInfo(currentLoginBonusName, poolType);
 
             ArrayList<ItemStack> items = new ArrayList<>();
-            for (int i = 0; i <= 44; i++){
-                if(adminNormalRewardSettingGui.getInventory().getItem(i) == null){
+            for (int i = 0; i <= 44; i++) {
+                if (targetGui.getInventory().getItem(i) == null) {
                     break;
                 }
-                ItemStack item = removeCustomNBT(adminNormalRewardSettingGui.getInventory().getItem(i), "loginbonusplugin", "if-uuid");
+                ItemStack item = removeCustomNBT(targetGui.getInventory().getItem(i), "loginbonusplugin", "if-uuid");
                 items.add(item);
             }
             RewardManager.saveRewards(currentLoginBonusName, poolType, items);
@@ -517,15 +528,8 @@ public class LoginBonusAdminGUI implements Listener {
 
             getAdminRewardSettingGui().show(player);
         }), 0, 0);
-        if(poolType.equals("normal")){
-            adminNormalRewardSettingGui.addPane(saveItemPane);
-        } else if(poolType.equals("special")){
-            adminSpecialRewardSettingGui.addPane(saveItemPane);
-        } else if (poolType.equals("bonus")){
-            adminBonusRewardSettingGui.addPane(saveItemPane);
-        } else if (poolType.equals("continuous")){
-            adminContinuousRewardSettingGui.addPane(saveItemPane);
-        }
+
+        targetGui.addPane(saveItemPane);
     }
 
     public void cancelItemPaneForRewardSettingGui(String poolType){
@@ -844,6 +848,7 @@ public class LoginBonusAdminGUI implements Listener {
         StaticPane saveItemPane = new StaticPane(4, 2, 1, 1);
         saveItemPane.addItem(new GuiItem(LBItems.returnLimeGlassIS(), event -> {
             Player player = (Player) event.getWhoClicked();
+            updateAdminCreateGui(currentLoginBonusName);
             getAdminCreateGui().show(player);
         }), 0, 0);
         adminOtherSettingGui.addPane(saveItemPane);
@@ -1258,7 +1263,7 @@ public class LoginBonusAdminGUI implements Listener {
                     if (event.isLeftClick()) {
                         String editingBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
                         currentLoginBonusName = editingBonusName;
-                        updateAdminCreateGui(true, editingBonusName);
+                        updateAdminCreateGui(editingBonusName);
                         getAdminCreateGui().show(player);
                     } else if (event.isRightClick()) {
                         //削除処理するgui
@@ -1383,7 +1388,7 @@ public class LoginBonusAdminGUI implements Listener {
                     if (event.isLeftClick()) {
                         String editingBonusName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
                         currentLoginBonusName = editingBonusName;
-                        updateAdminCreateGui(true, editingBonusName);
+                        updateAdminCreateGui(editingBonusName);
                         getAdminCreateGui().show(player);
                     } else if (event.isRightClick()) {
                         //削除処理するgui
