@@ -289,7 +289,6 @@ public class LoginBonusUserGUI implements Listener {
                                             Bukkit.getScheduler().runTask(plugin, new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    player.sendMessage("runTask内：" + Thread.currentThread().getName());
                                                     player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、受け取れません");
                                                     player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                                 }
@@ -639,7 +638,6 @@ public class LoginBonusUserGUI implements Listener {
                 {
                     userContinuousLoginBonusClaimGui.addPane(continuousRewardPane);
                     userContinuousLoginBonusClaimGui.update();
-                    Bukkit.getPlayer(playerUUID).sendMessage(messagePrefix + "GUIを更新しました");
                 }
             });
         });
