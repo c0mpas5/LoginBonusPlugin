@@ -55,11 +55,13 @@ public class LoginBonusCommand implements CommandExecutor {
                             userGui.getUserContinuousLoginBonusClaimGui().show(player);
                             return true;
                         case "admin":
-                            if(sender.hasPermission("loginbonusplugin.op")){
+                            if (sender.hasPermission("loginbonusplugin.op")) {
                                 LoginBonusAdminGUI adminGui = new LoginBonusAdminGUI();
                                 adminGui.getAdminHomeGui().show(player);
-                                return true;
+                            } else {
+                                player.sendMessage(messagePrefix + "§c権限がありません");
                             }
+                            return true;
                         case "help":
                             // ヘルプを表示
                             player.sendMessage("§f【ログインボーナスプラグインコマンド一覧】───────");

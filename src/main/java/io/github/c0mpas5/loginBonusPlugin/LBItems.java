@@ -227,7 +227,7 @@ public class LBItems {
             meta.setLore(List.of(
                     ChatColor.GRAY + "開催期間: " + period,
                     ChatColor.RED + "" + ChatColor.BOLD + "[クリック] " + ChatColor.RESET + ChatColor.RED + "当該ログボの報酬プール設定を現在操作中のログボに読み込みます",
-                    ChatColor.of("#DF2E8F") + "※現在の報酬プール設定は上書きされます"
+                    ChatColor.RED + "※現在の報酬プール設定は上書きされます"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
