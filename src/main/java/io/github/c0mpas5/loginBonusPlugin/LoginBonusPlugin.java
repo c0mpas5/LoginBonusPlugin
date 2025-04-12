@@ -46,6 +46,6 @@ public final class LoginBonusPlugin extends JavaPlugin {
 
 
 
-//TODO: コマンド発行？
+//TODO: コマンド発行？ https://discord.com/channels/277712676371562496/757026124651036672/1360655470657929467
 
-//NOTICE: サブ垢 ：実装済み要確認→確認しづらいのでhelperの誰かに確認してもらう
+//NOTICE: サブ垢 ：実装済み要確認→確認しづらいのでhelperの誰かに確認してもらう 治ったかも

@@ -13,3 +13,11 @@ mysql_connection_data:
     db: "connection_data"
 
 target_server_name: "man10"
+commands_when_claimed_normal_rewards:
+  - "tell <player> normalテストメッセージ"
+commands_when_claimed_special_rewards:
+  - "tell <player> specialテストメッセージ"
+commands_when_claimed_bonus_rewards:
+  - "tell <player> bonusテストメッセージ"
+commands_when_claimed_continuous_rewards:
+  - "tell <player> continuousテストメッセージ"

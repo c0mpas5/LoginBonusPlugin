@@ -1065,7 +1065,7 @@ public class LoginBonusAdminGUI implements Listener {
             chests[i] = LBItems.loginBonusNameChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName));
         }
 
-        int pageCount = (bonusNameCount / 28) + 1; //28=1ページに表示するアイテム数
+        int pageCount = (bonusNameCount + 27) / 28; //28=1ページに表示するアイテム数
 
         // 外周背景
         OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);
@@ -1190,7 +1190,7 @@ public class LoginBonusAdminGUI implements Listener {
             chests[i] = LBItems.loginBonusNameChestIS(bonusName, RewardManager.getOriginalPeriod(bonusName));
         }
 
-        int pageCount = (bonusNameCount / 28) + 1; //28=1ページに表示するアイテム数
+        int pageCount = (bonusNameCount + 27) / 28; //28=1ページに表示するアイテム数
 
         // 外周背景
         OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);

@@ -435,19 +435,30 @@ public class RewardManager {
         if (rewardConfig.contains("loginBonuses." + bonusName)) {
             Set<String> upperKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName).getKeys(false);
 
-            if (rewardConfig.contains("loginBonuses." + bonusName + ".pool")){
-                Set<String> poolKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName + ".pool").getKeys(false);
-                return upperKeys.contains("bonusRewardCondition") &&
+            if (rewardConfig.contains("loginBonuses." + bonusName + ".pool")) {
+                // プールタイプのリスト
+                String[] poolTypes = {"normal", "special", "bonus", "continuous"};
+
+                // 基本設定のチェック
+                boolean basicSettingsComplete = upperKeys.contains("bonusRewardCondition") &&
                         upperKeys.contains("dailyResetTime") &&
                         upperKeys.contains("startDate") &&
                         upperKeys.contains("endDate") &&
-                        upperKeys.contains("pool") &&
-                        poolKeys.contains("normal") &&
-                        poolKeys.contains("special") &&
-                        poolKeys.contains("bonus") &&
-                        poolKeys.contains("continuous");
-            } else{
-                return false; // poolが存在しない場合はそもそもfalse
+                        upperKeys.contains("pool");
+
+                // 各プールタイプに少なくとも1つの報酬が設定されているかチェック
+                boolean poolSettingsComplete = true;
+                for (String poolType : poolTypes) {
+                    // 各プールタイプに報酬スロット0が存在するかチェック
+                    if (!rewardConfig.contains("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_0")) {
+                        poolSettingsComplete = false;
+                        break;
+                    }
+                }
+
+                return basicSettingsComplete && poolSettingsComplete;
+            } else {
+                return false; // poolが存在しない場合はfalse
             }
         } else {
             return false; // 存在しないボーナス名の場合はfalse
@@ -459,8 +470,8 @@ public class RewardManager {
         if (rewardConfig.contains("loginBonuses." + bonusName)) {
             Set<String> upperKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName).getKeys(false);
 
-            if (rewardConfig.contains("loginBonuses." + bonusName + ".pool")){
-                Set<String> poolKeys = rewardConfig.getConfigurationSection("loginBonuses." + bonusName + ".pool").getKeys(false);
+            if (rewardConfig.contains("loginBonuses." + bonusName + ".pool")) {
+                // 基本設定のチェック
                 if (!upperKeys.contains("bonusRewardCondition")) {
                     missingSettings.add("報酬設定-ボーナス枠条件設定");
                 }
@@ -470,19 +481,29 @@ public class RewardManager {
                 if (!upperKeys.contains("startDate")) {
                     missingSettings.add("時間系設定-開催期間設定");
                 }
-                if (!poolKeys.contains("normal")) {
-                    missingSettings.add("通常枠報酬設定");
+
+                // 各プールタイプに報酬が設定されているかチェック
+                String[] poolTypes = {"normal", "special", "bonus", "continuous"};
+                for (String poolType : poolTypes) {
+                    if (!rewardConfig.contains("loginBonuses." + bonusName + ".pool." + poolType + ".rewards.slot_0")) {
+                        switch (poolType) {
+                            case "normal":
+                                missingSettings.add("通常枠報酬設定");
+                                break;
+                            case "special":
+                                missingSettings.add("特別枠報酬設定");
+                                break;
+                            case "bonus":
+                                missingSettings.add("ボーナス枠報酬設定");
+                                break;
+                            case "continuous":
+                                missingSettings.add("連続ログボ報酬設定");
+                                break;
+                        }
+                    }
                 }
-                if (!poolKeys.contains("special")) {
-                    missingSettings.add("特別枠報酬設定");
-                }
-                if (!poolKeys.contains("bonus")) {
-                    missingSettings.add("ボーナス枠報酬設定");
-                }
-                if (!poolKeys.contains("continuous")) {
-                    missingSettings.add("連続ログボ報酬設定");
-                }
-            }else{
+            } else {
+                // poolが存在しない場合は、基本設定とすべての報酬設定が不足しているとみなす
                 if (!upperKeys.contains("bonusRewardCondition")) {
                     missingSettings.add("報酬設定-ボーナス枠条件設定");
                 }
@@ -492,7 +513,6 @@ public class RewardManager {
                 if (!upperKeys.contains("startDate")) {
                     missingSettings.add("時間系設定-開催期間設定");
                 }
-                // poolが存在しない場合は、すべての報酬設定が不足しているとみなす
                 missingSettings.add("通常枠報酬設定");
                 missingSettings.add("特別枠報酬設定");
                 missingSettings.add("ボーナス枠報酬設定");

@@ -107,7 +107,7 @@ public class LoginBonusUserGUI implements Listener {
                 }
             }
 
-            int pageCount = (daysBetween / 28) + 1; //28=1ページに表示するアイテム数
+            int pageCount = (daysBetween + 27) / 28; //28=1ページに表示するアイテム数
 
             // 外周背景
             OutlinePane background = new OutlinePane(0, 0, 9, 6, Pane.Priority.LOWEST);
@@ -301,6 +301,20 @@ public class LoginBonusUserGUI implements Listener {
                                                 public void run() {
                                                     player.closeInventory();
                                                     player.getInventory().addItem(item);
+                                                    List<String> commands = null;
+                                                    if (poolType.equals("normal")) {
+                                                        commands = plugin.getConfig().getStringList("commands_when_claimed_normal_rewards");
+                                                    } else if (poolType.equals("special")) {
+                                                        commands = plugin.getConfig().getStringList("commands_when_claimed_special_rewards");
+                                                    } else if (poolType.equals("bonus")) {
+                                                        commands = plugin.getConfig().getStringList("commands_when_claimed_bonus_rewards");
+                                                    }
+                                                    if (commands != null && !commands.isEmpty()) {
+                                                        for (String command : commands) {
+                                                            command = command.replace("<player>", player.getName());
+                                                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                                                        }
+                                                    }
                                                     player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
                                                     player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
                                                 }
@@ -390,8 +404,8 @@ public class LoginBonusUserGUI implements Listener {
                 @Override
                 public void run() {
                     userAccumulatedLoginBonusClaimGui.addPane(paginatedPane);
-                    userAccumulatedLoginBonusClaimGui.update();
                     userAccumulatedLoginBonusClaimGui.setTitle("累積ログボ §l⏰残り" + daysUntilEnd);
+                    userAccumulatedLoginBonusClaimGui.update();
                 }
             });
         });
@@ -502,6 +516,7 @@ public class LoginBonusUserGUI implements Listener {
                     if (closeInvWhenDayChanged(player)) {
                         return;
                     }
+
                     player.sendMessage(messagePrefix + "§c報酬は受け取り済みです");
                     player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                 }), 0, 0);
@@ -570,6 +585,13 @@ public class LoginBonusUserGUI implements Listener {
                                         {
                                             player.closeInventory();
                                             player.getInventory().addItem(item);
+                                            List<String> commands = plugin.getConfig().getStringList("commands_when_claimed_continuous_rewards");;
+                                            if (commands != null && !commands.isEmpty()) {
+                                                for (String command : commands) {
+                                                    command = command.replace("<player>", player.getName());
+                                                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                                                }
+                                            }
                                             player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
                                             player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
                                         }
@@ -712,7 +734,7 @@ public class LoginBonusUserGUI implements Listener {
     // サブスレッドでしか呼ばれない。現在のアカウントも含む、特定の報酬を受取済みのアカウントの所持数を返す
     public int checkSubAccountClaimedCount(UUID uuid, int index, String poolType) {
         List<UUID> accounts = ScoreDatabase.INSTANCE.getSubAccount(uuid);
-        int accountCount = 1; // 現在のアカウントをカウントに含める
+        int accountCount = 0;
 
         if(poolType.equals("special")){
             for (UUID account : accounts) {
