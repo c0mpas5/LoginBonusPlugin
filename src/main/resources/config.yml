@@ -1,3 +1,4 @@
+# ログインボーナス受取履歴を格納するdbを指定します
 mysql_loginbonus_info:
   host: "localhost"
   port: "3306"
@@ -5,6 +6,7 @@ mysql_loginbonus_info:
   pass: "rootpass"
   db: "loginbonus_info"
 
+# ログイン履歴を格納しているdbを指定します
 mysql_connection_data:
     host: "localhost"
     port: "3306"
@@ -12,12 +14,19 @@ mysql_connection_data:
     pass: "rootpass"
     db: "connection_data"
 
+# ログインの対象となるサーバー名を指定します
 target_server_name: "man10"
+
+# 各報酬枠報酬の受け取り時に実行されるコマンドを指定します
+# <player>は受け取ったプレイヤー名に置き換えられます
+# 例：
+# commands_when_claimed_normal_rewards:
+#   - "tell <player> normalテストメッセージ"
+# と書くことで、報酬を受け取ったプレイヤーに対して「normalテストメッセージ」という文字列をチャットに送信します。
 commands_when_claimed_normal_rewards:
-  - "tell <player> normalテストメッセージ"
+
 commands_when_claimed_special_rewards:
-  - "tell <player> specialテストメッセージ"
+
 commands_when_claimed_bonus_rewards:
-  - "tell <player> bonusテストメッセージ"
+
 commands_when_claimed_continuous_rewards:
-  - "tell <player> continuousテストメッセージ"
