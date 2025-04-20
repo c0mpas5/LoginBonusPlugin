@@ -209,10 +209,20 @@ public class LoginBonusUserGUI implements Listener {
                     // 受取可能な日の報酬についての設定
                     if (index == canClaimRewardDay) {
                         rewardPanes[i].addItem(new GuiItem(chests[index], event -> {
+                            Player player = (Player) event.getWhoClicked();
+
+                            // 左クリック（受け取りの動作）をした且つ処理中の時、この受け取り処理を中断。処理中でなければ、処理中にしてこの処理を続行
+                            if (event.isLeftClick() && processing) {
+                                player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
+                                return;
+                            } else if (event.isLeftClick()){
+                                processing = true;
+                            }
+
                             Thread thRewardPane1 = new Thread(() -> {
-                                Player player = (Player) event.getWhoClicked();
                                 // クリック時、日付が変わってたらインベントリ閉じて処理中断
                                 if (closeInvWhenDayChanged(player)) {
+                                    processing = false;
                                     return;
                                 }
 
@@ -228,16 +238,6 @@ public class LoginBonusUserGUI implements Listener {
 
                                 // 左クリック時、問題がなければ報酬渡す
                                 if (event.isLeftClick()) {
-                                    if (processing) {
-                                        Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
-                                            }
-                                        });
-                                        return;
-                                    }
-                                    processing = true;
                                     if (isInventoryFull(player)) {
                                         Bukkit.getScheduler().runTask(plugin, new Runnable() {
                                             @Override
@@ -245,6 +245,7 @@ public class LoginBonusUserGUI implements Listener {
                                                 player.sendMessage(messagePrefix + "§cインベントリに空きがないため、報酬を受け取れません");
                                                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                                 player.closeInventory();
+                                                processing = false;
                                             }
                                         });
                                     } else if (!(canClaimRewardDay == loginCount - 1)) { // これいる？
@@ -254,6 +255,7 @@ public class LoginBonusUserGUI implements Listener {
                                                 player.sendMessage(messagePrefix + "§c日付が変わりました。もう一度ログインボーナス画面を開きなおしてください");
                                                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                                 player.closeInventory();
+                                                processing = false;
                                             }
                                         });
                                     } else {
@@ -271,6 +273,7 @@ public class LoginBonusUserGUI implements Listener {
                                                         player.closeInventory();
                                                     }
                                                 });
+                                                processing = false;
                                                 return;
                                             }
                                         }
@@ -320,8 +323,8 @@ public class LoginBonusUserGUI implements Listener {
                                             });
                                             loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, index + 1, poolType, item.toString(), LocalDateTime.now());
                                         }
+                                        processing = false;
                                     }
-                                    processing = false;
                                     // poolTypeごとに表示する報酬プールを変更
                                 } else if (event.isRightClick()) {
                                     ItemStack clickedSlotItem = event.getCurrentItem();
@@ -352,6 +355,7 @@ public class LoginBonusUserGUI implements Listener {
                             thRewardPane1.start();
                         }));
                     } else {
+                        // 以下、受け取れない報酬に対しての処理
                         rewardPanes[i].addItem(new GuiItem(chests[index], event -> {
                             Thread thRewardPane2 = new Thread(() -> {
                                 Player player = (Player) event.getWhoClicked();
@@ -521,11 +525,21 @@ public class LoginBonusUserGUI implements Listener {
                 }), 0, 0);
             } else {
                 continuousRewardPane.addItem(new GuiItem(LBItems.continuousRewardForUserPlayerHeadIS(streak, needDayToClaim), event -> {
+                    Player player = (Player) event.getWhoClicked();
+
+                    // 左クリック（受け取りの動作）をした且つ処理中の時、この受け取り処理を中断。処理中でなければ、処理中にしてこの処理を続行
+                    if (event.isLeftClick() && streak >= needDayToClaim && processing) {
+                        player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
+                        return;
+                    } else if (event.isLeftClick() && streak >= needDayToClaim){
+                        processing = true;
+                    }
+
                     Thread thRewardPane = new Thread(() -> {
-                        Player player = (Player) event.getWhoClicked();
 
                         // クリック時、日付が変わってたらインベントリ閉じて処理中断
                         if (closeInvWhenDayChanged(player)) {
+                            processing = false;
                             return;
                         }
 
@@ -533,18 +547,6 @@ public class LoginBonusUserGUI implements Listener {
 
                             // 左クリック時、問題がなければ報酬渡す
                             if (event.isLeftClick()) {
-                                if (processing) {
-                                    Bukkit.getScheduler().runTask(plugin, new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            player.sendMessage(messagePrefix + "§c複数の受け取り処理を同時に実行することはできません");
-                                        }
-                                    });
-                                    return;
-                                }
-                                processing = true;
                                 if (isInventoryFull(player)) {
                                     Bukkit.getScheduler().runTask(plugin, new Runnable()
                                     {
@@ -556,6 +558,7 @@ public class LoginBonusUserGUI implements Listener {
                                             player.closeInventory();
                                         }
                                     });
+                                    processing = false;
                                 } else {
                                     int claimedContinuousRewardNum = loginBonusData.getNumOfClaimedContinuousReward(playerUUID, currentBonusName); // 最後に受け取った連続ログボ報酬の番号
                                     int accountLimit = RewardManager.getAccountRewardLimit();
@@ -573,6 +576,7 @@ public class LoginBonusUserGUI implements Listener {
                                                 player.closeInventory();
                                             }
                                         });
+                                        processing = false;
                                         return;
                                     }
 
@@ -595,10 +599,9 @@ public class LoginBonusUserGUI implements Listener {
                                             player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
                                         }
                                     });
-
+                                    processing = false;
                                     loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum, poolType, item.toString(), LocalDateTime.now());
                                 }
-                                processing = false;
                             } else if (event.isRightClick()) {
                                 updateUserRewardListGui(poolType);
                                 Bukkit.getScheduler().runTask(plugin, new Runnable()
