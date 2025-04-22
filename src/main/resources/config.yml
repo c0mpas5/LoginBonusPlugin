@@ -14,6 +14,9 @@ mysql_connection_data:
     pass: "rootpass"
     db: "connection_data"
 
+# プラグインの状態を指定します。onにすると有効、offにすると無効になります。
+status: "on"
+
 # ログインの対象となるサーバー名を指定します
 target_server_name: "man10"
 

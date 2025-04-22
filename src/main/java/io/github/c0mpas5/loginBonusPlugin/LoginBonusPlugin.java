@@ -43,5 +43,7 @@ public final class LoginBonusPlugin extends JavaPlugin {
 
 
 }
-
+//TODO: 全体の機能停止（ユーザーに対してのみ） コマンドでできるように config.ymlに書き込む【必須】
+//TODO: マニュアル作成
+//TODO: https://discord.com/channels/277712676371562496/759721290881302598/1363572636008972499
 //NOTICE: サブ垢 ：実装済み要確認→確認しづらいのでhelperの誰かに確認してもらう 治ったかも

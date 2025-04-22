@@ -35,6 +35,11 @@ public class LoginBonusCommand implements CommandExecutor {
                     LoginBonusUserGUI userGui;
                     switch (args[0].toLowerCase()) {
                         case "total":
+                            if(plugin.getConfig().getString("status").equals("off")){
+                                player.sendMessage(messagePrefix + "§c現在、ログインボーナスは利用できません");
+                                return false;
+                            }
+
                             if (RewardManager.getCurrentBonusName() == null) {
                                 sender.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
                                 return false;
@@ -45,6 +50,11 @@ public class LoginBonusCommand implements CommandExecutor {
                             userGui.getUserAccumulatedLoginBonusClaimGui().show(player);
                             return true;
                         case "streak":
+                            if(plugin.getConfig().getString("status").equals("off")){
+                                player.sendMessage(messagePrefix + "§c現在、ログインボーナスは利用できません");
+                                return false;
+                            }
+
                             if (RewardManager.getCurrentBonusName() == null) {
                                 sender.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
                                 return false;
@@ -62,6 +72,32 @@ public class LoginBonusCommand implements CommandExecutor {
                                 player.sendMessage(messagePrefix + "§c権限がありません");
                             }
                             return true;
+                        case "status":
+                            if(!sender.hasPermission("loginbonusplugin.op")) {
+                                player.sendMessage(messagePrefix + "§c権限がありません");
+                                return false;
+                            }
+
+                            if(args.length == 1){
+                                player.sendMessage(messagePrefix + "§f現在、ログインボーナスプラグインの状態は" + plugin.getConfig().getString("status") + "です");
+                                return true;
+                            }
+
+                            switch (args[1].toLowerCase()) {
+                                case "on":
+                                    plugin.getConfig().set("status", "on");
+                                    plugin.saveConfig();
+                                    player.sendMessage(messagePrefix + "§aログインボーナスプラグインを有効にしました");
+                                    return true;
+                                case "off":
+                                    plugin.getConfig().set("status", "off");
+                                    plugin.saveConfig();
+                                    player.sendMessage(messagePrefix + "§cログインボーナスプラグインを無効にしました");
+                                    return true;
+                                default:
+                                    player.sendMessage("§c引数が誤っています");
+                                    return false;
+                            }
                         case "help":
                             // ヘルプを表示
                             player.sendMessage("§f【ログインボーナスプラグインコマンド一覧】───────");
@@ -70,6 +106,9 @@ public class LoginBonusCommand implements CommandExecutor {
                             player.sendMessage("§b/loginbonus[lb] streak §r§7- 連続ログインボーナスGUIを表示");
                             if (sender.hasPermission("loginbonusplugin.op")) {
                                 player.sendMessage("§b/loginbonus[lb] admin §r§7- 管理者用GUIを表示。ログボを作成・編集できます");
+                                player.sendMessage("§b/loginbonus[lb] status §r§7- ログインボーナスプラグインの状態を表示します");
+                                player.sendMessage("§b/loginbonus[lb] status on §r§7- ログインボーナスプラグインを有効化します");
+                                player.sendMessage("§b/loginbonus[lb] status off §r§7- ログインボーナスプラグインを無効化します");
                             }
                             player.sendMessage("§b/loginbonus[lb] help §r§7- ヘルプを表示");
                             player.sendMessage("§f（[]：括弧内の書き方に代替可能）");
@@ -81,10 +120,15 @@ public class LoginBonusCommand implements CommandExecutor {
 //                                return true;
 //                            }
                         default:
-                            // 引数がわからない場合はGUIを表示
                             player.sendMessage(messagePrefix + "§cコマンドが誤っています");
+                            return false;
                     }
                 } else {
+                    if(plugin.getConfig().getString("status").equals("off")){
+                        player.sendMessage(messagePrefix + "§c現在、ログインボーナスは利用できません");
+                        return false;
+                    }
+
                     if (RewardManager.getCurrentBonusName() == null) {
                         sender.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
                         return false;
