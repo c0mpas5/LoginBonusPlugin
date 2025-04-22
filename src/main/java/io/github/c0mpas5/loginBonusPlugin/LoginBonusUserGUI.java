@@ -114,8 +114,8 @@ public class LoginBonusUserGUI implements Listener {
             Mask mask = new Mask(
                     "111111111",
                     "100000001",
-                    "000000001",
-                    "000000001",
+                    "000000000",
+                    "100000000",
                     "100000001",
                     "011101010"
             );
@@ -175,8 +175,13 @@ public class LoginBonusUserGUI implements Listener {
             }), 0, 0);
 
             //チュートリアル2
-            StaticPane rewardTutorialPane = new StaticPane(0, 3, 1, 1);
-            rewardTutorialPane.addItem(new GuiItem(LBItems.rewardTutorialBookForUserIS(currentBonusName), event -> {
+            StaticPane rewardTutorial1Pane = new StaticPane(8, 2, 1, 1);
+            rewardTutorial1Pane.addItem(new GuiItem(LBItems.rewardTutorialBookForUser1IS(currentBonusName), event -> {
+            }), 0, 0);
+
+            //チュートリアル3
+            StaticPane rewardTutorial2Pane = new StaticPane(8, 3, 1, 1);
+            rewardTutorial2Pane.addItem(new GuiItem(LBItems.rewardTutorialBookForUser2IS(currentBonusName), event -> {
             }), 0, 0);
 
             // 表示するplayerHead、現在のページ数の表示を各ページに追加
@@ -189,7 +194,8 @@ public class LoginBonusUserGUI implements Listener {
                 paginatedPane.addPane(i, prevPagePane);
                 paginatedPane.addPane(i, loginStreakPane);
                 paginatedPane.addPane(i, ruleTutorialPane);
-                paginatedPane.addPane(i, rewardTutorialPane);
+                paginatedPane.addPane(i, rewardTutorial1Pane);
+                paginatedPane.addPane(i, rewardTutorial2Pane);
 
                 // 現在のページ数の表示
                 currentPageCountPane[i] = new StaticPane(4, 5, 1, 1);

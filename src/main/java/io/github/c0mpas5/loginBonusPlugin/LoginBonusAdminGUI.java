@@ -335,11 +335,17 @@ public class LoginBonusAdminGUI implements Listener {
         }), 0, 0);
         adminRewardSettingGui.addPane(bonusRewardConditionPane);
 
-        // チュートリアル
-        StaticPane tutorialPane = new StaticPane(8, 1, 1, 1);
-        tutorialPane.addItem(new GuiItem(LBItems.rewardSettingTutorialBookIS(), event -> {
+        // チュートリアル1
+        StaticPane tutorial1Pane = new StaticPane(7, 1, 1, 1);
+        tutorial1Pane.addItem(new GuiItem(LBItems.rewardSettingTutorialBook1IS(), event -> {
         }), 0, 0);
-        adminRewardSettingGui.addPane(tutorialPane);
+        adminRewardSettingGui.addPane(tutorial1Pane);
+
+        // チュートリアル2
+        StaticPane tutorial2Pane = new StaticPane(8, 1, 1, 1);
+        tutorial2Pane.addItem(new GuiItem(LBItems.rewardSettingTutorialBook2IS(), event -> {
+        }), 0, 0);
+        adminRewardSettingGui.addPane(tutorial2Pane);
 
         //保存ボタン
         StaticPane saveItemPane = new StaticPane(4, 2, 1, 1);
