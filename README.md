@@ -1,4 +1,6 @@
-![lbp_1_B](https://github.com/user-attachments/assets/1e383719-3851-4592-9858-2afe5b388250)
+![lbp_1_B](https://github.com/user-attachments/assets/f5f6acba-6ce5-4495-8d21-c99a252e8653)
+![lbp_2](https://github.com/user-attachments/assets/bcad4333-34db-4173-aefa-5602bca3ac65)
+
 # LoginBonusPlugin
 
 サーバーに導入することで、インベントリGUIを用いたログインボーナス機能を追加できます
