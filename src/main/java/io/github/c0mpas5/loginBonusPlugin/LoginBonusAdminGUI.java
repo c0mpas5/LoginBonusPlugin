@@ -1440,7 +1440,7 @@ public class LoginBonusAdminGUI implements Listener {
 
         cancelPane.addItem(new GuiItem(cancel, event -> {
             Player player = (Player) event.getWhoClicked();
-            getAdminTimeSettingGui().show(player);
+            getAdminGlobalSettingGui().show(player);
         }), 0, 0);
         adminSubAccountSettingGui.getFirstItemComponent().addPane(cancelPane);
 
@@ -1480,7 +1480,7 @@ public class LoginBonusAdminGUI implements Listener {
 
         cancelPane.addItem(new GuiItem(cancel, event -> {
             Player player = (Player) event.getWhoClicked();
-            getAdminTimeSettingGui().show(player);
+            getAdminGlobalSettingGui().show(player);
         }), 0, 0);
         adminSubAccountSettingGui.getFirstItemComponent().addPane(cancelPane);
     }

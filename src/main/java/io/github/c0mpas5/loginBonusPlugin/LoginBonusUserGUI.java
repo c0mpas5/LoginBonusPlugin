@@ -292,6 +292,7 @@ public class LoginBonusUserGUI implements Listener {
                                                 public void run() {
                                                     player.sendMessage(messagePrefix + "§cボーナス枠報酬の受け取り条件を満たしていないため、この報酬は受け取れません");
                                                     player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                                    processing = false;
                                                 }
                                             });
                                         } else if (clickedSlotItemMeta.getDisplayName().contains("無効")) { // 2回目以降は報酬を取れないように
@@ -300,6 +301,7 @@ public class LoginBonusUserGUI implements Listener {
                                                 public void run() {
                                                     player.sendMessage(messagePrefix + "§cこの報酬は無効であるため、受け取れません");
                                                     player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
+                                                    processing = false;
                                                 }
                                             });
                                         } else {
@@ -325,11 +327,11 @@ public class LoginBonusUserGUI implements Listener {
                                                     }
                                                     player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
                                                     player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
+                                                    processing = false;
                                                 }
                                             });
                                             loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, index + 1, poolType, item.toString(), LocalDateTime.now());
                                         }
-                                        processing = false;
                                     }
                                     // poolTypeごとに表示する報酬プールを変更
                                 } else if (event.isRightClick()) {
@@ -562,9 +564,9 @@ public class LoginBonusUserGUI implements Listener {
                                             player.sendMessage(messagePrefix + "§cインベントリに空きがないため、報酬を受け取れません");
                                             player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                             player.closeInventory();
+                                            processing = false;
                                         }
                                     });
-                                    processing = false;
                                 } else {
                                     int claimedContinuousRewardNum = loginBonusData.getNumOfClaimedContinuousReward(playerUUID, currentBonusName); // 最後に受け取った連続ログボ報酬の番号
                                     int accountLimit = RewardManager.getAccountRewardLimit();
@@ -580,9 +582,9 @@ public class LoginBonusUserGUI implements Listener {
                                                 player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
                                                 player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                                 player.closeInventory();
+                                                processing = false;
                                             }
                                         });
-                                        processing = false;
                                         return;
                                     }
 
@@ -603,9 +605,9 @@ public class LoginBonusUserGUI implements Listener {
                                             }
                                             player.sendMessage(Component.text(messagePrefix).append(getItemDisplayName(item)).append(Component.text(" §f×" + item.getAmount() + " §aを受け取りました！")));
                                             player.playSound(player.getLocation(), "minecraft:entity.player.levelup", 1.0f, 1.0f);
+                                            processing = false;
                                         }
                                     });
-                                    processing = false;
                                     loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum, poolType, item.toString(), LocalDateTime.now());
                                 }
                             } else if (event.isRightClick()) {
