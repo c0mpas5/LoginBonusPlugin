@@ -31,32 +31,30 @@ public class EventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Thread th = new Thread(() -> {
-            Player player = event.getPlayer();
-            UUID playerUUID = player.getUniqueId();
-
-            String currentBonusName = RewardManager.getCurrentBonusName();
-            if (currentBonusName == null) {
-                Bukkit.getScheduler().runTask(plugin, new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        player.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
-                    }
-                });
-                return;
-            }
-            boolean hasClaimedTodayAccumulatedReward = !hasClaimedToday(playerUUID, "accumulated", currentBonusName);
-            boolean hasClaimedTodayContinuousReward = !hasClaimedToday(playerUUID, "continuous", currentBonusName);
-            int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
-            int loginStreak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
-
             if(plugin.getConfig().getString("status").equals("on")){
-                Bukkit.getScheduler().runTask(plugin, new Runnable()
-                {
-                    @Override
-                    public void run()
+                Player player = event.getPlayer();
+                UUID playerUUID = player.getUniqueId();
+
+                String currentBonusName = RewardManager.getCurrentBonusName();
+                if (currentBonusName == null) {
+                    Bukkit.getScheduler().runTask(plugin, new Runnable()
                     {
+                        @Override
+                        public void run()
+                        {
+                            player.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
+                        }
+                    });
+                    return;
+                }
+                boolean hasClaimedTodayAccumulatedReward = !hasClaimedToday(playerUUID, "accumulated", currentBonusName);
+                boolean hasClaimedTodayContinuousReward = !hasClaimedToday(playerUUID, "continuous", currentBonusName);
+                int loginCount = loginBonusData.getLoginCount(playerUUID, currentBonusName);
+                int loginStreak = loginBonusData.getLoginStreak(playerUUID, currentBonusName);
+
+                Bukkit.getScheduler().runTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
                         if (hasClaimedTodayAccumulatedReward) {
                             player.sendMessage(messagePrefix + "ログイン" + loginCount + "日目！");
                             sendOpenAccumulatedRewardGuiMessage(player);
