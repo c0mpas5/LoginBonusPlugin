@@ -1,6 +1,7 @@
 package io.github.c0mpas5.loginBonusPlugin;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -661,6 +662,124 @@ public class RewardManager {
             return rewardConfig.getInt("accountRewardLimit");
         } else {
             return 1; // デフォルト値を返す
+        }
+    }
+
+    /////////// 自動作成機能 ///////////
+    public static void createNextLoginBonus(Player player) {
+        // 現在の日付と月の情報を取得
+        LocalDate currentDate = LocalDate.now();
+        LocalDate firstDayOfMonth = currentDate.withDayOfMonth(1);
+        LocalDate lastDayOfMonth = currentDate.withDayOfMonth(currentDate.lengthOfMonth());
+
+        // 現在の月に有効なログインボーナスが既に存在するかチェック
+        boolean existsForCurrentMonth = false;
+        // 過去のログインボーナスが存在するかチェック
+        boolean existsPreviousBonus = false;
+        // 最新のログインボーナス名を保持
+        String latestBonusName = null;
+        LocalDate latestStartDate = null;
+
+        if (rewardConfig.getConfigurationSection("loginBonuses") != null) {
+            Set<String> bonusNames = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
+
+            for (String name : bonusNames) {
+                LocalDate startDate = getPeriodStartDate(name);
+                LocalDate endDate = getPeriodEndDate(name);
+
+                if (startDate == null || endDate == null) continue;
+
+                // 日付変更時刻を考慮した重複チェック
+                int resetHour = getDailyResetTime(name);
+
+                // ログインボーナスの実際の開始と終了時刻
+                LocalDateTime bonusStartDateTime = startDate.atTime(resetHour, 0);
+                LocalDateTime bonusEndDateTime = endDate.plusDays(1).atTime(resetHour, 0);
+
+                // 現在月の実際の開始と終了時刻
+                LocalDateTime monthStartDateTime = firstDayOfMonth.atTime(resetHour, 0);
+                LocalDateTime monthEndDateTime = lastDayOfMonth.plusDays(1).atTime(resetHour, 0);
+
+                // 重複チェック（開始日時・終了日時部分の重複は重複とみなさない）
+                boolean overlapsWithCurrentMonth = !(bonusEndDateTime.isEqual(monthStartDateTime) || bonusStartDateTime.isEqual(monthEndDateTime) || bonusEndDateTime.isBefore(monthStartDateTime) || bonusStartDateTime.isAfter(monthEndDateTime));
+                if (overlapsWithCurrentMonth) {
+                    existsForCurrentMonth = true;
+                    break;
+                }
+
+                LocalDateTime currentDateTime = LocalDateTime.now();
+
+                // 過去のログボがあるかどうか
+                if (bonusStartDateTime.isBefore(currentDateTime)) {
+                    existsPreviousBonus = true;
+                    // 最新のログインボーナスを特定
+                    if (latestStartDate == null || startDate.isAfter(latestStartDate)) {
+                        latestStartDate = startDate;
+                        latestBonusName = name;
+                    }
+                }
+            }
+        }
+
+        // 条件チェック: 現在の月にログインボーナスがなく、過去にログインボーナスが存在する
+        if (!existsForCurrentMonth && existsPreviousBonus && latestBonusName != null) {
+            // 新しいログインボーナス名を生成 (例: "monthly_2024_05")
+            String newBonusName = "monthly_" + currentDate.getYear() + "_" +
+                    String.format("%02d", currentDate.getMonthValue());
+
+            // 既に同名のボーナスが存在する場合は作成しない
+            if (rewardConfig.contains("loginBonuses." + newBonusName)) {
+                if (player != null) {
+                    //player.sendMessage(messagePrefix + "§c同名のログインボーナスが既に存在します: " + newBonusName);
+                }
+                return;
+            }
+
+            // 直近のログインボーナス設定を複製（ディープコピー）
+            ConfigurationSection sourceSection = rewardConfig.getConfigurationSection("loginBonuses." + latestBonusName);
+            ConfigurationSection targetSection = rewardConfig.createSection("loginBonuses." + newBonusName);
+
+            // セクション内の各キーを個別にコピー（期間情報を除く）
+            for (String key : sourceSection.getKeys(true)) {
+                if (!key.equals("startDate") && !key.equals("endDate") && !sourceSection.isConfigurationSection(key)) {
+                    targetSection.set(key, sourceSection.get(key));
+                }
+            }
+
+            // 期間を現在の月に設定
+            String startDateStr = firstDayOfMonth.format(DateTimeFormatter.ofPattern("uuuu/MM/dd"));
+            String endDateStr = lastDayOfMonth.format(DateTimeFormatter.ofPattern("uuuu/MM/dd"));
+            targetSection.set("startDate", startDateStr);
+            targetSection.set("endDate", endDateStr);
+
+            // 有効化状態を設定
+            if (isAllSettingsComplete(newBonusName)) {
+                targetSection.set("status", "enabled");
+            } else {
+                targetSection.set("status", "disabled");
+            }
+
+            try {
+                rewardConfig.save(rewardFile);
+                if (player != null) {
+//                    player.sendMessage(messagePrefix + "§a今月のログインボーナス (" + newBonusName + ") を作成しました。");
+//                    player.sendMessage(messagePrefix + "§a期間: " + startDateStr + " から " + endDateStr);
+                    player.sendMessage(messagePrefix + "§aログインボーナスを更新しました。再度/lbコマンドを実行してください。");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                if (player != null) {
+                    player.sendMessage(messagePrefix + "§cログインボーナスの更新中にエラーが発生しました。");
+                }
+            }
+        } else {
+            if (player != null) {
+                if (existsForCurrentMonth) {
+//                    player.sendMessage(messagePrefix + "§c今月のログインボーナスは既に存在しています。");
+                } else if (!existsPreviousBonus) {
+//                    player.sendMessage(messagePrefix + "§c過去のログインボーナスが見つかりません。");
+                }
+            }
         }
     }
 
