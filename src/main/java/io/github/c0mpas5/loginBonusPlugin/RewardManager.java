@@ -20,10 +20,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class RewardManager {
 
@@ -263,9 +260,31 @@ public class RewardManager {
         ArrayList<String> bonusNames = new ArrayList<>();
         if (rewardConfig.getConfigurationSection("loginBonuses") != null) {
             Set<String> keys = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
+
+            // まず全てのボーナス名と開始日を集める
+            Map<String, LocalDate> bonusStartDates = new HashMap<>();
+            List<String> bonusWithoutDates = new ArrayList<>();
+
             for (String key : keys) {
-                bonusNames.add(key);
+                LocalDate startDate = getPeriodStartDate(key);
+                if (startDate != null) {
+                    bonusStartDates.put(key, startDate);
+                } else {
+                    bonusWithoutDates.add(key);
+                }
             }
+
+            // 開始日でソート
+            List<Map.Entry<String, LocalDate>> sortedEntries = new ArrayList<>(bonusStartDates.entrySet());
+            sortedEntries.sort(Map.Entry.comparingByValue());
+
+            // ソートされたボーナス名をリストに追加
+            for (Map.Entry<String, LocalDate> entry : sortedEntries) {
+                bonusNames.add(entry.getKey());
+            }
+
+            // 日付のないボーナスを末尾に追加
+            bonusNames.addAll(bonusWithoutDates);
         }
         return bonusNames;
     }

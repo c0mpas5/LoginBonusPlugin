@@ -13,10 +13,7 @@ import org.bukkit.profile.PlayerTextures;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.Base64;
+import java.util.*;
 
 public class LBItems {
     // adminHomeGui
@@ -717,6 +714,9 @@ public class LBItems {
             ));
 
             ArrayList<LocalDate> existingDates = RewardManager.getRecoverLoginMissedDate();
+            // 日付を古い順（昇順）にソート
+            Collections.sort(existingDates);
+
             List<String> lore = meta.getLore();
             StringBuilder currentRow = new StringBuilder();
 
