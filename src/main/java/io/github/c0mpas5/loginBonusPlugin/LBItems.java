@@ -922,7 +922,7 @@ public class LBItems {
         return item;
     }
 
-    public static ItemStack rewardTutorialBookForUser2IS(String bonusName){
+    public static ItemStack rewardTutorialBookForUser2IS(String bonusName, String period, int dailyResetTime){
         ItemStack item = new ItemStack(Material.BOOK, 1);
         ItemMeta meta = item.getItemMeta();
 
@@ -941,7 +941,10 @@ public class LBItems {
                     ChatColor.of("#C2C2C2") + "この枠の報酬は" + ChatColor.GOLD  + accountRewardLimit + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "回を上限に受け取ることができます。",
                     ChatColor.of("#C2C2C2") + " ",
                     ChatColor.of("#C2C2C2") + "※特に、" + ChatColor.GOLD  + "オレンジ文字" + ChatColor.RESET + "" + ChatColor.of("#C2C2C2") + "の部分は",
-                    ChatColor.of("#C2C2C2") + "開催期間ごとに変更される場合があります。"
+                    ChatColor.of("#C2C2C2") + "開催期間ごとに変更される場合があります。",
+                    ChatColor.of("#C2C2C2") + " ",
+                    ChatColor.of("#C2C2C2") + "■開催期間：" + ChatColor.BOLD + period,
+                    ChatColor.of("#C2C2C2") + "■日付変更時刻：" + ChatColor.BOLD + dailyResetTime + "時"
             ));
             meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true); // 発光効果（効果なし）
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);

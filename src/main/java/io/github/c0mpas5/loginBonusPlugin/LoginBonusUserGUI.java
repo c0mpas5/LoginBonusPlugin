@@ -181,7 +181,7 @@ public class LoginBonusUserGUI implements Listener {
 
             //チュートリアル3
             StaticPane rewardTutorial2Pane = new StaticPane(8, 3, 1, 1);
-            rewardTutorial2Pane.addItem(new GuiItem(LBItems.rewardTutorialBookForUser2IS(currentBonusName), event -> {
+            rewardTutorial2Pane.addItem(new GuiItem(LBItems.rewardTutorialBookForUser2IS(currentBonusName, RewardManager.getOriginalPeriod(currentBonusName), RewardManager.getDailyResetTime(currentBonusName)), event -> {
             }), 0, 0);
 
             // 表示するplayerHead、現在のページ数の表示を各ページに追加
