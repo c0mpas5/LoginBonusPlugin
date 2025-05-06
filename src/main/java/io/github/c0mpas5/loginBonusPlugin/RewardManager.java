@@ -584,7 +584,8 @@ public class RewardManager {
             LocalDateTime existingEndDateTime = existingEndDate.plusDays(1).atTime(existingResetHour, 0);
 
             // 期間重複チェック
-            boolean overlap = !(newEndDateTime.isBefore(existingStartDateTime) || newStartDateTime.isAfter(existingEndDateTime));
+            boolean overlap = !(newEndDateTime.isEqual(existingStartDateTime) || newEndDateTime.isBefore(existingStartDateTime) ||
+                    newStartDateTime.isEqual(existingEndDateTime) || newStartDateTime.isAfter(existingEndDateTime));
 
             if (overlap) {
                 // 重複がある場合は常にfalseを返す（リセット時間に関係なく）
