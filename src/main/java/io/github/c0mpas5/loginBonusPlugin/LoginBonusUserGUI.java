@@ -277,9 +277,9 @@ public class LoginBonusUserGUI implements Listener {
                                                         player.sendMessage("§c（上限：" + accountLimit + " アカウント）");
                                                         player.playSound(player.getLocation(), "minecraft:block.note_block.bass", 1.0f, 0.7f);
                                                         player.closeInventory();
+                                                        processing = false;
                                                     }
                                                 });
-                                                processing = false;
                                                 return;
                                             }
                                         }
@@ -608,7 +608,8 @@ public class LoginBonusUserGUI implements Listener {
                                             processing = false;
                                         }
                                     });
-                                    loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum, poolType, item.toString(), LocalDateTime.now());
+                                    // 前回連続ログボを受け取った時点の受取回数（claimedContinuousRewardNum）に+1する
+                                    loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum + 1, poolType, item.toString(), LocalDateTime.now());
                                 }
                             } else if (event.isRightClick()) {
                                 updateUserRewardListGui(poolType);

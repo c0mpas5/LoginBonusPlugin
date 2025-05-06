@@ -237,6 +237,7 @@ public class LoginBonusData {
             }
 
             int latestClaimedDay = 0; // 受取履歴がない時は0を返す
+            //最新のdayを取得するようにしているが、連続ログボに限ってdayは受取済み回数を表す
             try (PreparedStatement ps = con.prepareStatement("SELECT day FROM loginbonus_reward_log WHERE uuid = ? AND claimed_item_pool_type = 'continuous' AND login_bonus_name = ? ORDER BY claimed_datetime DESC LIMIT 1")) {
                 ps.setString(1, playerUUID.toString());
                 ps.setString(2, bonusName);
