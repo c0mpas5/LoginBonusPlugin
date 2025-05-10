@@ -93,7 +93,7 @@ public class LoginBonusUserGUI implements Listener {
                 if (i < canClaimRewardDay || i == canClaimRewardDay && hasClaimedToday(playerUUID, "accumulated")) {
                     chests[i] = LBItems.alreadyClaimedRewardForUserGlassIS(i + 1);
                 } else if (i == canClaimRewardDay && i == daysBetween - (daysSinceStart - loginCount) - 1) { // 開催日数から逃がした日数を引く（後ろの-1はインデックス番号用に調整するもの）
-                    chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, true, daysBetween, loginCount, currentBonusName);
+                    chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, true, daysBetween, loginCount - 1, currentBonusName); // loginCount - 1は、ログイン率の算出において、最終日を計算の考慮に含めないようにするため
                 } else if (i == daysBetween - (daysSinceStart - loginCount) - 1) {
                     chests[i] = LBItems.bonusRewardForUserPlayerHeadIS(i + 1, false, daysBetween, loginCount, currentBonusName);
                 } else if (i % 10 == 9 && i == canClaimRewardDay) {
