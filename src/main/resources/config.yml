@@ -14,18 +14,21 @@ mysql_connection_data:
     pass: "rootpass"
     db: "connection_data"
 
-# プラグインの状態を指定します。onにすると有効、offにすると無効になります。
+# プラグインの状態を指定します。onにすると有効、offにすると無効になります
 status: "on"
 
 # ログインの対象となるサーバー名を指定します
 target_server_name: "man10"
+
+# プレイヤーが対象のサーバーにログインしたときに表示されるメッセージにディレイを設定します (1000 = 1秒)
+onPlayerJoinEventDelay: 2000
 
 # 各報酬枠報酬の受け取り時に実行されるコマンドを指定します
 # <player>は受け取ったプレイヤー名に置き換えられます
 # 例：
 # commands_when_claimed_normal_rewards:
 #   - "tell <player> normalテストメッセージ"
-# と書くことで、報酬を受け取ったプレイヤーに対して「normalテストメッセージ」という文字列をチャットに送信します。
+# と書くことで、報酬を受け取ったプレイヤーに対して「normalテストメッセージ」という文字列をチャットに送信します
 commands_when_claimed_normal_rewards:
 
 commands_when_claimed_special_rewards:

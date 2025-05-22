@@ -31,6 +31,12 @@ public class EventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Thread th = new Thread(() -> {
+            try {
+                Thread.sleep(plugin.getConfig().getInt("onPlayerJoinEventDelay"));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
             if(plugin.getConfig().getString("status").equals("on")){
                 Player player = event.getPlayer();
                 UUID playerUUID = player.getUniqueId();
