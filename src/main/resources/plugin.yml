@@ -16,5 +16,5 @@ permissions:
     default: op
     description: 'OP権限'
   loginbonusplugin.player:
-    default: true
+    default: op
     description: 'プレイヤー権限'
