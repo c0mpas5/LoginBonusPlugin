@@ -314,7 +314,7 @@ public class LoginBonusData {
         Thread th = new Thread(() -> {
             String query = "CREATE TABLE IF NOT EXISTS connection_log (uuid VARCHAR(36), connected_time DATETIME, server VARCHAR(16))";
             mysqlManager.execute(query, 1);
-            query = "CREATE TABLE IF NOT EXISTS loginbonus_reward_log (uuid VARCHAR(36), login_bonus_name VARCHAR(48), day INT, claimed_item_pool_type VARCHAR(16), claimed_item_stack TEXT, claimed_datetime DATETIME)";
+            query = "CREATE TABLE IF NOT EXISTS loginbonus_reward_log (claim_id INT unsigned auto_increment PRIMARY KEY, uuid VARCHAR(36), login_bonus_name VARCHAR(48), day INT, claimed_item_pool_type VARCHAR(16), claimed_item_stack TEXT, claimed_datetime DATETIME)";
             mysqlManager.execute(query, 0);
 
             //デバッグ：DBに適当なログイン日時を入力

@@ -8,6 +8,7 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -330,7 +331,8 @@ public class LoginBonusUserGUI implements Listener {
                                                     processing = false;
                                                 }
                                             });
-                                            loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, index + 1, poolType, item.toString(), LocalDateTime.now());
+                                            String displayName = PlainTextComponentSerializer.plainText().serialize(getItemDisplayName(item)) + " ×" + item.getAmount();
+                                            loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, index + 1, poolType, displayName, LocalDateTime.now());
                                         }
                                     }
                                     // poolTypeごとに表示する報酬プールを変更
@@ -609,7 +611,8 @@ public class LoginBonusUserGUI implements Listener {
                                         }
                                     });
                                     // 前回連続ログボを受け取った時点の受取回数（claimedContinuousRewardNum）に+1する
-                                    loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum + 1, poolType, item.toString(), LocalDateTime.now());
+                                    String displayName = PlainTextComponentSerializer.plainText().serialize(getItemDisplayName(item)) + " ×" + item.getAmount();
+                                    loginBonusData.setClaimedItemStack(playerUUID, currentBonusName, claimedContinuousRewardNum + 1, poolType, displayName, LocalDateTime.now());
                                 }
                             } else if (event.isRightClick()) {
                                 updateUserRewardListGui(poolType);
