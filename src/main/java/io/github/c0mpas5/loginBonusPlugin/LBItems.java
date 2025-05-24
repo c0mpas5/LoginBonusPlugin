@@ -216,7 +216,12 @@ public class LBItems {
     }
 
     public static ItemStack loginBonusNameForLoadChestIS(String bonusName, String period){
-        ItemStack item = new ItemStack(Material.CHEST, 1);
+        ItemStack item = null;
+        if (bonusName.equals("月更新用ログボ")) {
+            item = new ItemStack(Material.ENDER_CHEST, 1);
+        } else {
+            item = new ItemStack(Material.CHEST, 1);
+        }
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {

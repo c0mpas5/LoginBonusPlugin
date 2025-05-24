@@ -43,6 +43,9 @@ public class RewardManager {
 
             // デフォルトの設定を保存
             rewardConfig.set("accountRewardLimit", 2);
+            rewardConfig.set("loginBonuses.月更新用ログボ.bonusRewardCondition", 80);
+            rewardConfig.set("loginBonuses.月更新用ログボ.dailyResetTime", 5);
+            rewardConfig.set("loginBonuses.月更新用ログボ.status", "disabled");
 
             try {
                 rewardConfig.save(rewardFile);
@@ -696,9 +699,10 @@ public class RewardManager {
         boolean existsForCurrentMonth = false;
         // 過去のログインボーナスが存在するかチェック
         boolean existsPreviousBonus = false;
+        boolean existsMonthlyBonus = false;
         // 最新のログインボーナス名を保持
-        String latestBonusName = null;
-        LocalDate latestStartDate = null;
+//        String latestBonusName = null;
+//        LocalDate latestStartDate = null;
 
         if (rewardConfig.getConfigurationSection("loginBonuses") != null) {
             Set<String> bonusNames = rewardConfig.getConfigurationSection("loginBonuses").getKeys(false);
@@ -732,17 +736,21 @@ public class RewardManager {
                 // 過去のログボがあるかどうか
                 if (bonusStartDateTime.isBefore(currentDateTime)) {
                     existsPreviousBonus = true;
-                    // 最新のログインボーナスを特定
-                    if (latestStartDate == null || startDate.isAfter(latestStartDate)) {
-                        latestStartDate = startDate;
-                        latestBonusName = name;
-                    }
+//                    // 最新のログインボーナスを特定
+//                    if (latestStartDate == null || startDate.isAfter(latestStartDate)) {
+//                        latestStartDate = startDate;
+//                        latestBonusName = name;
+//                    }
+                }
+
+                if(name.equals("月更新用ログボ")){
+                    existsMonthlyBonus = true;
                 }
             }
         }
 
         // 条件チェック: 現在の月にログインボーナスがなく、過去にログインボーナスが存在する
-        if (!existsForCurrentMonth && existsPreviousBonus && latestBonusName != null) {
+        if (!existsForCurrentMonth && existsPreviousBonus && existsMonthlyBonus) {
             // 新しいログインボーナス名を生成 (例: "monthly_2024_05")
             String newBonusName = "monthly_" + currentDate.getYear() + "_" +
                     String.format("%02d", currentDate.getMonthValue());
@@ -756,7 +764,7 @@ public class RewardManager {
             }
 
             // 直近のログインボーナス設定を複製（ディープコピー）
-            ConfigurationSection sourceSection = rewardConfig.getConfigurationSection("loginBonuses." + latestBonusName);
+            ConfigurationSection sourceSection = rewardConfig.getConfigurationSection("loginBonuses." + "月更新用ログボ");
             ConfigurationSection targetSection = rewardConfig.createSection("loginBonuses." + newBonusName);
 
             // セクション内の各キーを個別にコピー（期間情報を除く）
