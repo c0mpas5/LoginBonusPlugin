@@ -700,7 +700,7 @@ public class RewardManager {
         // 現在の月に有効なログインボーナスが既に存在するかチェック
         boolean existsForCurrentMonth = false;
         // 過去のログインボーナスが存在するかチェック
-        boolean existsPreviousBonus = false;
+//        boolean existsPreviousBonus = false;
         boolean existsMonthlyBonus = false;
         // 最新のログインボーナス名を保持
 //        String latestBonusName = null;
@@ -736,14 +736,14 @@ public class RewardManager {
                 LocalDateTime currentDateTime = LocalDateTime.now();
 
                 // 過去のログボがあるかどうか
-                if (bonusStartDateTime.isBefore(currentDateTime)) {
-                    existsPreviousBonus = true;
+//                if (bonusStartDateTime.isBefore(currentDateTime)) {
+//                    existsPreviousBonus = true;
 //                    // 最新のログインボーナスを特定
 //                    if (latestStartDate == null || startDate.isAfter(latestStartDate)) {
 //                        latestStartDate = startDate;
 //                        latestBonusName = name;
 //                    }
-                }
+//                }
 
                 if(name.equals("月更新用ログボ")){
                     existsMonthlyBonus = true;
@@ -752,7 +752,7 @@ public class RewardManager {
         }
 
         // 条件チェック: 現在の月にログインボーナスがなく、過去にログインボーナスが存在する
-        if (!existsForCurrentMonth && existsPreviousBonus && existsMonthlyBonus) {
+        if (!existsForCurrentMonth && existsMonthlyBonus) {
             // 新しいログインボーナス名を生成 (例: "monthly_2024_05")
             String newBonusName = "monthly_" + currentDate.getYear() + "_" +
                     String.format("%02d", currentDate.getMonthValue());
@@ -806,7 +806,7 @@ public class RewardManager {
             if (player != null) {
                 if (existsForCurrentMonth) {
 //                    player.sendMessage(messagePrefix + "§c今月のログインボーナスは既に存在しています。");
-                } else if (!existsPreviousBonus) {
+//                } else if (!existsPreviousBonus) {
 //                    player.sendMessage(messagePrefix + "§c過去のログインボーナスが見つかりません。");
                 }
             }

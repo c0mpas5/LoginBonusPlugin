@@ -49,7 +49,9 @@ public class EventListener implements Listener {
                         public void run()
                         {
                             player.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
-                            RewardManager.createNextLoginBonus(player);
+                            if (plugin.getConfig().getString("auto_create_loginbonuses").equals("on")) {
+                                RewardManager.createNextLoginBonus(player);
+                            }
                         }
                     });
                     return;
