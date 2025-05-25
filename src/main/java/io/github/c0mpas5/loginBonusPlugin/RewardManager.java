@@ -46,6 +46,8 @@ public class RewardManager {
             rewardConfig.set("loginBonuses.月更新用ログボ.bonusRewardCondition", 80);
             rewardConfig.set("loginBonuses.月更新用ログボ.dailyResetTime", 5);
             rewardConfig.set("loginBonuses.月更新用ログボ.status", "disabled");
+            rewardConfig.set("loginBonuses.月更新用ログボ.startDate", "5000/01/01");
+            rewardConfig.set("loginBonuses.月更新用ログボ.endDate", "5000/01/02");
 
             try {
                 rewardConfig.save(rewardFile);

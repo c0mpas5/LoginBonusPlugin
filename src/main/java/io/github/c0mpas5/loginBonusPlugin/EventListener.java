@@ -49,7 +49,7 @@ public class EventListener implements Listener {
                         public void run()
                         {
                             player.sendMessage(messagePrefix + "現在開催中のログインボーナスはありません");
-//                            RewardManager.createNextLoginBonus(player);
+                            RewardManager.createNextLoginBonus(player);
                         }
                     });
                     return;
