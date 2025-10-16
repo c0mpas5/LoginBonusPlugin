@@ -1,5 +1,5 @@
 ![lbp_1_B](https://github.com/user-attachments/assets/f5f6acba-6ce5-4495-8d21-c99a252e8653)
-![lbp_2](https://github.com/user-attachments/assets/bcad4333-34db-4173-aefa-5602bca3ac65)
+![lbp_2](https://github.com/user-attachments/assets/308251e0-c82e-449e-8fc3-bb01fc666ba3)
 
 # LoginBonusPlugin
 
