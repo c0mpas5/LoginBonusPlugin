@@ -8,6 +8,8 @@
 <img width="45%" alt="screenshot1" src="https://github.com/user-attachments/assets/f2a442fa-83b8-4120-885f-a7068fa98199">
 <img width="45%" alt="screenshot1" src="https://github.com/user-attachments/assets/5df02ed1-c661-49ef-806a-07a350a931d8">
 
+## 紹介動画（YouTube）
+[!['LoginBonusPlugin']('https://github.com/user-attachments/assets/f2a442fa-83b8-4120-885f-a7068fa98199')]('https://youtu.be/6_9fWdHoiMk')
 
 ## 特徴
 
