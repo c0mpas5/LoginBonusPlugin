@@ -6,7 +6,7 @@
 サーバーに導入することで、インベントリGUIを用いたログインボーナス機能を追加できます
 
 ## 紹介動画（YouTube）
-https://www.youtube.com/watch?v=6_9fWdHoiMk
+https://youtu.be/m8wTl5RRxlI
 
 ## プレビュー画像
 <img width="45%" alt="screenshot1" src="https://github.com/user-attachments/assets/f2a442fa-83b8-4120-885f-a7068fa98199">
